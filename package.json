@@ -20,6 +20,8 @@
   "homepage": "https://github.com/ProbableTrain/MapGenerator#readme",
   "dependencies": {
     "@interactjs/types": "^1.9.8",
+    "@react-three/drei": "^8.4.0",
+    "@react-three/fiber": "^7.0.24",
     "@svgdotjs/svg.js": "^3.0.16",
     "@types/d3-quadtree": "^1.0.7",
     "@types/dat.gui": "^0.7.5",
@@ -29,7 +31,6 @@
     "dat.gui": "^0.7.7",
     "file-saver": "^2.0.2",
     "interactjs": "^1.9.8",
-    "isect": "^3.0.0",
     "jsts": "^2.1.2",
     "jszip": "^3.4.0",
     "loglevel": "^1.6.7",
@@ -39,8 +40,10 @@
     "roughjs": "^4.2.0",
     "simplex-noise": "^2.4.0",
     "simplify-js": "^1.2.4",
-    "three": "^0.115.0",
+    "styled-components": "^5.3.3",
+    "three": "^0.134.0",
     "three-csg-ts": "^1.0.4",
+    "three-stdlib": "^2.6.4",
     "threejs-export-stl": "0.0.4"
   },
   "devDependencies": {

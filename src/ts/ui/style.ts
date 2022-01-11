@@ -294,8 +294,8 @@ export class DefaultStyle extends Style {
       canvas.setStrokeStyle(this.colourScheme.frameColour);
       canvas.drawFrame(30, 30, 30, 30);
 
-      // canvas.setFillStyle(this.colourScheme.frameTextColour);
-      // canvas.drawCityName();
+      canvas.setFillStyle(this.colourScheme.frameTextColour);
+      canvas.drawCityName();
     }
   }
 }

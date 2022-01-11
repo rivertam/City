@@ -1,4 +1,6 @@
 import './style.css';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import * as log from 'loglevel';
 import * as dat from 'dat.gui';
 import TensorFieldGUI from './ts/ui/tensor_field_gui';
@@ -15,6 +17,7 @@ import Vector from './ts/vector';
 import { SVG } from '@svgdotjs/svg.js';
 import ModelGenerator from './ts/model_generator';
 import { saveAs } from 'file-saver';
+import { Game } from './Game';
 
 class Main {
   private readonly STARTING_WIDTH = 1440; // Initially zooms in if width > STARTING_WIDTH
@@ -390,3 +393,10 @@ window.addEventListener('load', (): void => {
 window.addEventListener('scroll', (event) => {
   event.preventDefault();
 });
+
+ReactDOM.render(
+  <React.StrictMode>
+    <Game />
+  </React.StrictMode>,
+  document.getElementById('root'),
+);
