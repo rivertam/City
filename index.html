@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map Generator</title>
+
+    <script src="https://cdn.rawgit.com/anvaka/isect/v2.0.0/build/isect.min.js"></script>
+  </head>
+  <body style="background-color: grey">
+    <svg id="map-svg"></svg>
+    <div>
+      <canvas id="map-canvas"></canvas>
+      <!-- Must match util.ts and style.css -->
+      <canvas id="img-canvas"></canvas>
+    </div>
+    <script src="bundle.js"></script>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
