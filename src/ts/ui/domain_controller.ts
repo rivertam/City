@@ -7,181 +7,192 @@ import Util from '../util';
  * Controls panning and zooming
  */
 export default class DomainController {
-    private static instance: DomainController;
+  private static instance: DomainController;
 
-    private readonly ZOOM_SPEED = 0.96;
-    private readonly SCROLL_DELAY = 100;
+  private readonly ZOOM_SPEED = 0.96;
+  private readonly SCROLL_DELAY = 100;
 
-    // Location of screen origin in world space
-    private _origin: Vector = Vector.zeroVector();
-    
-    // Screen-space width and height
-    private _screenDimensions = Vector.zeroVector();
+  // Location of screen origin in world space
+  private _origin: Vector = Vector.zeroVector();
 
-    // Ratio of screen pixels to world pixels
-    private _zoom: number = 1;
-    private zoomCallback: () => any = () => {};
-    private lastScrolltime = -this.SCROLL_DELAY;
-    private refreshedAfterScroll = false;
+  // Screen-space width and height
+  private _screenDimensions = Vector.zeroVector();
 
-    private _cameraDirection = Vector.zeroVector();
-    private _orthographic = false;
+  // Ratio of screen pixels to world pixels
+  private _zoom: number = 1;
+  private zoomCallback: () => any = () => {};
+  private lastScrolltime = -this.SCROLL_DELAY;
+  private refreshedAfterScroll = false;
 
-    // Set after pan or zoom
-    public moved = false;
+  private _cameraDirection = Vector.zeroVector();
+  private _orthographic = false;
 
+  // Set after pan or zoom
+  public moved = false;
 
-    private constructor() {
-        this.setScreenDimensions();
+  private constructor() {
+    this.setScreenDimensions();
 
-        window.addEventListener('resize', (): void => this.setScreenDimensions());
+    window.addEventListener('resize', (): void => this.setScreenDimensions());
 
-        window.addEventListener('wheel', (e: any): void => {
-            if (e.target.id === Util.CANVAS_ID) {
-                this.lastScrolltime = Date.now();
-                this.refreshedAfterScroll = false;
-                const delta: number = e.deltaY;
-                // TODO scale by value of delta
-                if (delta > 0) {
-                    this.zoom = this._zoom * this.ZOOM_SPEED;
-                } else {
-                    this.zoom = this._zoom / this.ZOOM_SPEED;
-                }
-            }
-        });
-
-    }
-
-    /**
-     * Used to stop drawing buildings while scrolling for certain styles
-     * to keep the framerate up
-     */
-    get isScrolling(): boolean {
-        return Date.now() - this.lastScrolltime < this.SCROLL_DELAY;
-    }
-
-    private setScreenDimensions(): void {
-        this.moved = true;
-        this._screenDimensions.setX(window.innerWidth);
-        this._screenDimensions.setY(window.innerHeight);
-    }
-
-    public static getInstance(): DomainController {
-        if (!DomainController.instance) {
-            DomainController.instance = new DomainController();
+    window.addEventListener('wheel', (e: any): void => {
+      if (e.target.id === Util.CANVAS_ID) {
+        this.lastScrolltime = Date.now();
+        this.refreshedAfterScroll = false;
+        const delta: number = e.deltaY;
+        // TODO scale by value of delta
+        if (delta > 0) {
+          this.zoom = this._zoom * this.ZOOM_SPEED;
+        } else {
+          this.zoom = this._zoom / this.ZOOM_SPEED;
         }
-        return DomainController.instance;
-    }
+      }
+    });
+  }
 
-    /**
-     * @param {Vector} delta in world space
-     */
-    pan(delta: Vector) {
-        this.moved = true;
-        this._origin.sub(delta);
-    }
+  /**
+   * Used to stop drawing buildings while scrolling for certain styles
+   * to keep the framerate up
+   */
+  get isScrolling(): boolean {
+    return Date.now() - this.lastScrolltime < this.SCROLL_DELAY;
+  }
 
-    /**
-     * Screen origin in world space
-     */
-    get origin(): Vector {
-        return this._origin.clone();
-    }
+  private setScreenDimensions(): void {
+    this.moved = true;
+    this._screenDimensions.setX(window.innerWidth);
+    this._screenDimensions.setY(window.innerHeight);
+  }
 
-    get zoom(): number {
-        return this._zoom;
+  public static getInstance(): DomainController {
+    if (!DomainController.instance) {
+      DomainController.instance = new DomainController();
     }
+    return DomainController.instance;
+  }
 
-    get screenDimensions(): Vector {
-        return this._screenDimensions.clone();
-    }
+  /**
+   * @param {Vector} delta in world space
+   */
+  pan(delta: Vector) {
+    this.moved = true;
+    this._origin.sub(delta);
+  }
 
-    /**
-     * @return {Vector} world-space w/h visible on screen
-     */
-    get worldDimensions(): Vector {
-        return this.screenDimensions.divideScalar(this._zoom);
-    }
+  /**
+   * Screen origin in world space
+   */
+  get origin(): Vector {
+    return this._origin.clone();
+  }
 
-    set screenDimensions(v: Vector) {
-        this.moved = true;
-        this._screenDimensions.copy(v);
-    }
+  get zoom(): number {
+    return this._zoom;
+  }
 
-    set zoom(z: number) {
-        if (z >= 0.3 && z <= 20) {
-            this.moved = true;
-            const oldWorldSpaceMidpoint = this.origin.add(this.worldDimensions.divideScalar(2));
-            this._zoom = z;
-            const newWorldSpaceMidpoint = this.origin.add(this.worldDimensions.divideScalar(2));
-            this.pan(newWorldSpaceMidpoint.sub(oldWorldSpaceMidpoint));
-            this.zoomCallback();
-        }
-    }
+  get screenDimensions(): Vector {
+    return this._screenDimensions.clone();
+  }
 
-    onScreen(v: Vector): boolean {
-        const screenSpace = this.worldToScreen(v.clone());
-        return screenSpace.x >= 0 && screenSpace.y >= 0
-            && screenSpace.x <= this.screenDimensions.x && screenSpace.y <= this.screenDimensions.y;
-    }
+  /**
+   * @return {Vector} world-space w/h visible on screen
+   */
+  get worldDimensions(): Vector {
+    return this.screenDimensions.divideScalar(this._zoom);
+  }
 
-    set orthographic(v: boolean) {
-        this._orthographic = v;
-        this.moved = true;
-    }
+  set screenDimensions(v: Vector) {
+    this.moved = true;
+    this._screenDimensions.copy(v);
+  }
 
-    get orthographic(): boolean {
-        return this._orthographic;
+  set zoom(z: number) {
+    if (z >= 0.3 && z <= 20) {
+      this.moved = true;
+      const oldWorldSpaceMidpoint = this.origin.add(
+        this.worldDimensions.divideScalar(2),
+      );
+      this._zoom = z;
+      const newWorldSpaceMidpoint = this.origin.add(
+        this.worldDimensions.divideScalar(2),
+      );
+      this.pan(newWorldSpaceMidpoint.sub(oldWorldSpaceMidpoint));
+      this.zoomCallback();
     }
+  }
 
-    set cameraDirection(v: Vector) {
-        this._cameraDirection = v;
-        // Screen update
-        this.moved = true;
-    }
+  onScreen(v: Vector): boolean {
+    const screenSpace = this.worldToScreen(v.clone());
+    return (
+      screenSpace.x >= 0 &&
+      screenSpace.y >= 0 &&
+      screenSpace.x <= this.screenDimensions.x &&
+      screenSpace.y <= this.screenDimensions.y
+    );
+  }
 
-    get cameraDirection(): Vector {
-        return this._cameraDirection.clone();
-    }
+  set orthographic(v: boolean) {
+    this._orthographic = v;
+    this.moved = true;
+  }
 
-    getCameraPosition(): Vector {
-        const centre = new Vector(this._screenDimensions.x / 2, this._screenDimensions.y / 2);
-        if (this._orthographic) {
-            return centre.add(centre.clone().multiply(this._cameraDirection).multiplyScalar(100));
-        }
-        return centre.add(centre.clone().multiply(this._cameraDirection));
-        // this.screenDimensions.divideScalar(2);
-    }
+  get orthographic(): boolean {
+    return this._orthographic;
+  }
 
-    setZoomUpdate(callback: () => any): void {
-        this.zoomCallback = callback;
-    }
+  set cameraDirection(v: Vector) {
+    this._cameraDirection = v;
+    // Screen update
+    this.moved = true;
+  }
 
-    /**
-     * Edits vector
-     */
-    zoomToWorld(v: Vector): Vector {
-        return v.divideScalar(this._zoom);
-    }
+  get cameraDirection(): Vector {
+    return this._cameraDirection.clone();
+  }
 
-    /**
-     * Edits vector
-     */
-    zoomToScreen(v: Vector): Vector {
-        return v.multiplyScalar(this._zoom);
+  getCameraPosition(): Vector {
+    const centre = new Vector(
+      this._screenDimensions.x / 2,
+      this._screenDimensions.y / 2,
+    );
+    if (this._orthographic) {
+      return centre.add(
+        centre.clone().multiply(this._cameraDirection).multiplyScalar(100),
+      );
     }
+    return centre.add(centre.clone().multiply(this._cameraDirection));
+    // this.screenDimensions.divideScalar(2);
+  }
 
-    /**
-     * Edits vector
-     */
-    screenToWorld(v: Vector): Vector {
-        return this.zoomToWorld(v).add(this._origin);
-    }
+  setZoomUpdate(callback: () => any): void {
+    this.zoomCallback = callback;
+  }
 
-    /**
-     * Edits vector
-     */
-    worldToScreen(v: Vector): Vector {
-        return this.zoomToScreen(v.sub(this._origin));
-    }
+  /**
+   * Edits vector
+   */
+  zoomToWorld(v: Vector): Vector {
+    return v.divideScalar(this._zoom);
+  }
+
+  /**
+   * Edits vector
+   */
+  zoomToScreen(v: Vector): Vector {
+    return v.multiplyScalar(this._zoom);
+  }
+
+  /**
+   * Edits vector
+   */
+  screenToWorld(v: Vector): Vector {
+    return this.zoomToWorld(v).add(this._origin);
+  }
+
+  /**
+   * Edits vector
+   */
+  worldToScreen(v: Vector): Vector {
+    return this.zoomToScreen(v.sub(this._origin));
+  }
 }
