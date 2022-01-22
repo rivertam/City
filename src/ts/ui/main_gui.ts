@@ -29,8 +29,8 @@ export default class MainGUI {
 
   private domainController = DomainController.getInstance();
   private intersections: Vector[] = [];
-  private bigParks: Vector[][] = [];
-  private smallParks: Vector[][] = [];
+  public bigParks: Vector[][] = [];
+  public smallParks: Vector[][] = [];
   private animate: boolean = true;
   private animationSpeed: number = 30;
 

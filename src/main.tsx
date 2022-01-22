@@ -1,6 +1,7 @@
 import './style.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import faker from 'faker';
 import * as log from 'loglevel';
 import * as dat from 'dat.gui';
 import TensorFieldGUI from './ts/ui/tensor_field_gui';
@@ -18,8 +19,9 @@ import { SVG } from '@svgdotjs/svg.js';
 import ModelGenerator from './ts/model_generator';
 import { saveAs } from 'file-saver';
 import { Game } from './Game';
+import { GeneratedCity, GameState, MapLine } from './GameState';
 
-class Main {
+class Generator {
   private readonly STARTING_WIDTH = 1440; // Initially zooms in if width > STARTING_WIDTH
 
   // UI
@@ -153,14 +155,16 @@ class Main {
   /**
    * Generate an entire map with no control over the process
    */
-  generate(): void {
+  async generate(): Promise<GeneratedCity> {
     if (!this.firstGenerate) {
       this.tensorField.setRecommended();
     } else {
       this.firstGenerate = false;
     }
 
-    this.mainGui.generateEverything();
+    await this.mainGui.generateEverything();
+
+    return this.getGeneratedCity();
   }
 
   /**
@@ -383,20 +387,82 @@ class Main {
     this.draw();
     requestAnimationFrame(this.update.bind(this));
   }
+
+  public getGeneratedCity(): GeneratedCity {
+    const usedNames = new Set<string>();
+
+    const createRiverName = (): string => {
+      let name: string;
+      do {
+        const fish = faker.animal.fish();
+        const kind = faker.random.arrayElement(['Stream', 'Creek', 'River']);
+        name = `${fish} ${kind}`;
+      } while (usedNames.has(name));
+
+      usedNames.add(name);
+      return name;
+    };
+
+    const createRoadName = (): string => {
+      let name: string;
+      do {
+        name = faker.address.streetName();
+      } while (usedNames.has(name));
+
+      usedNames.add(name);
+      return name;
+    };
+
+    const createParkName = (): string => {
+      let name: string;
+      do {
+        name = `${faker.name.lastName()} park`;
+      } while (usedNames.has(name));
+
+      usedNames.add(name);
+      return name;
+    };
+
+    const convertLine = (poly: Array<Vector>, name: string): MapLine => {
+      return {
+        name,
+        polygon: poly.map((vec) => [vec.x, -vec.y]),
+      };
+    };
+
+    return {
+      coastline: convertLine(this._style.coastline, 'coastline'),
+      river: convertLine(this._style.river, createRiverName()),
+      parks: [...this._style.parks, ...this.mainGui.smallParks].map((park) =>
+        convertLine(park, createParkName()),
+      ),
+      mainRoads: this._style.mainRoads.map((poly) =>
+        convertLine(poly, createRoadName()),
+      ),
+      majorRoads: this._style.majorRoads.map((poly) =>
+        convertLine(poly, createRoadName()),
+      ),
+      minorRoads: this._style.minorRoads.map((poly) =>
+        convertLine(poly, createRoadName()),
+      ),
+    };
+  }
 }
 
 // Add log to window so we can use log.setlevel from the console
 (window as any).log = log;
-window.addEventListener('load', (): void => {
-  new Main();
+window.addEventListener('load', async (): void => {
+  const generator = new Generator();
+
+  const city = await generator.generate();
+
+  ReactDOM.render(
+    <React.StrictMode>
+      <Game city={city} />
+    </React.StrictMode>,
+    document.getElementById('root'),
+  );
 });
 window.addEventListener('scroll', (event) => {
   event.preventDefault();
 });
-
-ReactDOM.render(
-  <React.StrictMode>
-    <Game />
-  </React.StrictMode>,
-  document.getElementById('root'),
-);

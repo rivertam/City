@@ -1,8 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { Box, PerspectiveCamera, OrbitControls } from '@react-three/drei';
+import { Box, PerspectiveCamera, OrbitControls, Line } from '@react-three/drei';
 import styled from 'styled-components';
+
+import { Piece } from './Piece';
+import { GameState, MapLine, GeneratedCity } from './GameState';
+import { toJS } from 'mobx';
+import { observer } from 'mobx-react-lite';
+import { Geometry, ConvexHull, VertexNode, ConvexGeometry } from 'three-stdlib';
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -48,30 +54,84 @@ function canvasRef(canvas: HTMLCanvasElement | null) {
   canvas.height = window.innerHeight;
 }
 
-export function Game(): React.ReactElement {
-  const renderer = useRef<THREE.WebGLRenderer>();
+const MapLineRender: React.FC<{ line: MapLine; color: string }> = ({
+  line,
+  color,
+}) => {
+  return (
+    <Line
+      points={line.polygon.map(([x, y]) => [x, y, 0])}
+      color={color}
+      lineWidth={1}
+    />
+  );
+};
+
+const Park: React.FC<{ park: MapLine }> = observer(({ park }) => {
+  const gameState = GameState.use();
 
   return (
-    <GameWindow>
-      <Canvas
-        gl={(canvas) => {
-          renderer.current = new THREE.WebGLRenderer({
-            logarithmicDepthBuffer: true,
-            canvas,
-          });
-
-          renderer.current.setClearColor(0x333333);
-          renderer.current.setPixelRatio(window.devicePixelRatio);
-          renderer.current.setSize(window.innerWidth, window.innerHeight);
-
-          return renderer.current;
-        }}
-        ref={canvasRef}
-      >
-        <Camera />
-        <Box position={[-1.2, 0, 0]} />
-        <Box position={[1.2, 0, 0]} />
-      </Canvas>
-    </GameWindow>
+    <>
+      <Piece color="green" polygon={park.polygon} />
+      <Line
+        points={park.polygon.map(([x, y]) => [x, y, 0])}
+        color={'green'}
+        lineWidth={1}
+      />
+    </>
   );
-}
+});
+
+export const Game = observer(
+  ({ city }: { city: GeneratedCity }): React.ReactElement => {
+    const renderer = useRef<THREE.WebGLRenderer>();
+
+    const gameState = useMemo(() => {
+      return new GameState(city);
+    }, [city]);
+
+    return (
+      <GameWindow>
+        <GameState.Context.Provider value={gameState}>
+          <Canvas
+            gl={(canvas) => {
+              renderer.current = new THREE.WebGLRenderer({
+                logarithmicDepthBuffer: true,
+                canvas,
+              });
+
+              renderer.current.setClearColor(0x333333);
+              renderer.current.setPixelRatio(window.devicePixelRatio);
+              renderer.current.setSize(window.innerWidth, window.innerHeight);
+
+              return renderer.current;
+            }}
+            ref={canvasRef}
+          >
+            <Camera />
+
+            <MapLineRender line={gameState.coastline} color="blue" />
+            <MapLineRender line={gameState.river} color="blue" />
+            {gameState.mainRoads.map((road) => (
+              <MapLineRender key={road.name} line={road} color="yellow" />
+            ))}
+
+            {gameState.majorRoads.map((road) => (
+              <MapLineRender key={road.name} line={road} color="white" />
+            ))}
+
+            {gameState.minorRoads.map((road) => (
+              <MapLineRender key={road.name} line={road} color="grey" />
+            ))}
+
+            {gameState.parks.map((park) => (
+              <Park key={park.name} park={park} />
+            ))}
+
+            <Box position={[1.2, 0, 0]} />
+          </Canvas>
+        </GameState.Context.Provider>
+      </GameWindow>
+    );
+  },
+);
