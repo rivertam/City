@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { Box, PerspectiveCamera, OrbitControls, Line } from '@react-three/drei';
 import styled from 'styled-components';
 
+import { Park } from './Park';
 import { Piece } from './Piece';
 import { GameState, MapLine, GeneratedCity } from './GameState';
 import { toJS } from 'mobx';
@@ -35,6 +36,7 @@ function Camera() {
       ></PerspectiveCamera>
       <directionalLight position={[1000, 100, 1000]} color={0xaaaaaa} />
       <directionalLight position={[100, 1000, 1000]} color={0xaaaaaa} />
+      <directionalLight position={[0, 0, 1000]} color={0xaaaaaa} />
       <OrbitControls
         addEventListener={undefined}
         hasEventListener={undefined}
@@ -67,21 +69,6 @@ const MapLineRender: React.FC<{ line: MapLine; color: string }> = ({
   );
 };
 
-const Park: React.FC<{ park: MapLine }> = observer(({ park }) => {
-  const gameState = GameState.use();
-
-  return (
-    <>
-      <Piece color="green" polygon={park.polygon} />
-      <Line
-        points={park.polygon.map(([x, y]) => [x, y, 0])}
-        color={'green'}
-        lineWidth={1}
-      />
-    </>
-  );
-});
-
 export const Game = observer(
   ({ city }: { city: GeneratedCity }): React.ReactElement => {
     const renderer = useRef<THREE.WebGLRenderer>();
@@ -111,7 +98,7 @@ export const Game = observer(
             <Camera />
 
             <MapLineRender line={gameState.coastline} color="blue" />
-            <MapLineRender line={gameState.river} color="blue" />
+            <Piece height={2} polygon={gameState.river.polygon} color="blue" />
             {gameState.mainRoads.map((road) => (
               <MapLineRender key={road.name} line={road} color="yellow" />
             ))}

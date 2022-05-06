@@ -8,7 +8,7 @@ type Props = {
   height: number;
 };
 
-export function Piece({ polygon, color }: Props) {
+export function Piece({ color, height, polygon }: Props) {
   const geometryRef = (newGeometry?: any): void => {
     if (!newGeometry) {
       return;
@@ -19,7 +19,6 @@ export function Piece({ polygon, color }: Props) {
     const normals: Array<number> = [];
     const indices: Array<number> = [];
 
-    const height = 30;
     // for each polygon edge (hence window(2)), create a wall
     const edges = windows(2, polygon);
     // include the final edge, connecting back to the beginning
@@ -74,7 +73,7 @@ export function Piece({ polygon, color }: Props) {
         normals.push(0, 0, 0);
 
         indices.push(p1Index, p2Index, p3Index);
-        indices.push(p2Index, p1Index, p3Index);
+        // indices.push(p2Index, p1Index, p3Index);
       }
     }
 
