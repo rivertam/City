@@ -70,7 +70,7 @@ export function Piece({ color, height, polygon }: Props) {
         normals.push(0, 0, 1);
         const p3Index = p2Index + 1;
         positions.push(p3[0], p3[1], zz);
-        normals.push(0, 0, 0);
+        normals.push(0, 0, 1);
 
         indices.push(p1Index, p2Index, p3Index);
         // indices.push(p2Index, p1Index, p3Index);
