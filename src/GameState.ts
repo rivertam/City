@@ -1,5 +1,5 @@
-import { makeAutoObservable } from 'mobx';
-import { createContext, useContext } from 'react';
+import { makeAutoObservable } from "mobx";
+import { createContext, useContext } from "react";
 
 export type MapLine = {
   name: string;
@@ -10,10 +10,14 @@ export type MapLine = {
 export type GeneratedCity = {
   coastline: MapLine;
   river: MapLine;
+  secondaryRiver: MapLine;
   mainRoads: Array<MapLine>;
   majorRoads: Array<MapLine>;
   minorRoads: Array<MapLine>;
   parks: Array<MapLine>;
+  lots: Array<{
+    shape: MapLine;
+  }>;
 };
 
 export class GameState {
@@ -22,6 +26,9 @@ export class GameState {
   public mainRoads: Array<MapLine>;
   public majorRoads: Array<MapLine>;
   public minorRoads: Array<MapLine>;
+  public lots: Array<{
+    shape: MapLine;
+  }>;
   public parks: Array<MapLine>;
   public static instance: GameState | null = null;
 
@@ -31,8 +38,41 @@ export class GameState {
     this.mainRoads = generatedCity.mainRoads;
     this.majorRoads = generatedCity.majorRoads;
     this.minorRoads = generatedCity.minorRoads;
+    this.lots = generatedCity.lots;
     this.parks = generatedCity.parks;
 
+    console.time("Centralizing city");
+    // average all vertices and normalize so the average is 0, 0
+    const vertices: Array<[number, number]> = [];
+    this.coastline.polygon.forEach((vertex) => vertices.push(vertex));
+    this.river.polygon.forEach((vertex) => vertices.push(vertex));
+    this.mainRoads.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    this.majorRoads.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    this.minorRoads.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    this.lots.forEach((lot) =>
+      lot.shape.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    this.parks.forEach((park) =>
+      park.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+
+    const averageX =
+      vertices.reduce((current, [x]) => current + x, 0) / vertices.length;
+    const averageY =
+      vertices.reduce((current, [, y]) => current + y, 0) / vertices.length;
+
+    vertices.forEach((vertex) => {
+      vertex[0] -= averageX;
+      vertex[1] -= averageY;
+    });
+
+    console.timeEnd("Centralizing city");
     makeAutoObservable(this);
 
     GameState.instance = this;
@@ -50,7 +90,7 @@ export class GameState {
 
     if (!park) {
       throw new Error(
-        `Tried to get vertices for park ${parkName}, which doesn't exist`,
+        `Tried to get vertices for park ${parkName}, which doesn't exist`
       );
     }
 

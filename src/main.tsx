@@ -1,25 +1,25 @@
-import './style.css';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import faker from 'faker';
-import * as log from 'loglevel';
-import * as dat from 'dat.gui';
-import TensorFieldGUI from './ts/ui/tensor_field_gui';
-import { NoiseParams } from './ts/impl/tensor_field';
-import MainGUI from './ts/ui/main_gui';
-import { DefaultCanvasWrapper } from './ts/ui/canvas_wrapper';
-import Util from './ts/util';
-import DragController from './ts/ui/drag_controller';
-import DomainController from './ts/ui/domain_controller';
-import Style from './ts/ui/style';
-import { ColourScheme, DefaultStyle, RoughStyle } from './ts/ui/style';
-import ColourSchemes from './ColorSchemes';
-import Vector from './ts/vector';
-import { SVG } from '@svgdotjs/svg.js';
-import ModelGenerator from './ts/model_generator';
-import { saveAs } from 'file-saver';
-import { Game } from './Game';
-import { GeneratedCity, GameState, MapLine } from './GameState';
+import "./style.css";
+import React from "react";
+import ReactDOM from "react-dom";
+import faker from "faker";
+import * as log from "loglevel";
+import * as dat from "dat.gui";
+import TensorFieldGUI from "./ts/ui/tensor_field_gui";
+import { NoiseParams } from "./ts/impl/tensor_field";
+import MainGUI from "./ts/ui/main_gui";
+import { DefaultCanvasWrapper } from "./ts/ui/canvas_wrapper";
+import Util from "./ts/util";
+import DragController from "./ts/ui/drag_controller";
+import DomainController from "./ts/ui/domain_controller";
+import Style from "./ts/ui/style";
+import { ColourScheme, DefaultStyle, RoughStyle } from "./ts/ui/style";
+import ColourSchemes from "./ColorSchemes";
+import Vector from "./ts/vector";
+import { SVG } from "@svgdotjs/svg.js";
+import ModelGenerator from "./ts/model_generator";
+import { saveAs } from "file-saver";
+import { Game } from "./Game";
+import { GeneratedCity, GameState, MapLine } from "./GameState";
 
 class Generator {
   private readonly STARTING_WIDTH = 1440; // Initially zooms in if width > STARTING_WIDTH
@@ -45,7 +45,7 @@ class Generator {
   private canvas: HTMLCanvasElement;
   private tensorCanvas: DefaultCanvasWrapper;
   private _style: Style;
-  private colourScheme: string = 'Default'; // See colour_schemes.json
+  private colourScheme: string = "Default"; // See colour_schemes.json
   private zoomBuildings: boolean = false; // Show buildings only when zoomed in?
   private buildingModels: boolean = false; // Draw pseudo-3D buildings?
   private showFrame: boolean = false;
@@ -62,15 +62,15 @@ class Generator {
 
   constructor() {
     // GUI Setup
-    const zoomController = this.gui.add(this.domainController, 'zoom');
+    const zoomController = this.gui.add(this.domainController, "zoom");
     this.domainController.setZoomUpdate(() => zoomController.updateDisplay());
-    this.gui.add(this, 'generate');
+    this.gui.add(this, "generate");
 
-    this.tensorFolder = this.gui.addFolder('Tensor Field');
-    this.roadsFolder = this.gui.addFolder('Map');
-    this.styleFolder = this.gui.addFolder('Style');
-    this.optionsFolder = this.gui.addFolder('Options');
-    this.downloadsFolder = this.gui.addFolder('Download');
+    this.tensorFolder = this.gui.addFolder("Tensor Field");
+    this.roadsFolder = this.gui.addFolder("Map");
+    this.styleFolder = this.gui.addFolder("Style");
+    this.optionsFolder = this.gui.addFolder("Options");
+    this.downloadsFolder = this.gui.addFolder("Download");
 
     // Canvas setup
     this.canvas = document.getElementById(Util.CANVAS_ID) as HTMLCanvasElement;
@@ -84,33 +84,33 @@ class Generator {
 
     // Style setup
     this.styleFolder
-      .add(this, 'colourScheme', Object.keys(ColourSchemes))
+      .add(this, "colourScheme", Object.keys(ColourSchemes))
       .onChange((val: string) => this.changeColourScheme(val));
 
-    this.styleFolder.add(this, 'zoomBuildings').onChange((val: boolean) => {
+    this.styleFolder.add(this, "zoomBuildings").onChange((val: boolean) => {
       // Force redraw
       this.previousFrameDrawTensor = true;
       this._style.zoomBuildings = val;
     });
 
-    this.styleFolder.add(this, 'buildingModels').onChange((val: boolean) => {
+    this.styleFolder.add(this, "buildingModels").onChange((val: boolean) => {
       // Force redraw
       this.previousFrameDrawTensor = true;
       this._style.showBuildingModels = val;
     });
 
-    this.styleFolder.add(this, 'showFrame').onChange((val: boolean) => {
+    this.styleFolder.add(this, "showFrame").onChange((val: boolean) => {
       this.previousFrameDrawTensor = true;
       this._style.showFrame = val;
     });
 
-    this.styleFolder.add(this.domainController, 'orthographic');
+    this.styleFolder.add(this.domainController, "orthographic");
     this.styleFolder
-      .add(this, 'cameraX', -15, 15)
+      .add(this, "cameraX", -15, 15)
       .step(1)
       .onChange(() => this.setCameraDirection());
     this.styleFolder
-      .add(this, 'cameraY', -15, 15)
+      .add(this, "cameraY", -15, 15)
       .step(1)
       .onChange(() => this.setCameraDirection());
 
@@ -127,24 +127,24 @@ class Generator {
       this.tensorFolder,
       this.dragController,
       true,
-      noiseParamsPlaceholder,
+      noiseParamsPlaceholder
     );
     this.mainGui = new MainGUI(this.roadsFolder, this.tensorField, () =>
-      this.tensorFolder.close(),
+      this.tensorFolder.close()
     );
 
-    this.optionsFolder.add(this.tensorField, 'drawCentre');
+    this.optionsFolder.add(this.tensorField, "drawCentre");
     this.optionsFolder
-      .add(this, 'highDPI')
+      .add(this, "highDPI")
       .onChange((high: boolean) => this.changeCanvasScale(high));
 
-    this.downloadsFolder.add(this, 'imageScale', 1, 5).step(1);
-    this.downloadsFolder.add({ PNG: () => this.downloadPng() }, 'PNG'); // This allows custom naming of button
-    this.downloadsFolder.add({ SVG: () => this.downloadSVG() }, 'SVG');
-    this.downloadsFolder.add({ STL: () => this.downloadSTL() }, 'STL');
+    this.downloadsFolder.add(this, "imageScale", 1, 5).step(1);
+    this.downloadsFolder.add({ PNG: () => this.downloadPng() }, "PNG"); // This allows custom naming of button
+    this.downloadsFolder.add({ SVG: () => this.downloadSVG() }, "SVG");
+    this.downloadsFolder.add({ STL: () => this.downloadSTL() }, "STL");
     this.downloadsFolder.add(
       { Heightmap: () => this.downloadHeightmap() },
-      'Heightmap',
+      "Heightmap"
     );
 
     this.changeColourScheme(this.colourScheme);
@@ -164,7 +164,7 @@ class Generator {
 
     await this.mainGui.generateEverything();
 
-    return this.getGeneratedCity();
+    return await this.getGeneratedCity();
   }
 
   /**
@@ -175,18 +175,18 @@ class Generator {
     this.zoomBuildings = colourScheme.zoomBuildings;
     this.buildingModels = colourScheme.buildingModels;
     Util.updateGui(this.styleFolder);
-    if (scheme.startsWith('Drawn')) {
+    if (scheme.startsWith("Drawn")) {
       this._style = new RoughStyle(
         this.canvas,
         this.dragController,
-        Object.assign({}, colourScheme),
+        Object.assign({}, colourScheme)
       );
     } else {
       this._style = new DefaultStyle(
         this.canvas,
         this.dragController,
         Object.assign({}, colourScheme),
-        scheme.startsWith('Heightmap'),
+        scheme.startsWith("Heightmap")
       );
     }
     this._style.showFrame = this.showFrame;
@@ -208,7 +208,7 @@ class Generator {
   setCameraDirection(): void {
     this.domainController.cameraDirection = new Vector(
       this.cameraX / 10,
-      this.cameraY / 10,
+      this.cameraY / 10
     );
   }
 
@@ -224,15 +224,15 @@ class Generator {
       new Vector(-extendScreenX, -extendScreenY),
       new Vector(
         -extendScreenX,
-        this.domainController.screenDimensions.y + extendScreenY,
+        this.domainController.screenDimensions.y + extendScreenY
       ),
       new Vector(
         this.domainController.screenDimensions.x + extendScreenX,
-        this.domainController.screenDimensions.y + extendScreenY,
+        this.domainController.screenDimensions.y + extendScreenY
       ),
       new Vector(
         this.domainController.screenDimensions.x + extendScreenX,
-        -extendScreenY,
+        -extendScreenY
       ),
     ];
 
@@ -246,12 +246,12 @@ class Generator {
         this.mainGui.majorRoadPolygons,
         this.mainGui.minorRoadPolygons,
         this.mainGui.buildingModels,
-        blocks,
+        blocks
       );
 
       this.modelGenerator
         .getSTL()
-        .then((blob) => this.downloadFile('model.zip', blob));
+        .then((blob) => this.downloadFile("model.zip", blob));
     });
   }
 
@@ -269,19 +269,19 @@ class Generator {
     // Draw
     if (this.showTensorField()) {
       this.tensorField.draw(
-        new DefaultCanvasWrapper(c, this.imageScale, false),
+        new DefaultCanvasWrapper(c, this.imageScale, false)
       );
     } else {
       const imgCanvas = this._style.createCanvasWrapper(
         c,
         this.imageScale,
-        false,
+        false
       );
       this.mainGui.draw(this._style, true, imgCanvas);
     }
 
-    const link = document.createElement('a');
-    link.download = 'map.png';
+    const link = document.createElement("a");
+    link.download = "map.png";
     link.href = (
       document.getElementById(Util.IMG_CANVAS_ID) as any
     ).toDataURL();
@@ -293,7 +293,7 @@ class Generator {
    */
   downloadHeightmap(): void {
     const oldColourScheme = this.colourScheme;
-    this.changeColourScheme('Heightmap');
+    this.changeColourScheme("Heightmap");
     this.downloadPng();
     this.changeColourScheme(oldColourScheme);
   }
@@ -322,13 +322,13 @@ class Generator {
     if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
       source = source.replace(
         /^<svg/,
-        '<svg xmlns="http://www.w3.org/2000/svg"',
+        '<svg xmlns="http://www.w3.org/2000/svg"'
       );
     }
     if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
       source = source.replace(
         /^<svg/,
-        '<svg xmlns:xlink="http://www.w3.org/1999/xlink"',
+        '<svg xmlns:xlink="http://www.w3.org/1999/xlink"'
       );
     }
 
@@ -337,10 +337,10 @@ class Generator {
 
     //convert svg source to URI data scheme.
     const url =
-      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+      "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
 
-    const link = document.createElement('a');
-    link.download = 'map.svg';
+    const link = document.createElement("a");
+    link.download = "map.svg";
     link.href = url;
     link.click();
 
@@ -388,14 +388,14 @@ class Generator {
     requestAnimationFrame(this.update.bind(this));
   }
 
-  public getGeneratedCity(): GeneratedCity {
+  public async getGeneratedCity(): Promise<GeneratedCity> {
     const usedNames = new Set<string>();
 
     const createRiverName = (): string => {
       let name: string;
       do {
         const fish = faker.animal.fish();
-        const kind = faker.random.arrayElement(['Stream', 'Creek', 'River']);
+        const kind = faker.random.arrayElement(["Stream", "Creek", "River"]);
         name = `${fish} ${kind}`;
       } while (usedNames.has(name));
 
@@ -430,28 +430,55 @@ class Generator {
       };
     };
 
+    const createLotName = (): string => {
+      let name: string;
+      let num = 0;
+      do {
+        name = `${num++} ${faker.address.streetAddress()}`;
+      } while (usedNames.has(name));
+
+      return name;
+    };
+
+    const blocks = await this.mainGui.getBlocks();
+
     return {
-      coastline: convertLine(this._style.coastline, 'coastline'),
-      river: convertLine(this._style.river, createRiverName()),
+      coastline: convertLine(this.mainGui.coastlinePolygon, "coastline"),
+      river: convertLine(this.mainGui.riverPolygon, createRiverName()),
+      secondaryRiver: convertLine(
+        this.mainGui.secondaryRiverPolygon,
+        createRiverName()
+      ),
       parks: [...this._style.parks, ...this.mainGui.smallParks].map((park) =>
-        convertLine(park, createParkName()),
+        convertLine(park, createParkName())
       ),
       mainRoads: this._style.mainRoads.map((poly) =>
-        convertLine(poly, createRoadName()),
+        convertLine(poly, createRoadName())
       ),
       majorRoads: this._style.majorRoads.map((poly) =>
-        convertLine(poly, createRoadName()),
+        convertLine(poly, createRoadName())
       ),
       minorRoads: this._style.minorRoads.map((poly) =>
-        convertLine(poly, createRoadName()),
+        convertLine(poly, createRoadName())
       ),
+      /*
+      lots: this._style.lots.map((poly) => {
+        return {
+          shape: convertLine(poly, createLotName()),
+        };
+      }),
+      */
+      lots: blocks.map((block) => ({
+        shape: convertLine(block, createLotName()),
+      })),
     };
   }
 }
 
 // Add log to window so we can use log.setlevel from the console
 (window as any).log = log;
-window.addEventListener('load', async (): void => {
+window.addEventListener("contextmenu", (e) => e.preventDefault());
+window.addEventListener("load", async (): void => {
   const generator = new Generator();
 
   const city = await generator.generate();
@@ -460,9 +487,9 @@ window.addEventListener('load', async (): void => {
     <React.StrictMode>
       <Game city={city} />
     </React.StrictMode>,
-    document.getElementById('root'),
+    document.getElementById("root")
   );
 });
-window.addEventListener('scroll', (event) => {
+window.addEventListener("scroll", (event) => {
   event.preventDefault();
 });

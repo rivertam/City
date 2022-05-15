@@ -1,15 +1,16 @@
-import React, { useRef, useMemo } from 'react';
-import * as THREE from 'three';
-import { Canvas } from '@react-three/fiber';
-import { Box, PerspectiveCamera, OrbitControls, Line } from '@react-three/drei';
-import styled from 'styled-components';
+import React, { useRef, useMemo } from "react";
+import * as THREE from "three";
+import { Canvas } from "@react-three/fiber";
+import { Box, PerspectiveCamera, OrbitControls, Line } from "@react-three/drei";
+import styled from "styled-components";
 
-import { Park } from './Park';
-import { Piece } from './Piece';
-import { GameState, MapLine, GeneratedCity } from './GameState';
-import { toJS } from 'mobx';
-import { observer } from 'mobx-react-lite';
-import { Geometry, ConvexHull, VertexNode, ConvexGeometry } from 'three-stdlib';
+import { Park } from "./Park";
+import { Piece } from "./Piece";
+import { GameState, MapLine, GeneratedCity } from "./GameState";
+import { toJS } from "mobx";
+import { observer } from "mobx-react-lite";
+import { Geometry, ConvexHull, VertexNode, ConvexGeometry } from "three-stdlib";
+import { Space } from "./Space";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -29,8 +30,8 @@ function Camera() {
         ref={camera}
         makeDefault
         position={[0, 0, 300]}
-        near={0.005}
-        far={999999999}
+        near={10}
+        far={9999}
         fov={80}
         aspect={window.innerWidth / window.innerHeight}
       ></PerspectiveCamera>
@@ -62,9 +63,9 @@ const MapLineRender: React.FC<{ line: MapLine; color: string }> = ({
 }) => {
   return (
     <Line
-      points={line.polygon.map(([x, y]) => [x, y, 0])}
+      points={line.polygon.map(([x, y]) => [x, y, 0.05])}
       color={color}
-      lineWidth={1}
+      lineWidth={2}
     />
   );
 };
@@ -97,22 +98,51 @@ export const Game = observer(
           >
             <Camera />
 
+            <group position={[0, 0, -0.1]}>
+              <Space
+                polygon={[
+                  [-2000, -2000],
+                  [-2000, 2000],
+                  [2000, 2000],
+                  [2000, -2000],
+                ]}
+                color="beige"
+              />
+            </group>
             <MapLineRender line={gameState.coastline} color="blue" />
             <Piece height={2} polygon={gameState.river.polygon} color="blue" />
-            {gameState.mainRoads.map((road) => (
-              <MapLineRender key={road.name} line={road} color="yellow" />
-            ))}
+            <group position={[0, 0, 0.1]}>
+              {gameState.mainRoads.map((road) => (
+                <MapLineRender key={road.name} line={road} color="yellow" />
+              ))}
+            </group>
 
-            {gameState.majorRoads.map((road) => (
-              <MapLineRender key={road.name} line={road} color="white" />
-            ))}
+            <group position={[0, 0, 0.5]}>
+              {gameState.majorRoads.map((road) => (
+                <MapLineRender key={road.name} line={road} color="white" />
+              ))}
+            </group>
 
-            {gameState.minorRoads.map((road) => (
-              <MapLineRender key={road.name} line={road} color="grey" />
+            <group position={[0, 0, 0.2]}>
+              {gameState.minorRoads.map((road) => (
+                <MapLineRender key={road.name} line={road} color="grey" />
+              ))}
+            </group>
+
+            {gameState.parks.map((park) => (
+              <Park key={park.name} park={park} />
             ))}
 
             {gameState.parks.map((park) => (
               <Park key={park.name} park={park} />
+            ))}
+
+            {gameState.lots.map((lot) => (
+              <Space
+                key={lot.shape.name}
+                polygon={lot.shape.polygon}
+                color="#ddd"
+              />
             ))}
 
             <Box position={[1.2, 0, 0]} />
@@ -120,5 +150,5 @@ export const Game = observer(
         </GameState.Context.Provider>
       </GameWindow>
     );
-  },
+  }
 );
