@@ -1,3 +1,4 @@
+import { Edges, Line } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
 import { windows } from "./utils/windows";
@@ -5,14 +6,16 @@ import { windows } from "./utils/windows";
 type Props = {
   polygon: Array<[number, number]>;
   color: string;
+  border?: boolean;
 };
 
 // 2D polygon on the board
-export function Space({ color, polygon }: Props) {
+export function Space({ color, polygon, border }: Props) {
   const geometryRef = (newGeometry?: any): void => {
     if (!newGeometry) {
       return;
     }
+    console.count("generate piece");
     // construct buffer geometry from polygon by adding the points for
     // each triangular face to the points with corresponding normals, uvs, and faces.
     const positions: Array<number> = [];
@@ -54,8 +57,17 @@ export function Space({ color, polygon }: Props) {
 
   return (
     <mesh>
+      {/*border && (
+        <Line
+          points={polygon.map(([x, y]) => [x, y, 0.05])}
+          color="black"
+          lineWidth={1}
+        />
+      )*/}
       <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
       <meshLambertMaterial attach={"material"} color={color} />
+
+      {border && <Edges color="black" />}
     </mesh>
   );
 }

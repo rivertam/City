@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useCallback } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { Box, PerspectiveCamera, OrbitControls, Line } from "@react-three/drei";
@@ -29,7 +29,7 @@ function Camera() {
       <PerspectiveCamera
         ref={camera}
         makeDefault
-        position={[0, 0, 300]}
+        position={[0, 0, 600]}
         near={10}
         far={9999}
         fov={80}
@@ -48,19 +48,11 @@ function Camera() {
   );
 }
 
-function canvasRef(canvas: HTMLCanvasElement | null) {
-  if (!canvas) {
-    return;
-  }
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-
 const MapLineRender: React.FC<{ line: MapLine; color: string }> = ({
   line,
   color,
 }) => {
+  return null;
   return (
     <Line
       points={line.polygon.map(([x, y]) => [x, y, 0.05])}
@@ -78,8 +70,10 @@ export const Game = observer(
       return new GameState(city);
     }, [city]);
 
+    const divWrapper = useRef<HTMLDivElement | null>(null);
+
     return (
-      <GameWindow>
+      <GameWindow ref={divWrapper}>
         <GameState.Context.Provider value={gameState}>
           <Canvas
             gl={(canvas) => {
@@ -90,62 +84,87 @@ export const Game = observer(
 
               renderer.current.setClearColor(0x333333);
               renderer.current.setPixelRatio(window.devicePixelRatio);
-              renderer.current.setSize(window.innerWidth, window.innerHeight);
+              if (divWrapper.current) {
+                console.log("seting size");
+                renderer.current.setSize(
+                  canvas.offsetWidth,
+                  canvas.offsetHeight
+                );
+              }
 
               return renderer.current;
             }}
-            ref={canvasRef}
           >
             <Camera />
 
-            <group position={[0, 0, -0.1]}>
+            <group position={[0, 0, -1]}>
               <Space
                 polygon={[
-                  [-2000, -2000],
-                  [-2000, 2000],
-                  [2000, 2000],
-                  [2000, -2000],
+                  [-900, -900],
+                  [-900, 900],
+                  [900, 900],
+                  [900, -900],
                 ]}
                 color="beige"
               />
             </group>
-            <MapLineRender line={gameState.coastline} color="blue" />
-            <Piece height={2} polygon={gameState.river.polygon} color="blue" />
-            <group position={[0, 0, 0.1]}>
+
+            <group position={[0, 0, 0]}>
+              <Space polygon={gameState.sea.polygon} color="blue" />
+            </group>
+
+            <group position={[0, 0, 1]}>
+              <Space polygon={gameState.coastline.polygon} color="beige" />
+            </group>
+            <group position={[0, 0, 3]}>
+              <Space polygon={gameState.river.polygon} color="blue" />
+            </group>
+            <group position={[0, 0, 2]}>
+              <Space polygon={gameState.secondaryRiver.polygon} color="blue" />
+            </group>
+            <group position={[0, 0, 5]}>
               {gameState.mainRoads.map((road) => (
                 <MapLineRender key={road.name} line={road} color="yellow" />
               ))}
             </group>
 
-            <group position={[0, 0, 0.5]}>
+            <group position={[0, 0, 2]}>
               {gameState.majorRoads.map((road) => (
                 <MapLineRender key={road.name} line={road} color="white" />
               ))}
             </group>
 
-            <group position={[0, 0, 0.2]}>
+            <group position={[0, 0, 3]}>
               {gameState.minorRoads.map((road) => (
                 <MapLineRender key={road.name} line={road} color="grey" />
               ))}
             </group>
 
-            {gameState.parks.map((park) => (
-              <Park key={park.name} park={park} />
-            ))}
+            <group position={[0, 0, -30]}>
+              {gameState.parks.map((park) => (
+                <Park key={park.name} park={park} />
+              ))}
+            </group>
 
-            {gameState.parks.map((park) => (
-              <Park key={park.name} park={park} />
-            ))}
-
-            {gameState.lots.map((lot) => (
-              <Space
-                key={lot.shape.name}
-                polygon={lot.shape.polygon}
-                color="#ddd"
-              />
-            ))}
-
-            <Box position={[1.2, 0, 0]} />
+            <group position={[0, 0, 3]}>
+              {gameState.blocks.map((block) => (
+                <Space
+                  key={block.shape.name}
+                  polygon={block.shape.polygon}
+                  color="#ddd"
+                />
+              ))}
+            </group>
+            <group position={[0, 0, 5]}>
+              {gameState.lots.map((lot) => (
+                <Piece
+                  key={lot.shape.name}
+                  polygon={lot.shape.polygon}
+                  color="white"
+                  height={(lot.shape.name.length - 6) * 2}
+                />
+              ))}
+            </group>
           </Canvas>
         </GameState.Context.Provider>
       </GameWindow>

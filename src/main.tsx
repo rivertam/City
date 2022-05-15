@@ -1,6 +1,6 @@
 import "./style.css";
 import React from "react";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client";
 import faker from "faker";
 import * as log from "loglevel";
 import * as dat from "dat.gui";
@@ -443,6 +443,7 @@ class Generator {
     const blocks = await this.mainGui.getBlocks();
 
     return {
+      sea: convertLine(this.mainGui.seaPolygon, "sea"),
       coastline: convertLine(this.mainGui.coastlinePolygon, "coastline"),
       river: convertLine(this.mainGui.riverPolygon, createRiverName()),
       secondaryRiver: convertLine(
@@ -461,16 +462,14 @@ class Generator {
       minorRoads: this._style.minorRoads.map((poly) =>
         convertLine(poly, createRoadName())
       ),
-      /*
-      lots: this._style.lots.map((poly) => {
-        return {
-          shape: convertLine(poly, createLotName()),
-        };
-      }),
-      */
-      lots: blocks.map((block) => ({
+      blocks: blocks.map((block) => ({
         shape: convertLine(block, createLotName()),
       })),
+      lots: this.mainGui.buildingModels.map((building) => {
+        return {
+          shape: convertLine(building.lotScreen, createLotName()),
+        };
+      }),
     };
   }
 }
@@ -483,11 +482,11 @@ window.addEventListener("load", async (): void => {
 
   const city = await generator.generate();
 
-  ReactDOM.render(
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(
     <React.StrictMode>
       <Game city={city} />
-    </React.StrictMode>,
-    document.getElementById("root")
+    </React.StrictMode>
   );
 });
 window.addEventListener("scroll", (event) => {

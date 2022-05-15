@@ -1,5 +1,6 @@
 import React from "react";
 import * as THREE from "three";
+import { Edges } from "@react-three/drei";
 import { windows } from "./utils/windows";
 
 type Props = {
@@ -62,20 +63,21 @@ export function Piece({ color, height, polygon }: Props) {
         const p2 = polygon[triangle[1]];
         const p3 = polygon[triangle[2]];
 
-        const zNormal = zz === 0 ? -1 : 1;
-
         const p1Index = positions.length / 3;
         positions.push(p1[0], p1[1], zz);
-        normals.push(0, 0, zNormal);
+        normals.push(0, 0, 1);
         const p2Index = p1Index + 1;
         positions.push(p2[0], p2[1], zz);
-        normals.push(0, 0, zNormal);
+        normals.push(0, 0, 1);
         const p3Index = p2Index + 1;
         positions.push(p3[0], p3[1], zz);
-        normals.push(0, 0, zNormal);
+        normals.push(0, 0, 1);
 
-        indices.push(p1Index, p2Index, p3Index);
-        // indices.push(p2Index, p1Index, p3Index);
+        if (zz === 0) {
+          indices.push(p1Index, p3Index, p2Index);
+        } else {
+          indices.push(p1Index, p2Index, p3Index);
+        }
       }
     }
 
@@ -93,7 +95,9 @@ export function Piece({ color, height, polygon }: Props) {
   return (
     <mesh>
       <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
+
       <meshLambertMaterial attach={"material"} color={color} />
+      <Edges color="black" />
     </mesh>
   );
 }
