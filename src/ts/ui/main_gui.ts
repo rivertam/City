@@ -166,6 +166,7 @@ export default class MainGUI {
     this.buildings.setPreGenerateCallback(() => {
       const allStreamlines = [];
       allStreamlines.push(...this.mainRoads.allStreamlines);
+      console.log(this.mainRoads);
       allStreamlines.push(...this.majorRoads.allStreamlines);
       allStreamlines.push(...this.minorRoads.allStreamlines);
       allStreamlines.push(...this.coastline.streamlinesWithSecondaryRoad);

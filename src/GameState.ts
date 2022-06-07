@@ -15,6 +15,7 @@ export type GeneratedCity = {
   mainRoads: Array<MapLine>;
   majorRoads: Array<MapLine>;
   minorRoads: Array<MapLine>;
+  coastlineRoads: Array<MapLine>;
   parks: Array<MapLine>;
   blocks: Array<{
     shape: MapLine;
@@ -32,6 +33,7 @@ export class GameState {
   public mainRoads: Array<MapLine>;
   public majorRoads: Array<MapLine>;
   public minorRoads: Array<MapLine>;
+  public coastlineRoads: Array<MapLine>;
   public blocks: Array<{
     shape: MapLine;
   }>;
@@ -50,6 +52,7 @@ export class GameState {
     this.mainRoads = generatedCity.mainRoads;
     this.majorRoads = generatedCity.majorRoads;
     this.minorRoads = generatedCity.minorRoads;
+    this.coastlineRoads = generatedCity.coastlineRoads;
     this.blocks = generatedCity.blocks;
     this.lots = generatedCity.lots;
     this.parks = generatedCity.parks;
@@ -68,6 +71,10 @@ export class GameState {
       road.polygon.forEach((vertex) => vertices.push(vertex))
     );
     this.minorRoads.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+
+    this.coastlineRoads.forEach((road) =>
       road.polygon.forEach((vertex) => vertices.push(vertex))
     );
     this.blocks.forEach((block) =>

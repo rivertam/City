@@ -22,6 +22,7 @@
     "@interactjs/types": "^1.9.8",
     "@react-three/drei": "^9.8.1",
     "@react-three/fiber": "^8.0.16",
+    "@rivertam/three.meshline": "^1.5.0-alpha",
     "@svgdotjs/svg.js": "^3.0.16",
     "@types/d3-quadtree": "^1.0.7",
     "@types/dat.gui": "^0.7.5",
@@ -34,6 +35,7 @@
     "interactjs": "^1.9.8",
     "jsts": "^2.1.2",
     "jszip": "^3.4.0",
+    "lodash": "^4.17.21",
     "loglevel": "^1.6.7",
     "mobx": "^6.3.12",
     "mobx-react-lite": "^3.2.3",
@@ -47,7 +49,7 @@
     "three": "^0.140.2",
     "three-csg-ts": "^1.0.4",
     "three-stdlib": "^2.6.4",
-    "threejs-export-stl": "0.0.4"
+    "threejs-export-stl": "^0.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

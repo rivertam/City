@@ -453,6 +453,10 @@ class Generator {
       parks: [...this._style.parks, ...this.mainGui.smallParks].map((park) =>
         convertLine(park, createParkName())
       ),
+
+      coastlineRoads: this._style.coastlineRoads.map((poly) =>
+        convertLine(poly, createRoadName())
+      ),
       mainRoads: this._style.mainRoads.map((poly) =>
         convertLine(poly, createRoadName())
       ),

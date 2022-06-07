@@ -11,6 +11,7 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Geometry, ConvexHull, VertexNode, ConvexGeometry } from "three-stdlib";
 import { Space } from "./Space";
+import { Road } from "./Road";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -33,7 +34,7 @@ function Camera() {
         near={10}
         far={9999}
         fov={80}
-        aspect={window.innerWidth / window.innerHeight}
+        aspect={window.innerWidth / 2 / window.innerHeight}
       ></PerspectiveCamera>
       <directionalLight position={[1000, 100, 1000]} color={0xaaaaaa} />
       <directionalLight position={[100, 1000, 1000]} color={0xaaaaaa} />
@@ -72,6 +73,22 @@ export const Game = observer(
 
     const divWrapper = useRef<HTMLDivElement | null>(null);
 
+    const testRoads: Array<[number, number][]> = [
+      [
+        [0, 0],
+        [50, 50],
+        [100, 0],
+        [100, 100],
+        [0, 100],
+        [0, 0],
+      ],
+
+      [
+        [200, 0],
+        [200, 100],
+      ],
+    ];
+
     return (
       <GameWindow ref={divWrapper}>
         <GameState.Context.Provider value={gameState}>
@@ -85,7 +102,6 @@ export const Game = observer(
               renderer.current.setClearColor(0x333333);
               renderer.current.setPixelRatio(window.devicePixelRatio);
               if (divWrapper.current) {
-                console.log("seting size");
                 renderer.current.setSize(
                   canvas.offsetWidth,
                   canvas.offsetHeight
@@ -105,7 +121,7 @@ export const Game = observer(
                   [900, 900],
                   [900, -900],
                 ]}
-                color="beige"
+                color="tan"
               />
             </group>
 
@@ -114,7 +130,7 @@ export const Game = observer(
             </group>
 
             <group position={[0, 0, 1]}>
-              <Space polygon={gameState.coastline.polygon} color="beige" />
+              <Space polygon={gameState.coastline.polygon} color="tan" />
             </group>
             <group position={[0, 0, 3]}>
               <Space polygon={gameState.river.polygon} color="blue" />
@@ -122,23 +138,46 @@ export const Game = observer(
             <group position={[0, 0, 2]}>
               <Space polygon={gameState.secondaryRiver.polygon} color="blue" />
             </group>
-            <group position={[0, 0, 5]}>
-              {gameState.mainRoads.map((road) => (
-                <MapLineRender key={road.name} line={road} color="yellow" />
-              ))}
-            </group>
 
-            <group position={[0, 0, 2]}>
-              {gameState.majorRoads.map((road) => (
-                <MapLineRender key={road.name} line={road} color="white" />
-              ))}
-            </group>
+            {/*testRoads.map((road) => (
+              <Road line={road} color="red" size={30} />
+            ))*/}
 
-            <group position={[0, 0, 3]}>
-              {gameState.minorRoads.map((road) => (
-                <MapLineRender key={road.name} line={road} color="grey" />
-              ))}
-            </group>
+            {gameState.coastlineRoads.map((road) => (
+              <Road
+                key={road.name}
+                line={road.polygon.map(([xx, yy]) => [xx, yy, 10])}
+                color="orange"
+                size={12}
+              />
+            ))}
+
+            {gameState.mainRoads.map((road) => (
+              <Road
+                key={road.name}
+                line={road.polygon.map(([xx, yy]) => [xx, yy, 5])}
+                color="yellow"
+                size={12}
+              />
+            ))}
+
+            {gameState.majorRoads.map((road) => (
+              <Road
+                key={road.name}
+                line={road.polygon.map(([xx, yy]) => [xx, yy, 4])}
+                color="white"
+                size={8}
+              />
+            ))}
+
+            {gameState.minorRoads.map((road) => (
+              <Road
+                key={road.name}
+                line={road.polygon.map(([xx, yy]) => [xx, yy, 3])}
+                color="grey"
+                size={5}
+              />
+            ))}
 
             <group position={[0, 0, -30]}>
               {gameState.parks.map((park) => (
@@ -151,7 +190,7 @@ export const Game = observer(
                 <Space
                   key={block.shape.name}
                   polygon={block.shape.polygon}
-                  color="#ddd"
+                  color="#afa"
                 />
               ))}
             </group>

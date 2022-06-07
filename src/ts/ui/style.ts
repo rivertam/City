@@ -1,15 +1,15 @@
-import * as log from 'loglevel';
-import * as dat from 'dat.gui';
-import TensorFieldGUI from './tensor_field_gui';
-import { NoiseParams } from '../impl/tensor_field';
-import CanvasWrapper from './canvas_wrapper';
-import { DefaultCanvasWrapper, RoughCanvasWrapper } from './canvas_wrapper';
-import Util from '../util';
-import PolygonUtil from '../impl/polygon_util';
-import DragController from './drag_controller';
-import DomainController from './domain_controller';
-import Vector from '../vector';
-import { BuildingModel } from './buildings';
+import * as log from "loglevel";
+import * as dat from "dat.gui";
+import TensorFieldGUI from "./tensor_field_gui";
+import { NoiseParams } from "../impl/tensor_field";
+import CanvasWrapper from "./canvas_wrapper";
+import { DefaultCanvasWrapper, RoughCanvasWrapper } from "./canvas_wrapper";
+import Util from "../util";
+import PolygonUtil from "../impl/polygon_util";
+import DragController from "./drag_controller";
+import DomainController from "./domain_controller";
+import Vector from "../vector";
+import { BuildingModel } from "./buildings";
 
 export interface ColourScheme {
   bgColour: string;
@@ -44,7 +44,7 @@ export default abstract class Style {
   public abstract createCanvasWrapper(
     c: HTMLCanvasElement,
     scale: number,
-    resizeToWindow: boolean,
+    resizeToWindow: boolean
   ): CanvasWrapper;
   public abstract draw(canvas?: CanvasWrapper): void;
 
@@ -68,14 +68,14 @@ export default abstract class Style {
 
   constructor(
     protected dragController: DragController,
-    protected colourScheme: ColourScheme,
+    protected colourScheme: ColourScheme
   ) {
     if (!colourScheme.bgColour)
-      log.error('ColourScheme Error - bgColour not defined');
+      log.error("ColourScheme Error - bgColour not defined");
     if (!colourScheme.seaColour)
-      log.error('ColourScheme Error - seaColour not defined');
+      log.error("ColourScheme Error - seaColour not defined");
     if (!colourScheme.minorRoadColour)
-      log.error('ColourScheme Error - minorRoadColour not defined');
+      log.error("ColourScheme Error - minorRoadColour not defined");
 
     // Default colourscheme cascade
     if (!colourScheme.bgColourIn)
@@ -110,7 +110,7 @@ export default abstract class Style {
 
     if (!colourScheme.buildingSideColour) {
       const parsedRgb = Util.parseCSSColor(colourScheme.buildingColour).map(
-        (v) => Math.max(0, v - 40),
+        (v) => Math.max(0, v - 40)
       );
       if (parsedRgb) {
         colourScheme.buildingSideColour = `rgb(${parsedRgb[0]},${parsedRgb[1]},${parsedRgb[2]})`;
@@ -150,7 +150,7 @@ export class DefaultStyle extends Style {
     c: HTMLCanvasElement,
     dragController: DragController,
     colourScheme: ColourScheme,
-    private heightmap = false,
+    private heightmap = false
   ) {
     super(dragController, colourScheme);
     this.canvas = this.createCanvasWrapper(c, 1, true);
@@ -159,7 +159,7 @@ export class DefaultStyle extends Style {
   public createCanvasWrapper(
     c: HTMLCanvasElement,
     scale = 1,
-    resizeToWindow = true,
+    resizeToWindow = true
   ): CanvasWrapper {
     return new DefaultCanvasWrapper(c, scale, resizeToWindow);
   }
@@ -204,14 +204,20 @@ export class DefaultStyle extends Style {
     canvas.setStrokeStyle(this.colourScheme.minorRoadOutline);
     canvas.setLineWidth(
       this.colourScheme.outlineSize +
-        this.colourScheme.minorWidth * this.domainController.zoom,
+        this.colourScheme.minorWidth * this.domainController.zoom
     );
-    for (const s of this.minorRoads) canvas.drawPolyline(s);
+
+    for (const s of this.minorRoads) {
+      canvas.setStrokeStyle(
+        `hsl(${(Math.random() * 360).toFixed(0)}, 50%, 50%)`
+      );
+      canvas.drawPolyline(s);
+    }
 
     canvas.setStrokeStyle(this.colourScheme.majorRoadOutline);
     canvas.setLineWidth(
       this.colourScheme.outlineSize +
-        this.colourScheme.majorWidth * this.domainController.zoom,
+        this.colourScheme.majorWidth * this.domainController.zoom
     );
     for (const s of this.majorRoads) canvas.drawPolyline(s);
     canvas.drawPolyline(this.secondaryRiver);
@@ -219,7 +225,7 @@ export class DefaultStyle extends Style {
     canvas.setStrokeStyle(this.colourScheme.mainRoadOutline);
     canvas.setLineWidth(
       this.colourScheme.outlineSize +
-        this.colourScheme.mainWidth * this.domainController.zoom,
+        this.colourScheme.mainWidth * this.domainController.zoom
     );
     for (const s of this.mainRoads) canvas.drawPolyline(s);
     for (const s of this.coastlineRoads) canvas.drawPolyline(s);
@@ -227,20 +233,20 @@ export class DefaultStyle extends Style {
     // Road inline
     canvas.setStrokeStyle(this.colourScheme.minorRoadColour);
     canvas.setLineWidth(
-      this.colourScheme.minorWidth * this.domainController.zoom,
+      this.colourScheme.minorWidth * this.domainController.zoom
     );
     for (const s of this.minorRoads) canvas.drawPolyline(s);
 
     canvas.setStrokeStyle(this.colourScheme.majorRoadColour);
     canvas.setLineWidth(
-      this.colourScheme.majorWidth * this.domainController.zoom,
+      this.colourScheme.majorWidth * this.domainController.zoom
     );
     for (const s of this.majorRoads) canvas.drawPolyline(s);
     canvas.drawPolyline(this.secondaryRiver);
 
     canvas.setStrokeStyle(this.colourScheme.mainRoadColour);
     canvas.setLineWidth(
-      this.colourScheme.mainWidth * this.domainController.zoom,
+      this.colourScheme.mainWidth * this.domainController.zoom
     );
     for (const s of this.mainRoads) canvas.drawPolyline(s);
     for (const s of this.coastlineRoads) canvas.drawPolyline(s);
@@ -252,13 +258,13 @@ export class DefaultStyle extends Style {
         // Colour based on height
 
         const parsedRgb = Util.parseCSSColor(this.colourScheme.bgColour).map(
-          (v) => Math.min(255, v + b.height * 3.5),
+          (v) => Math.min(255, v + b.height * 3.5)
         );
         canvas.setFillStyle(
-          `rgb(${parsedRgb[0]},${parsedRgb[1]},${parsedRgb[2]})`,
+          `rgb(${parsedRgb[0]},${parsedRgb[1]},${parsedRgb[2]})`
         );
         canvas.setStrokeStyle(
-          `rgb(${parsedRgb[0]},${parsedRgb[1]},${parsedRgb[2]})`,
+          `rgb(${parsedRgb[0]},${parsedRgb[1]},${parsedRgb[2]})`
         );
         canvas.drawPolygon(b.lotScreen);
       }
@@ -306,7 +312,7 @@ export class RoughStyle extends Style {
   constructor(
     c: HTMLCanvasElement,
     dragController: DragController,
-    colourScheme: ColourScheme,
+    colourScheme: ColourScheme
   ) {
     super(dragController, colourScheme);
     this.canvas = this.createCanvasWrapper(c, 1, true);
@@ -315,7 +321,7 @@ export class RoughStyle extends Style {
   public createCanvasWrapper(
     c: HTMLCanvasElement,
     scale = 1,
-    resizeToWindow = true,
+    resizeToWindow = true
   ): CanvasWrapper {
     return new RoughCanvasWrapper(c, scale, resizeToWindow);
   }
@@ -332,12 +338,13 @@ export class RoughStyle extends Style {
       fill: this.colourScheme.bgColour,
       roughness: 1,
       bowing: 1,
-      fillStyle: 'solid',
-      stroke: 'none',
+      fillStyle: "solid",
+      stroke: "none",
     });
 
     canvas.clearCanvas();
 
+    /*
     // Sea
     canvas.setOptions({
       roughness: 0,
@@ -372,12 +379,13 @@ export class RoughStyle extends Style {
       fill: this.colourScheme.grassColour,
     });
     this.parks.forEach((p) => canvas.drawPolygon(p));
+    */
 
     // Roads
     canvas.setOptions({
       stroke: this.colourScheme.minorRoadColour,
       strokeWidth: 1,
-      fill: 'none',
+      fill: "none",
     });
 
     this.minorRoads.forEach((s) => canvas.drawPolyline(s));
@@ -397,6 +405,7 @@ export class RoughStyle extends Style {
 
     this.mainRoads.forEach((s) => canvas.drawPolyline(s));
     this.coastlineRoads.forEach((s) => canvas.drawPolyline(s));
+    /*
 
     // Buildings
     if (!this.dragging) {
@@ -447,5 +456,6 @@ export class RoughStyle extends Style {
         for (const b of this.buildingModels) canvas.drawPolygon(b.roof);
       }
     }
+    */
   }
 }

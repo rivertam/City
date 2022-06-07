@@ -97,7 +97,6 @@ export function Piece({ color, height, polygon }: Props) {
       <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
 
       <meshLambertMaterial attach={"material"} color={color} />
-      <Edges color="black" />
     </mesh>
   );
 }
