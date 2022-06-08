@@ -5,27 +5,6 @@ body {
   overflow: hidden;
 }
 
-/* Must match util.ts and index.html */
-#map-canvas {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 50%;
-  height: 50%;
-}
-
-#map-svg {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 50%;
-  height: 50%;
-}
-
-#img-canvas {
-  display: none;
-}
-
 .ac .dg li.cr,
 .ac .dg li.folder {
   margin-left: 10px;
@@ -36,6 +15,6 @@ body {
   border-left: 3px solid #ffffff;
 }
 
-.ac .dg .c input[type='text'] {
+.ac .dg .c input[type="text"] {
   width: 80px;
 }

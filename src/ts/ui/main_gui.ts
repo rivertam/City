@@ -15,7 +15,6 @@ import StreamlineGenerator from "../impl/streamlines";
 import WaterGenerator from "../impl/water_generator";
 import Style from "./style";
 import { DefaultStyle, RoughStyle } from "./style";
-import CanvasWrapper from "./canvas_wrapper";
 import Buildings, { BuildingModel } from "./buildings";
 import PolygonUtil from "../impl/polygon_util";
 
@@ -34,11 +33,11 @@ export default class MainGUI {
   private animate: boolean = true;
   private animationSpeed: number = 30;
 
-  private coastline: WaterGUI;
-  private mainRoads: RoadGUI;
-  private majorRoads: RoadGUI;
-  private minorRoads: RoadGUI;
-  private buildings: Buildings;
+  public coastline: WaterGUI;
+  public mainRoads: RoadGUI;
+  public majorRoads: RoadGUI;
+  public minorRoads: RoadGUI;
+  public buildings: Buildings;
 
   // Params
   private coastlineParams: WaterParams;
@@ -321,49 +320,15 @@ export default class MainGUI {
     this.redraw = this.redraw || continueUpdate;
   }
 
-  draw(style: Style, forceDraw = false, customCanvas?: CanvasWrapper): void {
-    if (
-      !style.needsUpdate &&
-      !forceDraw &&
-      !this.redraw &&
-      !this.domainController.moved
-    ) {
-      return;
-    }
-
-    style.needsUpdate = false;
-    this.domainController.moved = false;
-    this.redraw = false;
-
-    style.seaPolygon = this.coastline.seaPolygon;
-    style.coastline = this.coastline.coastline;
-    style.river = this.coastline.river;
-    style.lots = this.buildings.lots;
-
-    if (
-      (style instanceof DefaultStyle && style.showBuildingModels) ||
-      style instanceof RoughStyle
-    ) {
-      style.buildingModels = this.buildings.models;
-    }
-
-    style.parks = [];
-    style.parks.push(
+  public get parks() {
+    return [
       ...this.bigParks.map((p) =>
         p.map((v) => this.domainController.worldToScreen(v.clone()))
-      )
-    );
-    style.parks.push(
+      ),
       ...this.smallParks.map((p) =>
         p.map((v) => this.domainController.worldToScreen(v.clone()))
-      )
-    );
-    style.minorRoads = this.minorRoads.roads;
-    style.majorRoads = this.majorRoads.roads;
-    style.mainRoads = this.mainRoads.roads;
-    style.coastlineRoads = this.coastline.roads;
-    style.secondaryRiver = this.coastline.secondaryRiver;
-    style.draw(customCanvas);
+      ),
+    ];
   }
 
   roadsEmpty(): boolean {

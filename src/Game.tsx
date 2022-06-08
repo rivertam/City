@@ -6,19 +6,16 @@ import styled from "styled-components";
 
 import { Park } from "./Park";
 import { Piece } from "./Piece";
-import { GameState, MapLine, GeneratedCity } from "./GameState";
-import { toJS } from "mobx";
+import { GameState, GeneratedCity } from "./GameState";
 import { observer } from "mobx-react-lite";
-import { Geometry, ConvexHull, VertexNode, ConvexGeometry } from "three-stdlib";
 import { Space } from "./Space";
 import { Road } from "./Road";
 
 export const GameWindow = styled.div`
   position: fixed;
-  right: 0;
   top: 0;
-  width: 50%;
-  height: 50%;
+  width: 100%;
+  height: 100%;
 
   background-color: blue;
 `;
@@ -48,20 +45,6 @@ function Camera() {
     </>
   );
 }
-
-const MapLineRender: React.FC<{ line: MapLine; color: string }> = ({
-  line,
-  color,
-}) => {
-  return null;
-  return (
-    <Line
-      points={line.polygon.map(([x, y]) => [x, y, 0.05])}
-      color={color}
-      lineWidth={2}
-    />
-  );
-};
 
 export const Game = observer(
   ({ city }: { city: GeneratedCity }): React.ReactElement => {

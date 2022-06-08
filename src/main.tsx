@@ -7,11 +7,10 @@ import * as dat from "dat.gui";
 import TensorFieldGUI from "./ts/ui/tensor_field_gui";
 import { NoiseParams } from "./ts/impl/tensor_field";
 import MainGUI from "./ts/ui/main_gui";
-import { DefaultCanvasWrapper } from "./ts/ui/canvas_wrapper";
 import Util from "./ts/util";
 import DragController from "./ts/ui/drag_controller";
 import DomainController from "./ts/ui/domain_controller";
-import Style from "./ts/ui/style";
+import Style, { NoStyle } from "./ts/ui/style";
 import { ColourScheme, DefaultStyle, RoughStyle } from "./ts/ui/style";
 import ColourSchemes from "./ColorSchemes";
 import Vector from "./ts/vector";
@@ -42,9 +41,6 @@ class Generator {
   public highDPI = false; // Increases resolution for hiDPI displays
 
   // Style options
-  private canvas: HTMLCanvasElement;
-  private tensorCanvas: DefaultCanvasWrapper;
-  private _style: Style;
   private colourScheme: string = "Default"; // See colour_schemes.json
   private zoomBuildings: boolean = false; // Show buildings only when zoomed in?
   private buildingModels: boolean = false; // Draw pseudo-3D buildings?
@@ -72,10 +68,6 @@ class Generator {
     this.optionsFolder = this.gui.addFolder("Options");
     this.downloadsFolder = this.gui.addFolder("Download");
 
-    // Canvas setup
-    this.canvas = document.getElementById(Util.CANVAS_ID) as HTMLCanvasElement;
-    this.tensorCanvas = new DefaultCanvasWrapper(this.canvas);
-
     // Make sure we're not too zoomed out for large resolutions
     const screenWidth = this.domainController.screenDimensions.x;
     if (screenWidth > this.STARTING_WIDTH) {
@@ -90,18 +82,15 @@ class Generator {
     this.styleFolder.add(this, "zoomBuildings").onChange((val: boolean) => {
       // Force redraw
       this.previousFrameDrawTensor = true;
-      this._style.zoomBuildings = val;
     });
 
     this.styleFolder.add(this, "buildingModels").onChange((val: boolean) => {
       // Force redraw
       this.previousFrameDrawTensor = true;
-      this._style.showBuildingModels = val;
     });
 
     this.styleFolder.add(this, "showFrame").onChange((val: boolean) => {
       this.previousFrameDrawTensor = true;
-      this._style.showFrame = val;
     });
 
     this.styleFolder.add(this.domainController, "orthographic");
@@ -134,9 +123,6 @@ class Generator {
     );
 
     this.optionsFolder.add(this.tensorField, "drawCentre");
-    this.optionsFolder
-      .add(this, "highDPI")
-      .onChange((high: boolean) => this.changeCanvasScale(high));
 
     this.downloadsFolder.add(this, "imageScale", 1, 5).step(1);
     this.downloadsFolder.add({ PNG: () => this.downloadPng() }, "PNG"); // This allows custom naming of button
@@ -175,31 +161,6 @@ class Generator {
     this.zoomBuildings = colourScheme.zoomBuildings;
     this.buildingModels = colourScheme.buildingModels;
     Util.updateGui(this.styleFolder);
-    if (scheme.startsWith("Drawn")) {
-      this._style = new RoughStyle(
-        this.canvas,
-        this.dragController,
-        Object.assign({}, colourScheme)
-      );
-    } else {
-      this._style = new DefaultStyle(
-        this.canvas,
-        this.dragController,
-        Object.assign({}, colourScheme),
-        scheme.startsWith("Heightmap")
-      );
-    }
-    this._style.showFrame = this.showFrame;
-    this.changeCanvasScale(this.highDPI);
-  }
-
-  /**
-   * Scale up canvas resolution for hiDPI displays
-   */
-  changeCanvasScale(high: boolean): void {
-    const value = high ? 2 : 1;
-    this._style.canvasScale = value;
-    this.tensorCanvas.canvasScale = value;
   }
 
   /**
@@ -259,120 +220,6 @@ class Generator {
     saveAs(file, filename);
   }
 
-  /**
-   * Downloads image of map
-   * Draws onto hidden canvas at requested resolution
-   */
-  downloadPng(): void {
-    const c = document.getElementById(Util.IMG_CANVAS_ID) as HTMLCanvasElement;
-
-    // Draw
-    if (this.showTensorField()) {
-      this.tensorField.draw(
-        new DefaultCanvasWrapper(c, this.imageScale, false)
-      );
-    } else {
-      const imgCanvas = this._style.createCanvasWrapper(
-        c,
-        this.imageScale,
-        false
-      );
-      this.mainGui.draw(this._style, true, imgCanvas);
-    }
-
-    const link = document.createElement("a");
-    link.download = "map.png";
-    link.href = (
-      document.getElementById(Util.IMG_CANVAS_ID) as any
-    ).toDataURL();
-    link.click();
-  }
-
-  /**
-   * Same as downloadPng but uses Heightmap style
-   */
-  downloadHeightmap(): void {
-    const oldColourScheme = this.colourScheme;
-    this.changeColourScheme("Heightmap");
-    this.downloadPng();
-    this.changeColourScheme(oldColourScheme);
-  }
-
-  /**
-   * Downloads svg of map
-   * Draws onto hidden svg at requested resolution
-   */
-  downloadSVG(): void {
-    const c = document.getElementById(Util.IMG_CANVAS_ID) as HTMLCanvasElement;
-    const svgElement = document.getElementById(Util.SVG_ID);
-
-    if (this.showTensorField()) {
-      const imgCanvas = new DefaultCanvasWrapper(c, 1, false);
-      imgCanvas.createSVG(svgElement);
-      this.tensorField.draw(imgCanvas);
-    } else {
-      const imgCanvas = this._style.createCanvasWrapper(c, 1, false);
-      imgCanvas.createSVG(svgElement);
-      this.mainGui.draw(this._style, true, imgCanvas);
-    }
-
-    const serializer = new XMLSerializer();
-    let source = serializer.serializeToString(svgElement);
-    //add name spaces.
-    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
-      source = source.replace(
-        /^<svg/,
-        '<svg xmlns="http://www.w3.org/2000/svg"'
-      );
-    }
-    if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
-      source = source.replace(
-        /^<svg/,
-        '<svg xmlns:xlink="http://www.w3.org/1999/xlink"'
-      );
-    }
-
-    //add xml declaration
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
-
-    //convert svg source to URI data scheme.
-    const url =
-      "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
-
-    const link = document.createElement("a");
-    link.download = "map.svg";
-    link.href = url;
-    link.click();
-
-    // Clear SVG
-    const element = SVG(svgElement);
-    element.clear();
-  }
-
-  private showTensorField(): boolean {
-    return !this.tensorFolder.closed || this.mainGui.roadsEmpty();
-  }
-
-  draw(): void {
-    if (this.showTensorField()) {
-      this.previousFrameDrawTensor = true;
-      this.dragController.setDragDisabled(false);
-      this.tensorField.draw(this.tensorCanvas);
-    } else {
-      // Disable field drag and drop
-      this.dragController.setDragDisabled(true);
-
-      if (this.previousFrameDrawTensor === true) {
-        this.previousFrameDrawTensor = false;
-
-        // Force redraw if switching from tensor field
-        this.mainGui.draw(this._style, true);
-      } else {
-        this.mainGui.draw(this._style);
-      }
-    }
-  }
-
   update(): void {
     if (this.modelGenerator) {
       let continueUpdate = true;
@@ -382,9 +229,7 @@ class Generator {
       }
     }
 
-    this._style.update();
     this.mainGui.update();
-    this.draw();
     requestAnimationFrame(this.update.bind(this));
   }
 
@@ -450,20 +295,20 @@ class Generator {
         this.mainGui.secondaryRiverPolygon,
         createRiverName()
       ),
-      parks: [...this._style.parks, ...this.mainGui.smallParks].map((park) =>
+      parks: this.mainGui.parks.map((park) =>
         convertLine(park, createParkName())
       ),
 
-      coastlineRoads: this._style.coastlineRoads.map((poly) =>
+      coastlineRoads: this.mainGui.coastline.roads.map((poly) =>
         convertLine(poly, createRoadName())
       ),
-      mainRoads: this._style.mainRoads.map((poly) =>
+      mainRoads: this.mainGui.mainRoads.roads.map((poly) =>
         convertLine(poly, createRoadName())
       ),
-      majorRoads: this._style.majorRoads.map((poly) =>
+      majorRoads: this.mainGui.majorRoads.roads.map((poly) =>
         convertLine(poly, createRoadName())
       ),
-      minorRoads: this._style.minorRoads.map((poly) =>
+      minorRoads: this.mainGui.minorRoads.roads.map((poly) =>
         convertLine(poly, createRoadName())
       ),
       blocks: blocks.map((block) => ({
