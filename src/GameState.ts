@@ -95,6 +95,7 @@ export class GameState {
     });
 
     console.timeEnd("Centralizing city");
+    console.log(`${vertices.length} points`);
     makeAutoObservable(this);
 
     GameState.instance = this;
