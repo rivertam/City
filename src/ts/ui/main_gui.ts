@@ -1,8 +1,6 @@
-import * as log from "loglevel";
 import DomainController from "./domain_controller";
 import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
-import FieldIntegrator from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import { WaterParams } from "../impl/water_generator";
 import Graph from "../impl/graph";
@@ -10,11 +8,6 @@ import RoadGUI from "./road_gui";
 import WaterGUI from "./water_gui";
 import Vector from "../vector";
 import PolygonFinder from "../impl/polygon_finder";
-import { PolygonParams } from "../impl/polygon_finder";
-import StreamlineGenerator from "../impl/streamlines";
-import WaterGenerator from "../impl/water_generator";
-import Style from "./style";
-import { DefaultStyle, RoughStyle } from "./style";
 import Buildings, { BuildingModel } from "./buildings";
 import PolygonUtil from "../impl/polygon_util";
 
@@ -364,31 +357,23 @@ export default class MainGUI {
 
   public get minorRoadPolygons(): Vector[][] {
     return this.minorRoads.roads.map((r) =>
-      PolygonUtil.resizeGeometry(r, 1 * this.domainController.zoom, false)
+      PolygonUtil.resizeGeometry(r, 1, false)
     );
   }
 
   public get majorRoadPolygons(): Vector[][] {
     return this.majorRoads.roads
       .concat([this.coastline.secondaryRiver])
-      .map((r) =>
-        PolygonUtil.resizeGeometry(r, 2 * this.domainController.zoom, false)
-      );
+      .map((r) => PolygonUtil.resizeGeometry(r, 2, false));
   }
 
   public get mainRoadPolygons(): Vector[][] {
     return this.mainRoads.roads
       .concat(this.coastline.roads)
-      .map((r) =>
-        PolygonUtil.resizeGeometry(r, 2.5 * this.domainController.zoom, false)
-      );
+      .map((r) => PolygonUtil.resizeGeometry(r, 2.5, false));
   }
 
   public get coastlinePolygon(): Vector[] {
-    return PolygonUtil.resizeGeometry(
-      this.coastline.coastline,
-      15 * this.domainController.zoom,
-      false
-    );
+    return PolygonUtil.resizeGeometry(this.coastline.coastline, 15, false);
   }
 }

@@ -1,5 +1,5 @@
-import * as log from 'loglevel';
-import Vector from '../vector';
+import * as log from "loglevel";
+import Vector from "../vector";
 
 /**
  * Cartesian grid accelerated data structure
@@ -14,11 +14,7 @@ export default class GridStorage {
    * worldDimensions assumes origin of 0,0
    * @param {number} dsep Separation distance between samples
    */
-  constructor(
-    private worldDimensions: Vector,
-    private origin: Vector,
-    private dsep: number,
-  ) {
+  constructor(private worldDimensions: Vector, private dsep: number) {
     this.dsepSq = this.dsep * this.dsep;
     this.gridDimensions = worldDimensions.clone().divideScalar(this.dsep);
     this.grid = [];
@@ -130,11 +126,11 @@ export default class GridStorage {
   }
 
   private worldToGrid(v: Vector): Vector {
-    return v.clone().sub(this.origin);
+    return v.clone();
   }
 
   private gridToWorld(v: Vector): Vector {
-    return v.clone().add(this.origin);
+    return v.clone();
   }
 
   private vectorOutOfBounds(gridV: Vector, bounds: Vector): boolean {

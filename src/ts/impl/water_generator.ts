@@ -1,10 +1,10 @@
-import * as log from 'loglevel';
-import Vector from '../vector';
-import FieldIntegrator from './integrator';
-import StreamlineGenerator from './streamlines';
-import { StreamlineParams } from './streamlines';
-import TensorField from './tensor_field';
-import PolygonUtil from './polygon_util';
+import * as log from "loglevel";
+import Vector from "../vector";
+import FieldIntegrator from "./integrator";
+import StreamlineGenerator from "./streamlines";
+import { StreamlineParams } from "./streamlines";
+import TensorField from "./tensor_field";
+import PolygonUtil from "./polygon_util";
 
 export interface WaterParams extends StreamlineParams {
   coastNoise: NoiseStreamlineParams;
@@ -32,12 +32,11 @@ export default class WaterGenerator extends StreamlineGenerator {
 
   constructor(
     integrator: FieldIntegrator,
-    origin: Vector,
     worldDimensions: Vector,
     protected params: WaterParams,
-    private tensorField: TensorField,
+    private tensorField: TensorField
   ) {
-    super(integrator, origin, worldDimensions, params);
+    super(integrator, worldDimensions, params);
   }
 
   get coastline(): Vector[] {
@@ -64,14 +63,14 @@ export default class WaterGenerator extends StreamlineGenerator {
     if (this.params.coastNoise.noiseEnabled) {
       this.tensorField.enableGlobalNoise(
         this.params.coastNoise.noiseAngle,
-        this.params.coastNoise.noiseSize,
+        this.params.coastNoise.noiseSize
       );
     }
     for (let i = 0; i < this.TRIES; i++) {
       major = Math.random() < 0.5;
       seed = this.getSeed(major);
       coastStreamline = this.extendStreamline(
-        this.integrateStreamline(seed, major),
+        this.integrateStreamline(seed, major)
       );
 
       if (this.reachesEdges(coastStreamline)) {
@@ -105,19 +104,19 @@ export default class WaterGenerator extends StreamlineGenerator {
     if (this.params.riverNoise.noiseEnabled) {
       this.tensorField.enableGlobalNoise(
         this.params.riverNoise.noiseAngle,
-        this.params.riverNoise.noiseSize,
+        this.params.riverNoise.noiseSize
       );
     }
     for (let i = 0; i < this.TRIES; i++) {
       seed = this.getSeed(!this.coastlineMajor);
       riverStreamline = this.extendStreamline(
-        this.integrateStreamline(seed, !this.coastlineMajor),
+        this.integrateStreamline(seed, !this.coastlineMajor)
       );
 
       if (this.reachesEdges(riverStreamline)) {
         break;
       } else if (i === this.TRIES - 1) {
-        log.error('Failed to find river reaching edge');
+        log.error("Failed to find river reaching edge");
       }
     }
     this.tensorField.sea = oldSea;
@@ -125,16 +124,16 @@ export default class WaterGenerator extends StreamlineGenerator {
 
     // Create river roads
     const expandedNoisy = this.complexifyStreamline(
-      PolygonUtil.resizeGeometry(riverStreamline, this.params.riverSize, false),
+      PolygonUtil.resizeGeometry(riverStreamline, this.params.riverSize, false)
     );
     this._riverPolygon = PolygonUtil.resizeGeometry(
       riverStreamline,
       this.params.riverSize - this.params.riverBankSize,
-      false,
+      false
     );
     // Make sure riverPolygon[0] is off screen
     const firstOffScreen = expandedNoisy.findIndex((v) =>
-      this.vectorOffScreen(v),
+      this.vectorOffScreen(v)
     );
     for (let i = 0; i < firstOffScreen; i++) {
       expandedNoisy.push(expandedNoisy.shift());
@@ -146,14 +145,14 @@ export default class WaterGenerator extends StreamlineGenerator {
       (v) =>
         !PolygonUtil.insidePolygon(v, this._seaPolygon) &&
         !this.vectorOffScreen(v) &&
-        PolygonUtil.insidePolygon(v, riverSplitPoly),
+        PolygonUtil.insidePolygon(v, riverSplitPoly)
     );
     const road1Simple = this.simplifyStreamline(road1);
     const road2 = expandedNoisy.filter(
       (v) =>
         !PolygonUtil.insidePolygon(v, this._seaPolygon) &&
         !this.vectorOffScreen(v) &&
-        !PolygonUtil.insidePolygon(v, riverSplitPoly),
+        !PolygonUtil.insidePolygon(v, riverSplitPoly)
     );
     const road2Simple = this.simplifyStreamline(road2);
 
@@ -220,9 +219,9 @@ export default class WaterGenerator extends StreamlineGenerator {
     // seaPolygon.splice((longestIndex + 1) % seaPolygon.length, 0, ...polyline);
 
     return PolygonUtil.lineRectanglePolygonIntersection(
-      this.origin,
+      new Vector(0, 0),
       this.worldDimensions,
-      polyline,
+      polyline
     );
 
     // return PolygonUtil.boundPolyToScreen(this.origin, this.worldDimensions, seaPolygon);
@@ -260,16 +259,16 @@ export default class WaterGenerator extends StreamlineGenerator {
         streamline[0]
           .clone()
           .sub(streamline[1])
-          .setLength(this.params.dstep * 5),
-      ),
+          .setLength(this.params.dstep * 5)
+      )
     );
     streamline.push(
       streamline[streamline.length - 1].clone().add(
         streamline[streamline.length - 1]
           .clone()
           .sub(streamline[streamline.length - 2])
-          .setLength(this.params.dstep * 5),
-      ),
+          .setLength(this.params.dstep * 5)
+      )
     );
     return streamline;
   }
@@ -282,12 +281,11 @@ export default class WaterGenerator extends StreamlineGenerator {
   }
 
   private vectorOffScreen(v: Vector): boolean {
-    const toOrigin = v.clone().sub(this.origin);
     return (
-      toOrigin.x <= 0 ||
-      toOrigin.y <= 0 ||
-      toOrigin.x >= this.worldDimensions.x ||
-      toOrigin.y >= this.worldDimensions.y
+      v.x <= 0 ||
+      v.y <= 0 ||
+      v.x >= this.worldDimensions.x ||
+      v.y >= this.worldDimensions.y
     );
   }
 }

@@ -1,8 +1,8 @@
-import * as log from 'loglevel';
-import * as simplify from 'simplify-js';
-import Vector from '../vector';
-import GridStorage from './grid_storage';
-import FieldIntegrator from './integrator';
+import * as log from "loglevel";
+import * as simplify from "simplify-js";
+import Vector from "../vector";
+import GridStorage from "./grid_storage";
+import FieldIntegrator from "./integrator";
 
 interface StreamlineIntegration {
   seed: Vector;
@@ -62,12 +62,11 @@ export default class StreamlineGenerator {
    */
   constructor(
     protected integrator: FieldIntegrator,
-    protected origin: Vector,
     protected worldDimensions: Vector,
-    protected params: StreamlineParams,
+    protected params: StreamlineParams
   ) {
     if (params.dstep > params.dsep) {
-      log.error('STREAMLINE SAMPLE DISTANCE BIGGER THAN DSEP');
+      log.error("STREAMLINE SAMPLE DISTANCE BIGGER THAN DSEP");
     }
 
     // Enforce test < sep
@@ -78,16 +77,8 @@ export default class StreamlineGenerator {
     this.nStreamlineStep = Math.floor(params.dcirclejoin / params.dstep);
     this.nStreamlineLookBack = 2 * this.nStreamlineStep;
 
-    this.majorGrid = new GridStorage(
-      this.worldDimensions,
-      this.origin,
-      params.dsep,
-    );
-    this.minorGrid = new GridStorage(
-      this.worldDimensions,
-      this.origin,
-      params.dsep,
-    );
+    this.majorGrid = new GridStorage(this.worldDimensions, params.dsep);
+    this.minorGrid = new GridStorage(this.worldDimensions, params.dsep);
 
     this.setParamsSq();
   }
@@ -114,13 +105,13 @@ export default class StreamlineGenerator {
         const newStart = this.getBestNextPoint(
           streamline[0],
           streamline[4],
-          streamline,
+          streamline
         );
         if (newStart !== null) {
           for (const p of this.pointsBetween(
             streamline[0],
             newStart,
-            this.params.dstep,
+            this.params.dstep
           )) {
             streamline.unshift(p);
             this.grid(major).addSample(p);
@@ -130,13 +121,13 @@ export default class StreamlineGenerator {
         const newEnd = this.getBestNextPoint(
           streamline[streamline.length - 1],
           streamline[streamline.length - 4],
-          streamline,
+          streamline
         );
         if (newEnd !== null) {
           for (const p of this.pointsBetween(
             streamline[streamline.length - 1],
             newEnd,
-            this.params.dstep,
+            this.params.dstep
           )) {
             streamline.push(p);
             this.grid(major).addSample(p);
@@ -185,14 +176,14 @@ export default class StreamlineGenerator {
   getBestNextPoint(
     point: Vector,
     previousPoint: Vector,
-    streamline: Vector[],
+    streamline: Vector[]
   ): Vector {
     const nearbyPoints = this.majorGrid.getNearbyPoints(
       point,
-      this.params.dlookahead,
+      this.params.dlookahead
     );
     nearbyPoints.push(
-      ...this.minorGrid.getNearbyPoints(point, this.params.dlookahead),
+      ...this.minorGrid.getNearbyPoints(point, this.params.dlookahead)
     );
     const direction = point.clone().sub(previousPoint);
 
@@ -215,7 +206,7 @@ export default class StreamlineGenerator {
           break;
         }
         const angleBetween = Math.abs(
-          Vector.angleBetween(direction, differenceVector),
+          Vector.angleBetween(direction, differenceVector)
         );
 
         // Filter by angle
@@ -331,7 +322,7 @@ export default class StreamlineGenerator {
   protected setParamsSq(): void {
     this.paramsSq = Object.assign({}, this.params);
     for (const p in this.paramsSq) {
-      if (typeof this.paramsSq[p] === 'number') {
+      if (typeof this.paramsSq[p] === "number") {
         this.paramsSq[p] *= this.paramsSq[p];
       }
     }
@@ -341,8 +332,8 @@ export default class StreamlineGenerator {
     // TODO better seeding scheme
     return new Vector(
       Math.random() * this.worldDimensions.x,
-      Math.random() * this.worldDimensions.y,
-    ).add(this.origin);
+      Math.random() * this.worldDimensions.y
+    );
   }
 
   /**
@@ -376,7 +367,7 @@ export default class StreamlineGenerator {
     major: boolean,
     point: Vector,
     dSq: number,
-    bothGrids = false,
+    bothGrids = false
   ): boolean {
     // dSq = dSq * point.distanceToSquared(Vector.zeroVector());
     let gridValid = this.grid(major).isValidSample(point, dSq);
@@ -400,10 +391,10 @@ export default class StreamlineGenerator {
 
   protected pointInBounds(v: Vector): boolean {
     return (
-      v.x >= this.origin.x &&
-      v.y >= this.origin.y &&
-      v.x < this.worldDimensions.x + this.origin.x &&
-      v.y < this.worldDimensions.y + this.origin.y
+      v.x >= 0 &&
+      v.y >= 0 &&
+      v.x < this.worldDimensions.x &&
+      v.y < this.worldDimensions.y
     );
   }
 
@@ -417,7 +408,7 @@ export default class StreamlineGenerator {
   protected doesStreamlineCollideSelf(
     testSample: Vector,
     streamlineForwards: Vector[],
-    streamlineBackwards: Vector[],
+    streamlineBackwards: Vector[]
   ): boolean {
     // Streamline long enough
     if (streamlineForwards.length > this.nStreamlineLookBack) {
@@ -460,7 +451,7 @@ export default class StreamlineGenerator {
     seed: Vector,
     originalDir: Vector,
     point: Vector,
-    direction: Vector,
+    direction: Vector
   ): boolean {
     if (originalDir.dot(direction) < 0) {
       // TODO optimise
@@ -480,13 +471,13 @@ export default class StreamlineGenerator {
   protected streamlineIntegrationStep(
     params: StreamlineIntegration,
     major: boolean,
-    collideBoth: boolean,
+    collideBoth: boolean
   ): void {
     if (params.valid) {
       params.streamline.push(params.previousPoint);
       const nextDirection = this.integrator.integrate(
         params.previousPoint,
-        major,
+        major
       );
 
       // Stop at degenerate point
@@ -514,13 +505,13 @@ export default class StreamlineGenerator {
           major,
           nextPoint,
           this.paramsSq.dtest,
-          collideBoth,
+          collideBoth
         ) &&
         !this.streamlineTurned(
           params.seed,
           params.originalDir,
           nextPoint,
-          nextDirection,
+          nextDirection
         )
       ) {
         params.previousPoint = nextPoint;
@@ -580,7 +571,7 @@ export default class StreamlineGenerator {
       // Join up circles
       const sqDistanceBetweenPoints =
         forwardParams.previousPoint.distanceToSquared(
-          backwardParams.previousPoint,
+          backwardParams.previousPoint
         );
 
       if (
