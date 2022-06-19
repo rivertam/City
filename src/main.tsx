@@ -2,7 +2,6 @@ import "./style.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import faker from "faker";
-import * as dat from "dat.gui";
 import TensorField, { NoiseParams } from "./ts/impl/tensor_field";
 import MainGUI from "./ts/ui/main_gui";
 import Vector from "./ts/vector";
@@ -13,11 +12,6 @@ import { GeneratedCity, GameState, MapLine } from "./GameState";
 class Generator {
   private readonly STARTING_WIDTH = 1440; // Initially zooms in if width > STARTING_WIDTH
 
-  // UI
-  private gui: dat.GUI = new dat.GUI({ width: 300 });
-  private tensorFolder: dat.GUI;
-  private roadsFolder: dat.GUI;
-
   private tensorField: TensorField;
   private mainGui: MainGUI; // In charge of glueing everything together
 
@@ -25,11 +19,6 @@ class Generator {
   private modelGenerator: ModelGenerator;
 
   constructor() {
-    this.gui.add(this, "generate");
-
-    this.tensorFolder = this.gui.addFolder("Tensor Field");
-    this.roadsFolder = this.gui.addFolder("Map");
-
     const noiseParamsPlaceholder: NoiseParams = {
       // Placeholder values for park + water noise
       globalNoise: false,
@@ -40,9 +29,7 @@ class Generator {
     };
 
     this.tensorField = new TensorField(noiseParamsPlaceholder);
-    this.mainGui = new MainGUI(this.roadsFolder, this.tensorField, () =>
-      this.tensorFolder.close()
-    );
+    this.mainGui = new MainGUI(this.tensorField);
 
     this.tensorField.setRecommended();
     requestAnimationFrame(() => this.update());

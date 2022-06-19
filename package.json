@@ -28,6 +28,8 @@
     "@types/dat.gui": "^0.7.5",
     "@types/file-saver": "^2.0.1",
     "@types/jsts": "^0.17.2",
+    "configui": "^1.1.0",
+    "controlkit": "^0.1.9",
     "d3-quadtree": "^1.0.7",
     "dat.gui": "^0.7.7",
     "faker": "^5.5.3",
@@ -41,6 +43,7 @@
     "mobx-react-lite": "^3.2.3",
     "polyk": "^0.24.0",
     "react": "^18.1.0",
+    "react-dat-gui": "^4.1.1",
     "react-dom": "^18.1.0",
     "roughjs": "^4.2.0",
     "simplex-noise": "^2.4.0",
@@ -49,7 +52,9 @@
     "three": "^0.140.2",
     "three-csg-ts": "^1.0.4",
     "three-stdlib": "^2.6.4",
-    "threejs-export-stl": "^0.0.4"
+    "threejs-export-stl": "^0.0.4",
+    "type-zoo": "^3.4.1",
+    "zod": "^3.17.3"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

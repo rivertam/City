@@ -15,8 +15,8 @@ export default class DomainController {
   }
 
   private setScreenDimensions(): void {
-    this._screenDimensions.setX(window.innerWidth);
-    this._screenDimensions.setY(window.innerHeight);
+    this._screenDimensions.setX(window.innerWidth * 0.8);
+    this._screenDimensions.setY(window.innerHeight * 0.8);
   }
 
   public static getInstance(): DomainController {

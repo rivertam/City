@@ -97,29 +97,12 @@ export default class Buildings {
     chanceNoDivide: 0.05,
   };
 
-  constructor(
-    private tensorField: TensorField,
-    folder: dat.GUI,
-    private redraw: () => void,
-    private dstep: number,
-    private _animate: boolean
-  ) {
-    folder.add(
-      { AddBuildings: () => this.generate(this._animate) },
-      "AddBuildings"
-    );
-    folder.add(this.buildingParams, "minArea");
-    folder.add(this.buildingParams, "shrinkSpacing");
-    folder.add(this.buildingParams, "chanceNoDivide");
+  constructor(private tensorField: TensorField, private dstep: number) {
     this.polygonFinder = new PolygonFinder(
       [],
       this.buildingParams,
       this.tensorField
     );
-  }
-
-  set animate(v: boolean) {
-    this._animate = v;
   }
 
   get lots(): Vector[][] {
@@ -131,7 +114,7 @@ export default class Buildings {
   /**
    * Only used when creating the 3D model to 'fake' the roads
    */
-  getBlocks(): Promise<Vector[][]> {
+  async getBlocks(): Promise<Vector[][]> {
     const g = new Graph(this.allStreamlines, this.dstep, true);
     const blockParams = Object.assign({}, this.buildingParams);
     blockParams.shrinkSpacing = blockParams.shrinkSpacing / 2;
@@ -141,13 +124,10 @@ export default class Buildings {
       this.tensorField
     );
     polygonFinder.findPolygons();
-    return polygonFinder
-      .shrink(false)
-      .then(() =>
-        polygonFinder.polygons.map((p) =>
-          p.map((v) => this.domainController.worldToScreen(v.clone()))
-        )
-      );
+    await polygonFinder.shrink(false);
+    return polygonFinder.polygons.map((p) =>
+      p.map((v) => this.domainController.worldToScreen(v.clone()))
+    );
   }
 
   get models(): BuildingModel[] {
@@ -184,7 +164,6 @@ export default class Buildings {
     this.polygonFinder.findPolygons();
     await this.polygonFinder.shrink(animate);
     await this.polygonFinder.divide(animate);
-    this.redraw();
     this._models = new BuildingModels(this.polygonFinder.polygons);
 
     this.postGenerateCallback();

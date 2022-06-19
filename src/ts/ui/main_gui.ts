@@ -23,7 +23,6 @@ export default class MainGUI {
   private intersections: Vector[] = [];
   public bigParks: Vector[][] = [];
   public smallParks: Vector[][] = [];
-  private animate: boolean = true;
   private animationSpeed: number = 30;
 
   public coastline: WaterGUI;
@@ -49,18 +48,7 @@ export default class MainGUI {
     collideEarly: 0,
   };
 
-  private redraw: boolean = true;
-
-  constructor(
-    private guiFolder: dat.GUI,
-    private tensorField: TensorField,
-    private closeTensorFolder: () => void
-  ) {
-    guiFolder.add(this, "generateEverything");
-    // guiFolder.add(this, 'simpleBenchMark');
-    const animateController = guiFolder.add(this, "animate");
-    guiFolder.add(this, "animationSpeed");
-
+  constructor(private tensorField: TensorField) {
     this.coastlineParams = Object.assign(
       {
         coastNoise: {
@@ -94,67 +82,17 @@ export default class MainGUI {
     this.mainParams.collideEarly = 0;
 
     const integrator = new RK4Integrator(tensorField, this.minorParams);
-    const redraw = () => (this.redraw = true);
 
     this.coastline = new WaterGUI(
       tensorField,
       this.coastlineParams,
-      integrator,
-      this.guiFolder,
-      closeTensorFolder,
-      "Water",
-      redraw
-    ).initFolder();
-    this.mainRoads = new RoadGUI(
-      this.mainParams,
-      integrator,
-      this.guiFolder,
-      closeTensorFolder,
-      "Main",
-      redraw
-    ).initFolder();
-    this.majorRoads = new RoadGUI(
-      this.majorParams,
-      integrator,
-      this.guiFolder,
-      closeTensorFolder,
-      "Major",
-      redraw,
-      this.animate
-    ).initFolder();
-    this.minorRoads = new RoadGUI(
-      this.minorParams,
-      integrator,
-      this.guiFolder,
-      closeTensorFolder,
-      "Minor",
-      redraw,
-      this.animate
-    ).initFolder();
-
-    const parks = guiFolder.addFolder("Parks");
-    parks.add(
-      {
-        Generate: () => {
-          this.buildings.reset();
-          this.addParks();
-          this.redraw = true;
-        },
-      },
-      "Generate"
+      integrator
     );
-    parks.add(this, "clusterBigParks");
-    parks.add(this, "numBigParks");
-    parks.add(this, "numSmallParks");
+    this.mainRoads = new RoadGUI(this.mainParams, integrator);
+    this.majorRoads = new RoadGUI(this.majorParams, integrator);
+    this.minorRoads = new RoadGUI(this.minorParams, integrator);
 
-    const buildingsFolder = guiFolder.addFolder("Buildings");
-    this.buildings = new Buildings(
-      tensorField,
-      buildingsFolder,
-      redraw,
-      this.minorParams.dstep,
-      this.animate
-    );
+    this.buildings = new Buildings(tensorField, this.minorParams.dstep);
     this.buildings.setPreGenerateCallback(() => {
       const allStreamlines = [];
       allStreamlines.push(...this.mainRoads.allStreamlines);
@@ -163,12 +101,6 @@ export default class MainGUI {
       allStreamlines.push(...this.minorRoads.allStreamlines);
       allStreamlines.push(...this.coastline.streamlinesWithSecondaryRoad);
       this.buildings.setAllStreamlines(allStreamlines);
-    });
-
-    animateController.onChange((b: boolean) => {
-      this.majorRoads.animate = b;
-      this.minorRoads.animate = b;
-      this.buildings.animate = b;
     });
 
     this.minorRoads.setExistingStreamlines([
@@ -217,7 +149,6 @@ export default class MainGUI {
     this.majorRoads.setPostGenerateCallback(() => {
       tensorField.ignoreRiver = false;
       this.addParks();
-      this.redraw = true;
     });
 
     this.minorRoads.setPreGenerateCallback(() => {
@@ -292,10 +223,9 @@ export default class MainGUI {
   async generateEverything() {
     this.coastline.generateRoads();
     await this.mainRoads.generateRoads();
-    await this.majorRoads.generateRoads(this.animate);
-    await this.minorRoads.generateRoads(this.animate);
-    this.redraw = true;
-    await this.buildings.generate(this.animate);
+    await this.majorRoads.generateRoads();
+    await this.minorRoads.generateRoads();
+    await this.buildings.generate();
   }
 
   update() {
@@ -309,8 +239,6 @@ export default class MainGUI {
       continueUpdate =
         minorChanged || majorChanged || mainChanged || buildingsChanged;
     }
-
-    this.redraw = this.redraw || continueUpdate;
   }
 
   public get parks() {

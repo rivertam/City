@@ -19,12 +19,7 @@ export default class RoadGUI {
 
   constructor(
     protected params: StreamlineParams,
-    protected integrator: FieldIntegrator,
-    protected guiFolder: dat.GUI,
-    protected closeTensorFolder: () => void,
-    protected folderName: string,
-    protected redraw: () => void,
-    protected _animate = false
+    protected integrator: FieldIntegrator
   ) {
     this.streamlines = new StreamlineGenerator(
       this.integrator,
@@ -35,33 +30,6 @@ export default class RoadGUI {
     // Update path iterations based on window size
     this.setPathIterations();
     window.addEventListener("resize", (): void => this.setPathIterations());
-  }
-
-  initFolder(): RoadGUI {
-    const roadGUI = {
-      Generate: () =>
-        this.generateRoads(this._animate).then(() => this.redraw()),
-      JoinDangling: (): void => {
-        this.streamlines.joinDanglingStreamlines();
-        this.redraw();
-      },
-    };
-
-    const folder = this.guiFolder.addFolder(this.folderName);
-    folder.add(roadGUI, "Generate");
-    // folder.add(roadGUI, 'JoinDangling');
-
-    const paramsFolder = folder.addFolder("Params");
-    paramsFolder.add(this.params, "dsep");
-    paramsFolder.add(this.params, "dtest");
-
-    const devParamsFolder = paramsFolder.addFolder("Dev");
-    this.addDevParamsToFolder(this.params, devParamsFolder);
-    return this;
-  }
-
-  set animate(b: boolean) {
-    this._animate = b;
   }
 
   get allStreamlines(): Vector[][] {
@@ -108,9 +76,6 @@ export default class RoadGUI {
       this.streamlines.addExistingStreamlines(s.streamlines);
     }
 
-    this.closeTensorFolder();
-    this.redraw();
-
     return this.streamlines
       .createAllStreamlines(animate)
       .then(() => this.postGenerateCallback());
@@ -123,26 +88,11 @@ export default class RoadGUI {
     return this.streamlines.update();
   }
 
-  protected addDevParamsToFolder(
-    params: StreamlineParams,
-    folder: dat.GUI
-  ): void {
-    folder.add(params, "pathIterations");
-    folder.add(params, "seedTries");
-    folder.add(params, "dstep");
-    folder.add(params, "dlookahead");
-    folder.add(params, "dcirclejoin");
-    folder.add(params, "joinangle");
-    folder.add(params, "simplifyTolerance");
-    folder.add(params, "collideEarly");
-  }
-
   /**
    * Sets path iterations so that a road can cover the screen
    */
   private setPathIterations(): void {
     const max = 1.5 * Math.max(window.innerWidth, window.innerHeight);
     this.params.pathIterations = max / this.params.dstep;
-    Util.updateGui(this.guiFolder);
   }
 }
