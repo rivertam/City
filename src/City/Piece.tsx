@@ -1,7 +1,7 @@
 import React from "react";
 import * as THREE from "three";
 import { Edges } from "@react-three/drei";
-import { windows } from "./utils/windows";
+import { windows } from "../utils/windows";
 
 type Props = {
   polygon: Array<[number, number]>;

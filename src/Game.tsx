@@ -4,12 +4,12 @@ import { Canvas } from "@react-three/fiber";
 import { Box, PerspectiveCamera, OrbitControls, Line } from "@react-three/drei";
 import styled from "styled-components";
 
-import { Park } from "./Park";
-import { Piece } from "./Piece";
-import { GameState, GeneratedCity } from "./GameState";
+import { Park } from "./City/Park";
+import { Piece } from "./City/Piece";
+import { GameState } from "./GameState";
 import { observer } from "mobx-react-lite";
-import { Space } from "./Space";
-import { Road } from "./Road";
+import { Space } from "./City/Space";
+import { Road } from "./City/Road";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -47,12 +47,8 @@ function Camera() {
 }
 
 export const Game = observer(
-  ({ city }: { city: GeneratedCity }): React.ReactElement => {
+  ({ gameState }: { gameState: GameState }): React.ReactElement => {
     const renderer = useRef<THREE.WebGLRenderer>();
-
-    const gameState = useMemo(() => {
-      return new GameState(city);
-    }, [city]);
 
     const divWrapper = useRef<HTMLDivElement | null>(null);
 
@@ -126,7 +122,7 @@ export const Game = observer(
               <Road line={road} color="red" size={30} />
             ))*/}
 
-            {gameState.coastlineRoads.map((road) => (
+            {gameState.roads.coastline.map((road) => (
               <Road
                 key={road.name}
                 line={road.polygon.map(([xx, yy]) => [xx, yy, 10])}
@@ -135,7 +131,7 @@ export const Game = observer(
               />
             ))}
 
-            {gameState.mainRoads.map((road) => (
+            {gameState.roads.main.map((road) => (
               <Road
                 key={road.name}
                 line={road.polygon.map(([xx, yy]) => [xx, yy, 5])}
@@ -144,7 +140,7 @@ export const Game = observer(
               />
             ))}
 
-            {gameState.majorRoads.map((road) => (
+            {gameState.roads.major.map((road) => (
               <Road
                 key={road.name}
                 line={road.polygon.map(([xx, yy]) => [xx, yy, 4])}
@@ -153,7 +149,7 @@ export const Game = observer(
               />
             ))}
 
-            {gameState.minorRoads.map((road) => (
+            {gameState.roads.minor.map((road) => (
               <Road
                 key={road.name}
                 line={road.polygon.map(([xx, yy]) => [xx, yy, 3])}

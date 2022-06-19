@@ -2,7 +2,7 @@ import * as React from "react";
 import { Cylinder, Edges, Line } from "@react-three/drei";
 import * as THREE from "three";
 import { Space } from "./Space";
-import { windows } from "./utils/windows";
+import { windows } from "../utils/windows";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 type Props = {

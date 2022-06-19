@@ -6,34 +6,28 @@ export type MapLine = {
   polygon: Array<[number, number]>;
 };
 
-// essentially the output of the generation algorithms
-export type GeneratedCity = {
-  sea: MapLine;
-  coastline: MapLine;
-  river: MapLine;
-  secondaryRiver: MapLine;
-  mainRoads: Array<MapLine>;
-  majorRoads: Array<MapLine>;
-  minorRoads: Array<MapLine>;
-  coastlineRoads: Array<MapLine>;
-  parks: Array<MapLine>;
-  blocks: Array<{
-    shape: MapLine;
-  }>;
-  lots: Array<{
-    shape: MapLine;
-  }>;
-};
+export class Road {
+  public name: string;
+  public polygon: Array<[number, number]>;
+
+  public constructor() {
+    makeAutoObservable(this);
+  }
+}
 
 export class GameState {
   public sea: MapLine;
   public coastline: MapLine;
   public river: MapLine;
   public secondaryRiver: MapLine;
-  public mainRoads: Array<MapLine>;
-  public majorRoads: Array<MapLine>;
-  public minorRoads: Array<MapLine>;
-  public coastlineRoads: Array<MapLine>;
+
+  public roads: {
+    main: Array<Road>;
+    minor: Array<Road>;
+    major: Array<Road>;
+    coastline: Array<Road>;
+  };
+
   public blocks: Array<{
     shape: MapLine;
   }>;
@@ -49,10 +43,13 @@ export class GameState {
     this.coastline = generatedCity.coastline;
     this.river = generatedCity.river;
     this.secondaryRiver = generatedCity.secondaryRiver;
-    this.mainRoads = generatedCity.mainRoads;
-    this.majorRoads = generatedCity.majorRoads;
-    this.minorRoads = generatedCity.minorRoads;
-    this.coastlineRoads = generatedCity.coastlineRoads;
+    this.roads = {
+      main: generatedCity.mainRoads,
+      major: generatedCity.majorRoads,
+      minor: generatedCity.minorRoads,
+      coastline: generatedCity.coastlineRoads,
+    };
+
     this.blocks = generatedCity.blocks;
     this.lots = generatedCity.lots;
     this.parks = generatedCity.parks;
@@ -64,17 +61,17 @@ export class GameState {
     this.coastline.polygon.forEach((vertex) => vertices.push(vertex));
     this.river.polygon.forEach((vertex) => vertices.push(vertex));
     this.secondaryRiver.polygon.forEach((vertex) => vertices.push(vertex));
-    this.mainRoads.forEach((road) =>
+    this.roads.main.forEach((road) =>
       road.polygon.forEach((vertex) => vertices.push(vertex))
     );
-    this.majorRoads.forEach((road) =>
+    this.roads.major.forEach((road) =>
       road.polygon.forEach((vertex) => vertices.push(vertex))
     );
-    this.minorRoads.forEach((road) =>
+    this.roads.minor.forEach((road) =>
       road.polygon.forEach((vertex) => vertices.push(vertex))
     );
 
-    this.coastlineRoads.forEach((road) =>
+    this.roads.coastline.forEach((road) =>
       road.polygon.forEach((vertex) => vertices.push(vertex))
     );
     this.blocks.forEach((block) =>
@@ -133,3 +130,22 @@ export class GameState {
     return new Float32Array(floats);
   }
 }
+
+// essentially the output of the generation algorithms
+export type GeneratedCity = {
+  sea: MapLine;
+  coastline: MapLine;
+  river: MapLine;
+  secondaryRiver: MapLine;
+  mainRoads: Array<MapLine>;
+  majorRoads: Array<MapLine>;
+  minorRoads: Array<MapLine>;
+  coastlineRoads: Array<MapLine>;
+  parks: Array<MapLine>;
+  blocks: Array<{
+    shape: MapLine;
+  }>;
+  lots: Array<{
+    shape: MapLine;
+  }>;
+};

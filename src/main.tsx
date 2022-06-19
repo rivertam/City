@@ -2,17 +2,11 @@ import "./style.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import faker from "faker";
-import * as log from "loglevel";
 import * as dat from "dat.gui";
 import TensorField, { NoiseParams } from "./ts/impl/tensor_field";
 import MainGUI from "./ts/ui/main_gui";
-import Util from "./ts/util";
-import DomainController from "./ts/ui/domain_controller";
-import ColourSchemes from "./ColorSchemes";
 import Vector from "./ts/vector";
-import { SVG } from "@svgdotjs/svg.js";
 import ModelGenerator from "./ts/model_generator";
-import { saveAs } from "file-saver";
 import { Game } from "./Game";
 import { GeneratedCity, GameState, MapLine } from "./GameState";
 
@@ -172,18 +166,17 @@ class Generator {
   }
 }
 
-// Add log to window so we can use log.setlevel from the console
-(window as any).log = log;
 window.addEventListener("contextmenu", (e) => e.preventDefault());
-window.addEventListener("load", async (): void => {
+window.addEventListener("load", async () => {
   const generator = new Generator();
 
   const city = await generator.generate();
+  const gameState = new GameState(city);
 
   const root = ReactDOM.createRoot(document.getElementById("root"));
   root.render(
     <React.StrictMode>
-      <Game city={city} />
+      <Game gameState={gameState} />
     </React.StrictMode>
   );
 });
