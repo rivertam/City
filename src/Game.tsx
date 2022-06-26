@@ -1,5 +1,5 @@
 import * as zod from "zod";
-import React, { useRef, useMemo, useCallback } from "react";
+import React, { useRef, useMemo, useCallback, useState } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { Box, PerspectiveCamera, OrbitControls, Line } from "@react-three/drei";
@@ -85,6 +85,12 @@ export const Game = observer(
       ],
     ];
 
+    const [city, setCity] = useState(false);
+
+    gameState.useMethod("Toggle city", () => {
+      setCity((city) => !city);
+    });
+
     return (
       <>
         <GameWindow ref={divWrapper}>
@@ -109,7 +115,7 @@ export const Game = observer(
               }}
             >
               <Camera />
-              <City />
+              {city && <City />}
             </Canvas>
           </GameState.Context.Provider>
         </GameWindow>

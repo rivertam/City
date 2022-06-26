@@ -8,6 +8,7 @@ import {
   FieldConfiguration,
 } from "./Agents";
 import { toJS } from "mobx";
+import { GameState } from "./GameState";
 
 export const AgentFieldGUI = observer(
   ({
@@ -40,7 +41,6 @@ export const AgentFieldGUI = observer(
         });
 
         return () => {
-          console.log("oowh", label);
           input.remove();
         };
       }
@@ -52,11 +52,6 @@ export const AgentFieldGUI = observer(
 
 export const AgentConfigGUI = observer(
   ({ agent, gui }: { agent: Agent<any>; gui: dat.GUI }) => {
-    console.log(
-      "rendering",
-      Object.entries(agent.configuration).length,
-      "fields"
-    );
     return (
       <>
         {Object.entries(agent.configuration).map(([key, configuration]) => (
@@ -93,8 +88,6 @@ export const AgentKindGUI = observer(
         gui.removeFolder(newFolder);
       };
     }, [agents.length, gui]);
-
-    console.log("rendering", agents.length, kind, "agents into", folder);
 
     const [folders, setFolders] = useState<Record<string, dat.GUI>>({});
     useEffect(() => {
@@ -148,6 +141,40 @@ export const AgentKindGUI = observer(
   }
 );
 
+const MethodGUI = observer(
+  ({
+    gui,
+    label,
+    method,
+  }: {
+    gui: dat.GUI;
+    label: string;
+    method: () => void;
+  }) => {
+    useEffect(() => {
+      const button = gui.add({ [label]: method }, label);
+
+      return () => {
+        button.remove();
+      };
+    }, [gui, label, method]);
+
+    return <></>;
+  }
+);
+
+export const MethodsGUI = observer(({ gui }: { gui: dat.GUI }) => {
+  const { globalMethods: methods } = GameState.use();
+
+  return (
+    <>
+      {methods.map(({ id, label, method }) => {
+        return <MethodGUI key={id} gui={gui} label={label} method={method} />;
+      })}
+    </>
+  );
+});
+
 export const GUI = observer(() => {
   const [datGUI, setDatGUI] = useState<null | dat.GUI>(null);
   useEffect(() => {
@@ -165,6 +192,7 @@ export const GUI = observer(() => {
 
   return (
     <>
+      <MethodsGUI gui={datGUI} />
       {Object.entries(agents).map(([kind, agents]) => {
         return (
           <AgentKindGUI

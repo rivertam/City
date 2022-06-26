@@ -1,5 +1,6 @@
-import { makeAutoObservable } from "mobx";
-import { createContext, useContext } from "react";
+import { v4 as uuid } from "uuid";
+import { action, makeAutoObservable } from "mobx";
+import { createContext, useEffect, useRef } from "react";
 
 export type MapLine = {
   name: string;
@@ -37,6 +38,12 @@ export class GameState {
 
   public parks: Array<MapLine>;
   public static instance: GameState | null = null;
+
+  public globalMethods: Array<{
+    id: string;
+    label: string;
+    method: () => void;
+  }> = [];
 
   public constructor(generatedCity: GeneratedCity) {
     this.sea = generatedCity.sea;
@@ -99,6 +106,46 @@ export class GameState {
     makeAutoObservable(this);
 
     GameState.instance = this;
+  }
+
+  public useMethod(label: string, method: () => void) {
+    const referenceCount = useRef(0);
+    const id = useRef(uuid());
+
+    useEffect(
+      action(() => {
+        const extantMethod = this.globalMethods.find(
+          (m) => m.id === id.current
+        );
+        if (extantMethod) {
+          extantMethod.label = label;
+          extantMethod.method = method;
+        } else {
+          this.globalMethods.push({
+            id: id.current,
+            label,
+            method,
+          });
+        }
+
+        referenceCount.current += 1;
+
+        return action(() => {
+          referenceCount.current -= 1;
+          setTimeout(
+            action(() => {
+              if (referenceCount.current === 0) {
+                this.globalMethods = this.globalMethods.filter(
+                  (m) => m.id !== id.current
+                );
+              }
+            }),
+            500
+          );
+        });
+      }),
+      [this, label, method]
+    );
   }
 
   public static Context = createContext<GameState>(null);

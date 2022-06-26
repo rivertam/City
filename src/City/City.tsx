@@ -1,11 +1,13 @@
 import React from "react";
 import { GameState } from "../GameState";
 import { Park } from "./Park";
+import { Piece } from "./Piece";
 import { Road } from "./Road";
 import { Space } from "./Space";
 
 export const City = () => {
   const gameState = GameState.use();
+
   return (
     <>
       <group position={[0, 0, -1]}>
@@ -87,19 +89,21 @@ export const City = () => {
       </group>
       <group position={[0, 0, 5]}>
         {gameState.lots.map((lot) => (
+          <Piece
+            key={lot.shape.name}
+            polygon={lot.shape.polygon}
+            color="white"
+            height={(lot.shape.name.length - 6) * 2}
+          />
+        ))}
+        {/*
           <Space
             key={lot.shape.name}
             polygon={lot.shape.polygon}
             color="#fff"
           />
-        ))}
-        {/*
-                  <Piece
-                    key={lot.shape.name}
-                    polygon={lot.shape.polygon}
-                    color="white"
-                    height={(lot.shape.name.length - 6) * 2}
-                />*/}
+
+                  */}
       </group>
     </>
   );
