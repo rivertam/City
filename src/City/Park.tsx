@@ -1,5 +1,5 @@
 import React from "react";
-import { MapLine, CityState } from "../GameState";
+import { MapLine, CityState } from "./CityState";
 import { Piece } from "./Piece";
 import { Line } from "@react-three/drei";
 
