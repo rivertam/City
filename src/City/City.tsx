@@ -1,15 +1,30 @@
-import React from "react";
-import { GameState } from "../GameState";
+import React, { useEffect, useState } from "react";
+import { CityGenerator } from "./CityGenerator";
+import { CityState } from "./CityState";
 import { Park } from "./Park";
-import { Piece } from "./Piece";
 import { Road } from "./Road";
 import { Space } from "./Space";
 
-export const City = () => {
-  const gameState = GameState.use();
+export const City = ({ children }: { children: React.ReactNode }) => {
+  const [cityState, setCityState] = useState<CityState | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const generator = new CityGenerator();
+
+      const generatedCity = await generator.generate();
+
+      setCityState(new CityState(generatedCity));
+    })();
+  }, []);
+
+  if (!cityState) {
+    return <></>;
+  }
 
   return (
-    <>
+    <CityState.Context.Provider value={cityState}>
+      {children}
       <group position={[0, 0, -1]}>
         <Space
           polygon={[
@@ -23,20 +38,20 @@ export const City = () => {
       </group>
 
       <group position={[0, 0, 0]}>
-        <Space polygon={gameState.sea.polygon} color="blue" />
+        <Space polygon={cityState.sea.polygon} color="blue" />
       </group>
 
       <group position={[0, 0, 1]}>
-        <Space polygon={gameState.coastline.polygon} color="tan" />
+        <Space polygon={cityState.coastline.polygon} color="tan" />
       </group>
       <group position={[0, 0, 3]}>
-        <Space polygon={gameState.river.polygon} color="blue" />
+        <Space polygon={cityState.river.polygon} color="blue" />
       </group>
       <group position={[0, 0, 2]}>
-        <Space polygon={gameState.secondaryRiver.polygon} color="blue" />
+        <Space polygon={cityState.secondaryRiver.polygon} color="blue" />
       </group>
 
-      {gameState.roads.coastline.map((road) => (
+      {cityState.roads.coastline.map((road) => (
         <Road
           key={road.name}
           line={road.polygon.map(([xx, yy]) => [xx, yy, 10])}
@@ -45,7 +60,7 @@ export const City = () => {
         />
       ))}
 
-      {gameState.roads.main.map((road) => (
+      {cityState.roads.main.map((road) => (
         <Road
           key={road.name}
           line={road.polygon.map(([xx, yy]) => [xx, yy, 5])}
@@ -54,7 +69,7 @@ export const City = () => {
         />
       ))}
 
-      {gameState.roads.major.map((road) => (
+      {cityState.roads.major.map((road) => (
         <Road
           key={road.name}
           line={road.polygon.map(([xx, yy]) => [xx, yy, 4])}
@@ -63,7 +78,7 @@ export const City = () => {
         />
       ))}
 
-      {gameState.roads.minor.map((road) => (
+      {cityState.roads.minor.map((road) => (
         <Road
           key={road.name}
           line={road.polygon.map(([xx, yy]) => [xx, yy, 3])}
@@ -73,13 +88,13 @@ export const City = () => {
       ))}
 
       <group position={[0, 0, -30]}>
-        {gameState.parks.map((park) => (
+        {cityState.parks.map((park) => (
           <Park key={park.name} park={park} />
         ))}
       </group>
 
       <group position={[0, 0, 3]}>
-        {gameState.blocks.map((block) => (
+        {cityState.blocks.map((block) => (
           <Space
             key={block.shape.name}
             polygon={block.shape.polygon}
@@ -87,24 +102,19 @@ export const City = () => {
           />
         ))}
       </group>
-      <group position={[0, 0, 5]}>
-        {gameState.lots.map((lot) => (
+      {/*
           <Piece
             key={lot.shape.name}
             polygon={lot.shape.polygon}
             color="white"
             height={(lot.shape.name.length - 6) * 2}
           />
-        ))}
-        {/*
-          <Space
-            key={lot.shape.name}
-            polygon={lot.shape.polygon}
-            color="#fff"
-          />
-
                   */}
+      <group position={[0, 0, 5]}>
+        {cityState.lots.map((lot) => (
+          <Space key={lot.address} polygon={lot.shape} color="#fff" />
+        ))}
       </group>
-    </>
+    </CityState.Context.Provider>
   );
 };

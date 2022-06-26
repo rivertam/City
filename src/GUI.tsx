@@ -6,9 +6,86 @@ import {
   AgentConfiguration,
   Agents,
   FieldConfiguration,
+  MethodFieldConfiguration,
+  NumberFieldConfiguration,
+  visitAgentConfigurationField,
 } from "./Agents";
 import { toJS } from "mobx";
-import { GameState } from "./GameState";
+import { GUIState } from "./GUIState";
+
+export const AgentNumberGUI = observer(
+  ({
+    agent,
+    configuration,
+    label,
+    gui,
+  }: {
+    agent: Agent<any>;
+    configuration: NumberFieldConfiguration;
+    label: string;
+    gui: dat.GUI;
+  }) => {
+    const state = toJS(agent.state);
+    useEffect(() => {
+      const input = gui.add(
+        state,
+        label,
+        configuration.min,
+        configuration.max,
+        configuration.step
+      );
+
+      // we have to use this indirection rather than simply using the object reference
+      // (as dat.GUI is built to use with the first argument of `gui.add`) because
+      // mobx requires calling an action when changing state
+      input.onChange((newValue) => {
+        agent.setField(label, newValue);
+      });
+
+      return () => {
+        input.remove();
+      };
+    }, [label, state, configuration]);
+
+    return <></>;
+  }
+);
+
+export const AgentMethodGUI = observer(
+  ({
+    agent,
+    configuration,
+    label,
+    gui,
+  }: {
+    agent: Agent<any>;
+    configuration: MethodFieldConfiguration<any>;
+    label: string;
+    gui: dat.GUI;
+  }) => {
+    const { method, label: stringLabel = label } = configuration;
+    useEffect(() => {
+      const bound = method.bind(agent);
+
+      const controller = gui.add(
+        {
+          [stringLabel]: async () => {
+            console.time(stringLabel);
+            await bound();
+            console.timeEnd(stringLabel);
+          },
+        },
+        stringLabel
+      );
+
+      return () => {
+        controller.remove();
+      };
+    }, [agent, method, stringLabel, gui]);
+
+    return <></>;
+  }
+);
 
 export const AgentFieldGUI = observer(
   ({
@@ -22,31 +99,24 @@ export const AgentFieldGUI = observer(
     configuration: FieldConfiguration;
     gui: dat.GUI;
   }) => {
-    const value = agent.state[label];
-    useEffect(() => {
-      if (typeof value === "number") {
-        const input = gui.add(
-          toJS(agent.state),
-          label,
-          configuration.min,
-          configuration.max,
-          configuration.step
-        );
-
-        // we have to use this indirection rather than simply using the object reference
-        // (as dat.GUI is built to use with the first argument of `gui.add`) because
-        // mobx requires calling an action when changing state
-        input.onChange((newValue) => {
-          agent.setField(label, newValue);
-        });
-
-        return () => {
-          input.remove();
-        };
-      }
-    }, [agent, label, configuration, value]);
-
-    return <></>;
+    return visitAgentConfigurationField(configuration, {
+      number: (configuration) => (
+        <AgentNumberGUI
+          agent={agent}
+          label={label}
+          gui={gui}
+          configuration={configuration}
+        />
+      ),
+      method: (configuration) => (
+        <AgentMethodGUI
+          agent={agent}
+          label={label}
+          gui={gui}
+          configuration={configuration}
+        />
+      ),
+    });
   }
 );
 
@@ -80,7 +150,7 @@ export const AgentKindGUI = observer(
   }) => {
     const [folder, setFolder] = useState<dat.GUI | null>(null);
     useEffect(() => {
-      const name = agents.length === 1 ? `${kind} Agent` : `${kind} Agents`;
+      const name = agents.length === 1 ? `${kind}` : `${kind} Agents`;
       const newFolder = gui.addFolder(name);
       setFolder(newFolder);
 
@@ -164,7 +234,7 @@ const MethodGUI = observer(
 );
 
 export const MethodsGUI = observer(({ gui }: { gui: dat.GUI }) => {
-  const { globalMethods: methods } = GameState.use();
+  const { globalMethods: methods } = GUIState.instance;
 
   return (
     <>

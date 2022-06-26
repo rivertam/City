@@ -1,6 +1,5 @@
-import { v4 as uuid } from "uuid";
-import { action, makeAutoObservable } from "mobx";
-import { createContext, useEffect, useRef } from "react";
+import { makeAutoObservable } from "mobx";
+import { createContext, useContext, useEffect, useRef } from "react";
 
 export type MapLine = {
   name: string;
@@ -16,7 +15,30 @@ export class Road {
   }
 }
 
-export class GameState {
+export class Lot {
+  public address: string;
+  public shape: Array<[number, number]>;
+
+  public constructor({
+    address,
+    shape,
+  }: {
+    address: string;
+    shape: Array<[number, number]>;
+  }) {
+    this.address = address;
+    this.shape = shape;
+
+    makeAutoObservable(this);
+  }
+}
+
+/**
+ * The state of the city, mostly the generated features such as rivers,
+ * roads, and lot allocations. Primarily static at the present, but agents should
+ * be able to move these kinds of things.
+ */
+export class CityState {
   public sea: MapLine;
   public coastline: MapLine;
   public river: MapLine;
@@ -32,18 +54,10 @@ export class GameState {
   public blocks: Array<{
     shape: MapLine;
   }>;
-  public lots: Array<{
-    shape: MapLine;
-  }>;
+
+  public lots: Array<Lot>;
 
   public parks: Array<MapLine>;
-  public static instance: GameState | null = null;
-
-  public globalMethods: Array<{
-    id: string;
-    label: string;
-    method: () => void;
-  }> = [];
 
   public constructor(generatedCity: GeneratedCity) {
     this.sea = generatedCity.sea;
@@ -58,7 +72,9 @@ export class GameState {
     };
 
     this.blocks = generatedCity.blocks;
-    this.lots = generatedCity.lots;
+    this.lots = generatedCity.lots.map(({ shape: { name, polygon } }) => {
+      return new Lot({ address: name, shape: polygon });
+    });
     this.parks = generatedCity.parks;
 
     console.time("Centralizing city");
@@ -85,7 +101,7 @@ export class GameState {
       block.shape.polygon.forEach((vertex) => vertices.push(vertex))
     );
     this.lots.forEach((lot) =>
-      lot.shape.polygon.forEach((vertex) => vertices.push(vertex))
+      lot.shape.forEach((vertex) => vertices.push(vertex))
     );
     this.parks.forEach((park) =>
       park.polygon.forEach((vertex) => vertices.push(vertex))
@@ -104,55 +120,12 @@ export class GameState {
     console.timeEnd("Centralizing city");
     console.log(`${vertices.length} points`);
     makeAutoObservable(this);
-
-    GameState.instance = this;
   }
 
-  public useMethod(label: string, method: () => void) {
-    const referenceCount = useRef(0);
-    const id = useRef(uuid());
+  public static Context = createContext<CityState>(null);
 
-    useEffect(
-      action(() => {
-        const extantMethod = this.globalMethods.find(
-          (m) => m.id === id.current
-        );
-        if (extantMethod) {
-          extantMethod.label = label;
-          extantMethod.method = method;
-        } else {
-          this.globalMethods.push({
-            id: id.current,
-            label,
-            method,
-          });
-        }
-
-        referenceCount.current += 1;
-
-        return action(() => {
-          referenceCount.current -= 1;
-          setTimeout(
-            action(() => {
-              if (referenceCount.current === 0) {
-                this.globalMethods = this.globalMethods.filter(
-                  (m) => m.id !== id.current
-                );
-              }
-            }),
-            500
-          );
-        });
-      }),
-      [this, label, method]
-    );
-  }
-
-  public static Context = createContext<GameState>(null);
-
-  public static use(): GameState {
-    return this.instance!;
-    // return useContext(GameState.Context);
+  public static use(): CityState {
+    return useContext(CityState.Context);
   }
 
   public getParkVertices(parkName: string): Float32Array {

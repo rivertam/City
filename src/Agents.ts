@@ -7,74 +7,113 @@ import {
   useState,
 } from "react";
 
-type NumberFieldConfiguration = {
+export type NumberFieldConfiguration = {
   defaultValue: number;
   min: number;
   max: number;
   step: number;
 };
 
-export type FieldConfiguration = NumberFieldConfiguration;
+export type MethodFieldConfiguration<
+  Fn extends (this: Agent<any>, ...args: Array<unknown>) => Promise<unknown>
+> = {
+  label?: string;
+  method: Fn;
+};
+
+/**
+ * De-muxes the field config without you having to do the duck-typing
+ */
+export function visitAgentConfigurationField<T>(
+  fieldConfiguration: FieldConfiguration,
+  visitor: {
+    number: (config: NumberFieldConfiguration) => T;
+    method: (config: MethodFieldConfiguration<any>) => T;
+  }
+): T {
+  try {
+    if ("method" in fieldConfiguration) {
+      return visitor.method(fieldConfiguration);
+    }
+
+    return visitor.number(fieldConfiguration);
+  } catch (error) {
+    debugger;
+  }
+}
+
+export type FieldConfiguration =
+  | NumberFieldConfiguration
+  | MethodFieldConfiguration<(...args: Array<unknown>) => Promise<unknown>>;
 
 export type AgentConfiguration = Record<string, FieldConfiguration>;
 
-export type AgentState<Configuration extends AgentConfiguration> = {
+export type AgentState<Configuration extends {}> = {
   [key in keyof Configuration]: Configuration[key] extends NumberFieldConfiguration
     ? number
+    : Configuration[key] extends MethodFieldConfiguration<infer Fn>
+    ? Fn
     : never;
 };
 
-export class Agent<Configuration extends AgentConfiguration> {
+type StateFieldToConfig<SF> = SF extends number
+  ? NumberFieldConfiguration
+  : SF extends Function
+  ? MethodFieldConfiguration<any>
+  : never;
+
+export type AgentConfigurationFromState<
+  State extends AgentState<AgentConfiguration>
+> = {
+  [key in keyof State]: StateFieldToConfig<State[key]>;
+};
+
+export class Agent<State extends AgentState<any>> {
   public constructor(
     public id: string,
     public kind: string,
-    public configuration: Configuration,
-    public state: AgentState<Configuration> = Agent.getInitialState(
-      configuration
-    )
+    public configuration: AgentConfigurationFromState<State>,
+    public state: State = Agent.getInitialState(configuration)
   ) {
     makeAutoObservable(this);
   }
 
-  private static getInitialState<Config extends AgentConfiguration>(
-    configuration: Config
-  ): AgentState<Config> {
+  private static getInitialState<State extends AgentState<any>>(
+    configuration: AgentConfigurationFromState<State>
+  ): State {
     const state: any = {};
     for (const key in configuration) {
-      state[key] = configuration[key].defaultValue;
+      state[key] = visitAgentConfigurationField(configuration[key], {
+        method: (config) => config.method,
+        number: (config) => config.defaultValue,
+      });
     }
 
     return state;
   }
 
-  public static useAgent<Configuration extends AgentConfiguration>(
+  public static useAgent<State extends AgentState<{}>>(
     kind: string,
     constructAgent:
-      | Configuration
-      | ((args: { id: string }) => Agent<Configuration>),
-    initialConfiguration?: AgentState<Configuration>
-  ): Agent<Configuration> {
+      | AgentConfigurationFromState<State>
+      | ((args: { id: string }) => Agent<State>),
+    initialState?: State
+  ): Agent<State> {
     const agents = useContext(Agents.Context);
 
-    const [agent] = useState<Agent<Configuration>>(() => {
+    const [agent] = useState<Agent<State>>(() => {
       const id = agents.agentIDs[kind] ?? 0;
 
       agents.agentIDs[kind] = id + 1;
 
-      let agent: Agent<Configuration>;
+      let agent: Agent<State>;
       if (typeof constructAgent === "function") {
         agent = constructAgent({ id: `${kind} ${id}` });
       } else {
-        agent = new Agent(
-          `${kind} ${id}`,
-          kind,
-          constructAgent,
-          initialConfiguration
-        );
+        agent = new Agent(`${kind} ${id}`, kind, constructAgent, initialState);
       }
 
-      agents.agents[kind] = agents.agents[kind] ?? [];
-      agents.agents[kind].push(agent);
+      agents.addAgent(kind, agent);
 
       return agent;
     });
@@ -99,4 +138,9 @@ export class Agents {
   public agentIDs: Record<string, number> = {};
 
   public static Context = createContext(new Agents());
+
+  public addAgent(kind: string, agent: Agent<any>) {
+    this.agents[kind] = this.agents[kind] ?? [];
+    this.agents[kind].push(agent);
+  }
 }
