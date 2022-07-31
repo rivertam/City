@@ -241,8 +241,6 @@ export function Road({
         <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
         <meshLambertMaterial attach={"material"} color={color} />
       </mesh>
-
-      {joinPolygons}
     </group>
   );
 }
