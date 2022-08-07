@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, render } from "@react-three/fiber";
 import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
 import styled from "styled-components";
 import { observer } from "mobx-react-lite";
@@ -9,7 +9,7 @@ import { Agent } from "./Agents";
 import { CityState } from "./City/CityState";
 import { GUI } from "./GUI";
 import { City } from "./City/City";
-import { SegregationSimulation } from "./simulations/Segregation";
+import { RomeoAndJuliet } from "./simulations/RomeoAndJuliet";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -70,6 +70,7 @@ export const Game = observer((): React.ReactElement => {
             renderer.current = new THREE.WebGLRenderer({
               logarithmicDepthBuffer: true,
               canvas,
+              antialias: false,
             });
 
             renderer.current.setClearColor(0x333333);
@@ -83,7 +84,7 @@ export const Game = observer((): React.ReactElement => {
         >
           <Camera />
           <City>
-            <SegregationSimulation />
+            <RomeoAndJuliet />
           </City>
         </Canvas>
       </GameWindow>
