@@ -3,48 +3,83 @@ import { CityGenerator } from "./CityGenerator";
 import { CityState } from "./CityState";
 import { Park } from "./Park";
 import { Road } from "./Road";
-import { Space } from "./Space";
+// import { Space } from "./Space";
 import { Piece } from "./Piece";
-import { Stage } from "../Stage/Stage";
-
-const stage = new Stage();
+import { ReactStage } from "../Stage";
+import { Role } from "../Stage";
+import { Space, Spaces } from "./Space";
 
 export const City = ({ children }: { children: React.ReactNode }) => {
-  const [stage] = useState(() => new Stage());
+  const [stage] = useState(() => new ReactStage());
   const [cityState, setCityState] = useState<CityState | null>(null);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     const generator = new CityGenerator();
+  stage.useSetup(async () => {
+    const generator = new CityGenerator();
 
-  //     const generatedCity = await generator.generate();
+    const generatedCity = await generator.generate();
 
-  //     setCityState(new CityState(generatedCity));
-  //   })();
-  // }, []);
+    console.log("generated sea", generatedCity.sea.polygon);
+
+    const ground = stage.addActor();
+    ground.assignRole(Space, {
+      polygon: [
+        [-900, -900],
+        [-900, 900],
+        [900, 900],
+        [900, -900],
+      ],
+      color: "tan",
+      height: 5,
+    });
+
+    const sea = stage.addActor();
+    sea.assignRole(Space, {
+      polygon: generatedCity.sea.polygon,
+      color: "blue",
+      height: 1,
+    });
+
+    const coastline = stage.addActor();
+    coastline.assignRole(Space, {
+      polygon: generatedCity.coastline.polygon,
+      color: "tan",
+      height: 1,
+    });
+
+    const river = stage.addActor();
+    river.assignRole(Space, {
+      polygon: generatedCity.river.polygon,
+      color: "blue",
+      height: 3,
+    });
+
+    const secondaryRiver = stage.addActor();
+    secondaryRiver.assignRole(Space, {
+      polygon: generatedCity.secondaryRiver.polygon,
+      color: "blue",
+      height: 2,
+    });
+
+    // setCityState(new CityState(generatedCity));
+  });
 
   const StageProvider = stage.Provider;
 
   if (!cityState) {
-    return <StageProvider>{children}</StageProvider>;
+    return (
+      <StageProvider>
+        {children}
+        <Spaces />
+      </StageProvider>
+    );
   }
 
   return (
     <StageProvider>
       <CityState.Context.Provider value={cityState}>
         {children}
-        <group position={[0, 0, -1]}>
-          <Space
-            polygon={[
-              [-900, -900],
-              [-900, 900],
-              [900, 900],
-              [900, -900],
-            ]}
-            color="tan"
-          />
-        </group>
 
+        {/*
         <group position={[0, 0, 0]}>
           <Space polygon={cityState.sea.polygon} color="blue" />
         </group>
@@ -58,6 +93,7 @@ export const City = ({ children }: { children: React.ReactNode }) => {
         <group position={[0, 0, 2]}>
           <Space polygon={cityState.secondaryRiver.polygon} color="blue" />
         </group>
+  */}
 
         {cityState.roads.coastline.map((road) => (
           <Road

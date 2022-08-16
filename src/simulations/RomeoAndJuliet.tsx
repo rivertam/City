@@ -1,10 +1,5 @@
 import React, { useEffect } from "react";
-import { observer } from "mobx-react-lite";
-import { useState } from "react";
-import { CityState } from "../City/CityState";
-import { GUIState } from "../GUIState";
-import { Agent, AgentConfigurationFromState, AgentState } from "../Agents";
-import { Stage } from "../Stage/Stage";
+import { ReactStage } from "../Stage";
 import { Role } from "../Stage";
 
 const Position3D = new Role<{ x: number; y: number; z: number }>("Position 3D");
@@ -14,7 +9,7 @@ const TheEast = new Role<void>("The East");
 const TheSun = new Role<void>("The Sun");
 
 const Environment = () => {
-  const stage = Stage.use();
+  const stage = ReactStage.use();
 
   stage.useActor((sun) => {
     sun.assignRole(TheSun);
@@ -28,7 +23,7 @@ const Environment = () => {
 };
 
 const Romeo = () => {
-  const stage = Stage.use();
+  const stage = ReactStage.use();
 
   stage.useActor((romeo) => {
     romeo.assignRole(Position3D, { x: 0, y: 0, z: 0 });
@@ -73,7 +68,7 @@ const Romeo = () => {
 };
 
 const Juliet = () => {
-  const stage = Stage.use();
+  const stage = ReactStage.use();
   stage.useActor((juliet) => {
     juliet.assignRole(Position3D, { x: 0, y: 0, z: 0 });
     juliet.assignRole(Named, "Juliet");

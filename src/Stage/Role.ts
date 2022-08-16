@@ -8,7 +8,7 @@ export type RolesData<Roles extends Array<Role<any>>> = {
 };
 
 // extract the `RoleData` type parameter from a Role type
-type RoleData<T> = T extends Role<infer D> ? D : never;
+export type RoleData<T> = T extends Role<infer D> ? D : never;
 
 // Component
 // Just uses an array for storage and a timer based debouncer to call updates
@@ -19,7 +19,7 @@ export class Role<RoleData> {
     { generation: number; data: RoleData } | undefined
   >();
 
-  public setData(actor: ActorHandle, data: RoleData) {
+  public setData(actor: ActorIndex, data: RoleData) {
     this.data[actor.index] = { generation: actor.generation, data };
 
     this.markUpdate();

@@ -5,8 +5,6 @@ import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
 import styled from "styled-components";
 import { observer } from "mobx-react-lite";
 
-import { Agent } from "./Agents";
-import { CityState } from "./City/CityState";
 import { GUI } from "./GUI";
 import { City } from "./City/City";
 import { RomeoAndJuliet } from "./simulations/RomeoAndJuliet";
@@ -22,16 +20,8 @@ export const GameWindow = styled.div`
 
 const Camera = observer(() => {
   const camera = useRef<THREE.PerspectiveCamera>();
-  const agent = Agent.useAgent("Camera", {
-    "Field of View": {
-      defaultValue: 20,
-      min: 0.01,
-      max: 100,
-      step: 0.05,
-    },
-  });
 
-  const fov = agent.state["Field of View"];
+  const fov = 20;
 
   return (
     <>

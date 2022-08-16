@@ -1,18 +1,18 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
 import { ActorStatus, ActorHandle } from "./Actor";
 import { Role, RolesData } from "./Role";
-import {
-  ArrayQuery,
-  normalizeQueryParameters,
-  QueryParameters,
-  RoleGroup,
-} from "./Query";
+import { normalizeQueryParameters, QueryParameters, RoleGroup } from "./Query";
 
 // ECS
 export class Stage {
+  // Special role which every actor has, exposing its index and generation
+  public ActorRole = new Role<ActorStatus>("Actor");
+
+  private get actorStatus() {
+    return (this.ActorRole as any).data;
+  }
+
   private roles = new Array<Role<any>>();
 
-  private actorStatus = new Array<ActorStatus>();
   private vacatedActors = new Array<ActorHandle>();
 
   // methods attached to ActorHandles, implemented here because
@@ -33,17 +33,19 @@ export class Stage {
     },
 
     remove(this: ActorHandle) {
-      const status = this.stage.actorStatus[this.index];
+      const { hasRole, data } = this.stage.ActorRole.getData(this);
 
-      if (!status?.isLive) {
+      if (!hasRole) {
         return;
       }
 
-      status.isLive = false;
+      data.isLive = false;
     },
   };
 
-  public constructor() {}
+  public constructor() {
+    this.addRole(this.ActorRole);
+  }
 
   public addActor(): ActorHandle {
     let index = this.actorStatus.length;
@@ -55,9 +57,7 @@ export class Stage {
       generation = firstVacatedActor.generation;
     }
 
-    this.actorStatus[index] = { generation, isLive: true };
-
-    return Object.create(this.actorPrototype, {
+    const actor: ActorHandle = Object.create(this.actorPrototype, {
       index: {
         value: index,
         writable: false,
@@ -69,6 +69,10 @@ export class Stage {
         configurable: true,
       },
     });
+
+    actor.assignRole(this.ActorRole, { index, generation, isLive: true });
+
+    return actor;
   }
 
   public addRole(role: Role<any>) {
@@ -83,7 +87,7 @@ export class Stage {
     const results: Array<EachReturnType> = [];
 
     for (let index = 0; index < this.actorStatus.length; ++index) {
-      const { generation, isLive } = this.actorStatus[index];
+      const { generation, isLive } = this.actorStatus[index].data;
 
       if (!isLive) {
         continue;
@@ -97,6 +101,7 @@ export class Stage {
         const { data, hasRole } = role.getData({ index, generation });
 
         if (!hasRole) {
+          console.log(`${roleIndex} doesn\'t have ${role.name}`);
           break;
         }
 
@@ -107,61 +112,12 @@ export class Stage {
         continue;
       }
 
-      if (!filter || filter(...roleData)) {
-        results.push(forEach(...roleData));
+      if (!filter || filter.apply(null, roleData)) {
+        results.push(forEach.apply(null, roleData));
       }
     }
 
+    console.log("heh", results);
     return results;
-  }
-
-  public static Context = React.createContext<Stage | null>(null);
-
-  public static use(): Stage {
-    const stage = useContext(this.Context);
-
-    if (!stage) {
-      throw new Error("No Stage in context");
-    }
-
-    return stage;
-  }
-
-  public useActor(fn: (actor: ActorHandle) => void) {
-    useEffect(() => {
-      const actor = this.addActor();
-      fn(actor);
-      return () => {
-        actor.remove();
-      };
-    }, [this]);
-  }
-
-  public Provider = (
-    props: Omit<Parameters<typeof Stage.Context.Provider>[0], "value">
-  ) => {
-    const { Provider } = Stage.Context;
-
-    return <Provider value={this} {...props} />;
-  };
-
-  public useQuery<Roles extends Array<Role<any>>, EachReturnType>(
-    ...parameters: QueryParameters<Roles, EachReturnType>
-  ): Array<EachReturnType> {
-    const [state, setState] = useState<Array<EachReturnType>>([]);
-
-    useEffect(() => {
-      const { roles } = normalizeQueryParameters(parameters);
-
-      roles.forEach((role) => {
-        role.onUpdate(() => {
-          const queryResult = this.query(...parameters);
-
-          setState(queryResult);
-        });
-      });
-    }, [parameters, this]);
-
-    return state;
   }
 }

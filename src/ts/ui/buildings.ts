@@ -151,7 +151,7 @@ export default class Buildings {
   /**
    * Finds blocks, shrinks and divides them to create building lots
    */
-  async generate(animate: boolean): Promise<void> {
+  async generate(): Promise<void> {
     this.preGenerateCallback();
     this._models = new BuildingModels([]);
     const g = new Graph(this.allStreamlines, this.dstep, true);
@@ -162,8 +162,8 @@ export default class Buildings {
       this.tensorField
     );
     this.polygonFinder.findPolygons();
-    await this.polygonFinder.shrink(animate);
-    await this.polygonFinder.divide(animate);
+    await this.polygonFinder.shrink(false);
+    await this.polygonFinder.divide(false);
     this._models = new BuildingModels(this.polygonFinder.polygons);
 
     this.postGenerateCallback();

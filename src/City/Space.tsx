@@ -1,6 +1,7 @@
 import { Edges, Line } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
+import { Role, ReactStage, ActorRole, RoleData } from "../Stage";
 
 type Props = {
   polygon: Array<[number, number]>;
@@ -8,8 +9,14 @@ type Props = {
   border?: boolean;
 };
 
-// 2D polygon on the board
-export function Space({ color, polygon, border }: Props) {
+export const Space = new Role<{
+  polygon: Array<[number, number]>;
+  color: string;
+  height: number;
+  border?: boolean;
+}>("Space");
+
+function SpaceView({ color, polygon, border }: Props) {
   const geometryRef = (newGeometry?: any): void => {
     if (!newGeometry) {
       return;
@@ -53,6 +60,8 @@ export function Space({ color, polygon, border }: Props) {
     );
   };
 
+  console.log("rendering", color, polygon, border);
+
   return (
     <mesh>
       <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
@@ -60,5 +69,28 @@ export function Space({ color, polygon, border }: Props) {
 
       {border && <Edges color="black" />}
     </mesh>
+  );
+}
+
+export function Spaces() {
+  const stage = ReactStage.use();
+
+  const spaces = stage.useQuery(
+    [stage.ActorRole, Space],
+    ({ index }, space): [number, RoleData<typeof Space>] => [index, space]
+  );
+
+  console.log(spaces, "spaces");
+  return (
+    <>
+      {spaces.map(function eachSpace(space) {
+        const [index, { color, polygon, height, border }] = space;
+        return (
+          <group key={`space-${index}`} position={[0, 0, height]}>
+            <SpaceView color={color} polygon={polygon} border={border} />
+          </group>
+        );
+      })}
+    </>
   );
 }
