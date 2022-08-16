@@ -49,6 +49,7 @@ export class Role<RoleData> {
     this.updateTimeout = setTimeout(() => {
       this.changeNotifiers.forEach((notifier) => notifier());
 
+      this.updateTimeout = null;
       clearTimeout(this.updateTimeout);
     }, 0);
   }

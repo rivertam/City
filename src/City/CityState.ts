@@ -1,10 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext, useEffect, useRef } from "react";
 
-export type MapLine = {
-  name: string;
-  polygon: Array<[number, number]>;
-};
+import { MapLine } from "./MapLine";
 
 export class Road {
   public name: string;

@@ -4,8 +4,9 @@ import * as THREE from "three";
 import { Space } from "./Space";
 import { windows } from "../utils/windows";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { ReactStage, Role } from "../Stage";
 
-type Props = {
+type RoadProps = {
   line: Array<[number, number, number?]>;
   color: string;
   size: number;
@@ -14,13 +15,15 @@ type Props = {
   debugLines?: boolean;
 };
 
-export function Road({
+export const Road = new Role<RoadProps>("Road");
+
+function RoadView({
   color,
   line,
   size,
   height = 0,
   debugLines = false,
-}: Props): JSX.Element {
+}: RoadProps): JSX.Element {
   const debugColor = useMemo(() => {
     return `hsl(${(Math.random() * 360).toFixed(0)}, 50%, 50%)`;
   }, []);
@@ -181,25 +184,6 @@ export function Road({
     );
   };
 
-  const joinPolygons = line.map((point, index) => {
-    const polygon = new Array<[number, number]>();
-    const radius = size / 2;
-
-    for (let tick = 0; tick < 12; ++tick) {
-      const angle = (2 * Math.PI * tick) / 12;
-      const xx = Math.cos(angle) * radius;
-      const yy = Math.sin(angle) * radius;
-
-      polygon.push([xx, yy]);
-    }
-
-    return (
-      <group key={`${index}`} position={[point[0], point[1], point[2]]}>
-        <Space color={color} polygon={polygon} />
-      </group>
-    );
-  });
-
   return (
     <group position={[0, 0, height]}>
       {debugLines && (
@@ -242,5 +226,17 @@ export function Road({
         <meshLambertMaterial attach={"material"} color={color} />
       </mesh>
     </group>
+  );
+}
+
+export function Roads() {
+  const stage = ReactStage.use();
+
+  return (
+    <>
+      {stage.useQuery([stage.ActorRole, Road], ({ index }, road) => (
+        <RoadView key={`road-${index}`} {...road} />
+      ))}
+    </>
   );
 }

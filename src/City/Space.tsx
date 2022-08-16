@@ -60,8 +60,6 @@ function SpaceView({ color, polygon, border }: Props) {
     );
   };
 
-  console.log("rendering", color, polygon, border);
-
   return (
     <mesh>
       <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
@@ -80,11 +78,9 @@ export function Spaces() {
     ({ index }, space): [number, RoleData<typeof Space>] => [index, space]
   );
 
-  console.log(spaces, "spaces");
   return (
     <>
-      {spaces.map(function eachSpace(space) {
-        const [index, { color, polygon, height, border }] = space;
+      {spaces.map(([index, { color, polygon, height, border }]) => {
         return (
           <group key={`space-${index}`} position={[0, 0, height]}>
             <SpaceView color={color} polygon={polygon} border={border} />

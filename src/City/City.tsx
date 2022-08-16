@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { CityGenerator } from "./CityGenerator";
 import { CityState } from "./CityState";
-import { Park } from "./Park";
-import { Road } from "./Road";
+import { Park, Parks } from "./Park";
+import { Road, Roads } from "./Road";
 // import { Space } from "./Space";
 import { Piece } from "./Piece";
 import { ReactStage } from "../Stage";
 import { Role } from "../Stage";
 import { Space, Spaces } from "./Space";
+import { Block, Blocks } from "./Block";
+import { Lot, Lots } from "./Lot";
 
 export const City = ({ children }: { children: React.ReactNode }) => {
   const [stage] = useState(() => new ReactStage());
@@ -29,7 +31,7 @@ export const City = ({ children }: { children: React.ReactNode }) => {
         [900, -900],
       ],
       color: "tan",
-      height: 5,
+      height: 0,
     });
 
     const sea = stage.addActor();
@@ -60,6 +62,82 @@ export const City = ({ children }: { children: React.ReactNode }) => {
       height: 2,
     });
 
+    generatedCity.coastlineRoads.forEach((road) => {
+      const actor = stage.addActor();
+
+      actor.assignRole(Road, {
+        line: road.polygon.map(([xx, yy]): [number, number, number] => [
+          xx,
+          yy,
+          10,
+        ]),
+        color: "orange",
+        size: 12,
+      });
+    });
+
+    generatedCity.mainRoads.forEach((road) => {
+      const actor = stage.addActor();
+
+      actor.assignRole(Road, {
+        line: road.polygon.map(([xx, yy]): [number, number, number] => [
+          xx,
+          yy,
+          5,
+        ]),
+        color: "yellow",
+        size: 12,
+      });
+    });
+
+    generatedCity.majorRoads.forEach((road) => {
+      const actor = stage.addActor();
+
+      actor.assignRole(Road, {
+        line: road.polygon.map(([xx, yy]): [number, number, number] => [
+          xx,
+          yy,
+          4,
+        ]),
+        color: "white",
+        size: 8,
+      });
+    });
+
+    generatedCity.minorRoads.forEach((road) => {
+      const actor = stage.addActor();
+
+      actor.assignRole(Road, {
+        line: road.polygon.map(([xx, yy]): [number, number, number] => [
+          xx,
+          yy,
+          3,
+        ]),
+        color: "grey",
+        size: 5,
+      });
+    });
+
+    generatedCity.parks.forEach((park) => {
+      const actor = stage.addActor();
+
+      actor.assignRole(Park, { park });
+    });
+
+    generatedCity.blocks.forEach((block) => {
+      const actor = stage.addActor();
+
+      actor.assignRole(Block, block.shape);
+    });
+
+    generatedCity.lots.forEach((lot) => {
+      const actor = stage.addActor();
+
+      actor.assignRole(Lot, {
+        address: lot.shape.name,
+        shape: lot.shape.polygon,
+      });
+    });
     // setCityState(new CityState(generatedCity));
   });
 
@@ -70,6 +148,10 @@ export const City = ({ children }: { children: React.ReactNode }) => {
       <StageProvider>
         {children}
         <Spaces />
+        <Roads />
+        <Parks />
+        <Blocks />
+        <Lots />
       </StageProvider>
     );
   }
@@ -78,65 +160,6 @@ export const City = ({ children }: { children: React.ReactNode }) => {
     <StageProvider>
       <CityState.Context.Provider value={cityState}>
         {children}
-
-        {/*
-        <group position={[0, 0, 0]}>
-          <Space polygon={cityState.sea.polygon} color="blue" />
-        </group>
-
-        <group position={[0, 0, 1]}>
-          <Space polygon={cityState.coastline.polygon} color="tan" />
-        </group>
-        <group position={[0, 0, 3]}>
-          <Space polygon={cityState.river.polygon} color="blue" />
-        </group>
-        <group position={[0, 0, 2]}>
-          <Space polygon={cityState.secondaryRiver.polygon} color="blue" />
-        </group>
-  */}
-
-        {cityState.roads.coastline.map((road) => (
-          <Road
-            key={road.name}
-            line={road.polygon.map(([xx, yy]) => [xx, yy, 10])}
-            color="orange"
-            size={12}
-          />
-        ))}
-
-        {cityState.roads.main.map((road) => (
-          <Road
-            key={road.name}
-            line={road.polygon.map(([xx, yy]) => [xx, yy, 5])}
-            color="yellow"
-            size={12}
-          />
-        ))}
-
-        {cityState.roads.major.map((road) => (
-          <Road
-            key={road.name}
-            line={road.polygon.map(([xx, yy]) => [xx, yy, 4])}
-            color="white"
-            size={8}
-          />
-        ))}
-
-        {cityState.roads.minor.map((road) => (
-          <Road
-            key={road.name}
-            line={road.polygon.map(([xx, yy]) => [xx, yy, 3])}
-            color="grey"
-            size={5}
-          />
-        ))}
-
-        <group position={[0, 0, -30]}>
-          {cityState.parks.map((park) => (
-            <Park key={park.name} park={park} />
-          ))}
-        </group>
-
         <group position={[0, 0, 3]}>
           {cityState.blocks.map((block) => (
             <Space

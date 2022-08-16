@@ -16,7 +16,8 @@ export class Stage {
   private vacatedActors = new Array<ActorHandle>();
 
   // methods attached to ActorHandles, implemented here because
-  // they're really Stage methods from a conceptual standpoint.
+  // they're really Stage methods from an implementation standpoint
+  // and attaching the object as a prototype is cheap/optimizable
   private actorPrototype = {
     stage: this,
 
@@ -101,7 +102,6 @@ export class Stage {
         const { data, hasRole } = role.getData({ index, generation });
 
         if (!hasRole) {
-          console.log(`${roleIndex} doesn\'t have ${role.name}`);
           break;
         }
 
@@ -117,7 +117,6 @@ export class Stage {
       }
     }
 
-    console.log("heh", results);
     return results;
   }
 }
