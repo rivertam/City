@@ -1,11 +1,15 @@
 import React, { useEffect } from "react";
-import { ReactStage, Role, RoleData } from "../Stage";
+import { ActorHandle, ReactStage, Role, RoleData } from "../Stage";
+import { Piece } from "./Piece";
 import { Space } from "./Space";
 
-export const Lot = new Role<{
-  address: string;
-  shape: Array<[number, number]>;
-}>("Lot");
+export const Lot = new Role<
+  {
+    address: string;
+    shape: Array<[number, number]>;
+  },
+  "Lot"
+>("Lot");
 
 export const LotView = ({ shape }: RoleData<typeof Lot>) => {
   const stage = ReactStage.use();

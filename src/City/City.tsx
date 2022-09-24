@@ -131,13 +131,12 @@ export const City = ({ children }: { children: React.ReactNode }) => {
     });
 
     generatedCity.lots.forEach((lot) => {
-      const actor = stage.addActor();
-
-      actor.assignRole(Lot, {
+      stage.addActor().assignRole(Lot, {
         address: lot.shape.name,
         shape: lot.shape.polygon,
       });
     });
+
     // setCityState(new CityState(generatedCity));
   });
 

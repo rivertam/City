@@ -1,19 +1,32 @@
 import { ActorStatus, ActorHandle } from "./Actor";
-import { Role, RolesData } from "./Role";
-import { normalizeQueryParameters, QueryParameters, RoleGroup } from "./Query";
+import {
+  ManifestToRoleData,
+  Role,
+  RoleData,
+  RoleManifest,
+  RolesData,
+  RoleSpecifications,
+} from "./Role";
+import { normalizeQueryParameters, QueryParameters } from "./Query";
+
+type DynRole = Role<any, string>;
 
 // ECS
 export class Stage {
   // Special role which every actor has, exposing its index and generation
-  public ActorRole = new Role<ActorStatus>("Actor");
+  public ActorRole = new Role<
+    typeof ActorStatus,
+    "Actor",
+    ManifestToRoleData<typeof ActorStatus>
+  >("Actor", ActorStatus);
 
   private get actorStatus() {
     return (this.ActorRole as any).data;
   }
 
-  private roles = new Array<Role<any>>();
+  private roles = new Array<DynRole>();
 
-  private vacatedActors = new Array<ActorHandle>();
+  private vacatedActors = new Array<ActorHandle<any>>();
 
   // methods attached to ActorHandles, implemented here because
   // they're really Stage methods from an implementation standpoint
@@ -21,19 +34,36 @@ export class Stage {
   private actorPrototype = {
     stage: this,
 
-    assignRole<RoleData>(
-      this: ActorHandle,
-      role: Role<RoleData>,
-      initialData: RoleData
+    assignRole<Manifest extends RoleManifest, RoleName extends string>(
+      this: ActorHandle<Array<DynRole>>,
+      role: Role<Manifest, RoleName>,
+      initialData: ManifestToRoleData<Manifest>
+    ) {
+      role.setData(this, initialData);
+
+      return this;
+    },
+
+    setPart<R extends Role<any, string>>(
+      this: ActorHandle<Array<DynRole>>,
+      role: R,
+      initialData: RoleData<R>
     ) {
       role.setData(this, initialData);
     },
 
-    removeRole(role: Role<any>) {
+    getPart<R extends Role<any, string>>(
+      this: ActorHandle<Array<DynRole>>,
+      role: R
+    ) {
+      return role.getData(this);
+    },
+
+    removeRole(role: DynRole) {
       role.removeData(this);
     },
 
-    remove(this: ActorHandle) {
+    remove(this: ActorHandle<any>) {
       const { hasRole, data } = this.stage.ActorRole.getData(this);
 
       if (!hasRole) {
@@ -48,7 +78,7 @@ export class Stage {
     this.addRole(this.ActorRole);
   }
 
-  public addActor(): ActorHandle {
+  public addActor(): ActorHandle<[]> {
     let index = this.actorStatus.length;
     let generation = 0;
 
@@ -58,7 +88,7 @@ export class Stage {
       generation = firstVacatedActor.generation;
     }
 
-    const actor: ActorHandle = Object.create(this.actorPrototype, {
+    const actor: ActorHandle<[]> = Object.create(this.actorPrototype, {
       index: {
         value: index,
         writable: false,
@@ -76,11 +106,11 @@ export class Stage {
     return actor;
   }
 
-  public addRole(role: Role<any>) {
+  public addRole(role: DynRole) {
     this.roles.push(role);
   }
 
-  public query<Roles extends RoleGroup, EachReturnType>(
+  public query<Roles extends RoleSpecifications, EachReturnType>(
     ...query: QueryParameters<Roles, EachReturnType>
   ): Array<EachReturnType> {
     const { roles, filter, forEach } = normalizeQueryParameters(query);
