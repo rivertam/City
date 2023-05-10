@@ -1,4 +1,3 @@
-import DomainController from "./domain_controller";
 import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
@@ -19,7 +18,6 @@ export default class MainGUI {
   private numSmallParks: number = 0;
   private clusterBigParks: boolean = false;
 
-  private domainController = DomainController.getInstance();
   private intersections: Vector[] = [];
   public bigParks: Vector[][] = [];
   public smallParks: Vector[][] = [];
@@ -86,11 +84,25 @@ export default class MainGUI {
     this.coastline = new WaterGUI(
       tensorField,
       this.coastlineParams,
-      integrator
+      integrator,
+      this.worldDimensions.clone()
     );
-    this.mainRoads = new RoadGUI(this.mainParams, integrator);
-    this.majorRoads = new RoadGUI(this.majorParams, integrator);
-    this.minorRoads = new RoadGUI(this.minorParams, integrator);
+    this.mainRoads = new RoadGUI(
+      this.mainParams,
+      integrator,
+      this.worldDimensions.clone()
+    );
+    this.majorRoads = new RoadGUI(
+      this.majorParams,
+      integrator,
+      this.worldDimensions.clone()
+    );
+
+    this.minorRoads = new RoadGUI(
+      this.minorParams,
+      integrator,
+      this.worldDimensions.clone()
+    );
 
     this.buildings = new Buildings(tensorField, this.minorParams.dstep);
     this.buildings.setPreGenerateCallback(() => {
@@ -163,16 +175,16 @@ export default class MainGUI {
   }
 
   addParks(): void {
-    const g = new Graph(
+    const graph = new Graph(
       this.majorRoads.allStreamlines
         .concat(this.mainRoads.allStreamlines)
         .concat(this.minorRoads.allStreamlines),
       this.minorParams.dstep
     );
-    this.intersections = g.intersections;
+    this.intersections = graph.intersections;
 
-    const p = new PolygonFinder(
-      g.nodes,
+    const polygonFinder = new PolygonFinder(
+      graph.nodes,
       {
         maxLength: 20,
         minArea: 80,
@@ -181,8 +193,8 @@ export default class MainGUI {
       },
       this.tensorField
     );
-    p.findPolygons();
-    const polygons = p.polygons;
+    polygonFinder.findPolygons();
+    const polygons = polygonFinder.polygons;
 
     if (this.minorRoads.allStreamlines.length === 0) {
       // Big parks
@@ -241,14 +253,14 @@ export default class MainGUI {
     }
   }
 
+  public get worldDimensions(): Vector {
+    return this.tensorField.worldDimensions;
+  }
+
   public get parks() {
     return [
-      ...this.bigParks.map((p) =>
-        p.map((v) => this.domainController.worldToScreen(v.clone()))
-      ),
-      ...this.smallParks.map((p) =>
-        p.map((v) => this.domainController.worldToScreen(v.clone()))
-      ),
+      ...this.bigParks.map((p) => p.map((v) => v.clone())),
+      ...this.smallParks.map((p) => p.map((v) => v.clone())),
     ];
   }
 

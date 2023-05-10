@@ -5,7 +5,6 @@ import Tensor from "./tensor";
 import Vector from "../vector";
 import { Grid, Radial, BasisField } from "./basis_field";
 import PolygonUtil from "./polygon_util";
-import DomainController from "../ui/domain_controller";
 import Util from "../util";
 
 export interface NoiseParams {
@@ -22,7 +21,6 @@ export interface NoiseParams {
  */
 export default class TensorField {
   private TENSOR_SPAWN_SCALE = 0.7; // How much to shrink worldDimensions to find spawn point
-  private domainController = DomainController.getInstance();
 
   private basisFields: BasisField[] = [];
   private noise: SimplexNoise;
@@ -34,7 +32,7 @@ export default class TensorField {
 
   public smooth = false;
 
-  constructor(public noiseParams: NoiseParams) {
+  constructor(public noiseParams: NoiseParams, public worldDimensions: Vector) {
     this.noise = new SimplexNoise();
   }
 
@@ -165,10 +163,8 @@ export default class TensorField {
    */
   setRecommended(): void {
     this.reset();
-    const size = this.domainController.worldDimensions.multiplyScalar(
-      this.TENSOR_SPAWN_SCALE
-    );
-    const newOrigin = this.domainController.worldDimensions.multiplyScalar(
+    const size = this.worldDimensions.multiplyScalar(this.TENSOR_SPAWN_SCALE);
+    const newOrigin = this.worldDimensions.multiplyScalar(
       (1 - this.TENSOR_SPAWN_SCALE) / 2
     );
     this.addGridAtLocation(newOrigin);
@@ -179,7 +175,7 @@ export default class TensorField {
   }
 
   addRadialRandom(): void {
-    const width = this.domainController.worldDimensions.x;
+    const width = this.worldDimensions.x;
     this.addRadial(
       this.randomLocation(),
       Util.randomRange(width / 10, width / 5), // Size
@@ -192,7 +188,7 @@ export default class TensorField {
   }
 
   private addGridAtLocation(location: Vector): void {
-    const width = this.domainController.worldDimensions.x;
+    const width = this.worldDimensions.x;
     this.addGrid(
       location,
       Util.randomRange(width / 4, width), // Size
@@ -206,11 +202,9 @@ export default class TensorField {
    * Sampled from middle of screen (shrunk rectangle)
    */
   private randomLocation(): Vector {
-    const size = this.domainController.worldDimensions.multiplyScalar(
-      this.TENSOR_SPAWN_SCALE
-    );
+    const size = this.worldDimensions.multiplyScalar(this.TENSOR_SPAWN_SCALE);
     const location = new Vector(Math.random(), Math.random()).multiply(size);
-    const newOrigin = this.domainController.worldDimensions.multiplyScalar(
+    const newOrigin = this.worldDimensions.multiplyScalar(
       (1 - this.TENSOR_SPAWN_SCALE) / 2
     );
     return location.add(newOrigin);

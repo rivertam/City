@@ -24,7 +24,10 @@ export class CityGenerator {
       noiseAngleGlobal: 20,
     };
 
-    this.tensorField = new TensorField(noiseParamsPlaceholder);
+    this.tensorField = new TensorField(
+      noiseParamsPlaceholder,
+      new Vector(300, 300)
+    );
     this.mainGui = new MainGUI(this.tensorField);
 
     this.tensorField.setRecommended();

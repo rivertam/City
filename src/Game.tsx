@@ -41,7 +41,6 @@ const Camera = observer(() => {
         far={999999}
         fov={fov}
         aspect={window.innerWidth / window.innerHeight}
-        ref={(camera) => (window.clamera = camera)}
       ></PerspectiveCamera>
       <directionalLight position={[1000, 100, 1000]} color={0xaaaaaa} />
       <directionalLight position={[100, 1000, 1000]} color={0xaaaaaa} />

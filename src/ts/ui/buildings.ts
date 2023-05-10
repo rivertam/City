@@ -1,5 +1,4 @@
 import * as log from "loglevel";
-import DomainController from "./domain_controller";
 import TensorField from "../impl/tensor_field";
 import Graph from "../impl/graph";
 import Vector from "../vector";
@@ -18,7 +17,6 @@ export interface BuildingModel {
  * Pseudo 3D buildings
  */
 class BuildingModels {
-  private domainController = DomainController.getInstance();
   private _buildingModels: BuildingModel[] = [];
 
   constructor(lots: Vector[][]) {
@@ -45,9 +43,7 @@ class BuildingModels {
   setBuildingProjections(): void {
     const d = 1000 / 1;
     for (const b of this._buildingModels) {
-      b.lotScreen = b.lotWorld.map((v) =>
-        this.domainController.worldToScreen(v.clone())
-      );
+      b.lotScreen = b.lotWorld.map((v) => v.clone());
       b.roof = b.lotScreen.map((v) =>
         this.heightVectorToScreen(v, b.height, d)
       );
@@ -84,7 +80,6 @@ class BuildingModels {
 export default class Buildings {
   private polygonFinder: PolygonFinder;
   private allStreamlines: Vector[][] = [];
-  private domainController = DomainController.getInstance();
   private preGenerateCallback: () => any = () => {};
   private postGenerateCallback: () => any = () => {};
   private _models: BuildingModels = new BuildingModels([]);
@@ -106,9 +101,7 @@ export default class Buildings {
   }
 
   get lots(): Vector[][] {
-    return this.polygonFinder.polygons.map((p) =>
-      p.map((v) => this.domainController.worldToScreen(v.clone()))
-    );
+    return this.polygonFinder.polygons.map((p) => p.map((v) => v.clone()));
   }
 
   /**
@@ -125,9 +118,7 @@ export default class Buildings {
     );
     polygonFinder.findPolygons();
     await polygonFinder.shrink(false);
-    return polygonFinder.polygons.map((p) =>
-      p.map((v) => this.domainController.worldToScreen(v.clone()))
-    );
+    return polygonFinder.polygons.map((p) => p.map((v) => v.clone()));
   }
 
   get models(): BuildingModel[] {
@@ -151,7 +142,7 @@ export default class Buildings {
   /**
    * Finds blocks, shrinks and divides them to create building lots
    */
-  async generate(animate: boolean): Promise<void> {
+  async generate(): Promise<void> {
     this.preGenerateCallback();
     this._models = new BuildingModels([]);
     const g = new Graph(this.allStreamlines, this.dstep, true);
@@ -162,8 +153,8 @@ export default class Buildings {
       this.tensorField
     );
     this.polygonFinder.findPolygons();
-    await this.polygonFinder.shrink(animate);
-    await this.polygonFinder.divide(animate);
+    await this.polygonFinder.shrink(false);
+    await this.polygonFinder.divide(false);
     this._models = new BuildingModels(this.polygonFinder.polygons);
 
     this.postGenerateCallback();

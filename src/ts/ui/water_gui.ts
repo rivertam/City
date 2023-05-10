@@ -16,12 +16,13 @@ export default class WaterGUI extends RoadGUI {
   constructor(
     private tensorField: TensorField,
     protected params: WaterParams,
-    integrator: FieldIntegrator
+    integrator: FieldIntegrator,
+    protected worldDimensions: Vector
   ) {
-    super(params, integrator);
+    super(params, integrator, worldDimensions);
     this.streamlines = new WaterGenerator(
       this.integrator,
-      this.domainController.worldDimensions,
+      this.worldDimensions,
       Object.assign({}, this.params),
       this.tensorField
     );
@@ -32,7 +33,7 @@ export default class WaterGUI extends RoadGUI {
 
     this.streamlines = new WaterGenerator(
       this.integrator,
-      this.domainController.worldDimensions,
+      this.worldDimensions,
       Object.assign({}, this.params),
       this.tensorField
     );
@@ -54,28 +55,20 @@ export default class WaterGUI extends RoadGUI {
   }
 
   get river(): Vector[] {
-    return this.streamlines.riverPolygon.map((v) =>
-      this.domainController.worldToScreen(v.clone())
-    );
+    return this.streamlines.riverPolygon.map((v) => v.clone());
   }
 
   get secondaryRiver(): Vector[] {
-    return this.streamlines.riverSecondaryRoad.map((v) =>
-      this.domainController.worldToScreen(v.clone())
-    );
+    return this.streamlines.riverSecondaryRoad.map((v) => v.clone());
   }
 
   get coastline(): Vector[] {
     // Use unsimplified noisy streamline as coastline
     // Visual only, no road logic performed using this
-    return this.streamlines.coastline.map((v) =>
-      this.domainController.worldToScreen(v.clone())
-    );
+    return this.streamlines.coastline.map((v) => v.clone());
   }
 
   get seaPolygon(): Vector[] {
-    return this.streamlines.seaPolygon.map((v) =>
-      this.domainController.worldToScreen(v.clone())
-    );
+    return this.streamlines.seaPolygon.map((v) => v.clone());
   }
 }

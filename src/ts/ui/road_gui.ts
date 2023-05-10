@@ -1,4 +1,3 @@
-import DomainController from "./domain_controller";
 import Util from "../util";
 import FieldIntegrator from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
@@ -11,19 +10,17 @@ import Vector from "../vector";
 export default class RoadGUI {
   protected streamlines: StreamlineGenerator;
   private existingStreamlines: RoadGUI[] = [];
-  protected domainController = DomainController.getInstance();
   protected preGenerateCallback: () => any = () => {};
   protected postGenerateCallback: () => any = () => {};
 
-  private streamlinesInProgress: boolean = false;
-
   constructor(
     protected params: StreamlineParams,
-    protected integrator: FieldIntegrator
+    protected integrator: FieldIntegrator,
+    protected worldDimensions: Vector
   ) {
     this.streamlines = new StreamlineGenerator(
       this.integrator,
-      this.domainController.worldDimensions,
+      this.worldDimensions.clone(),
       this.params
     );
 
@@ -33,13 +30,15 @@ export default class RoadGUI {
   }
 
   get allStreamlines(): Vector[][] {
-    return this.streamlines.allStreamlinesSimple;
+    return this.streamlines.allStreamlinesSimple.map((s) =>
+      s.map((v) => v.clone())
+    );
   }
 
   get roads(): Vector[][] {
     // For drawing not generation, probably fine to leave map
     return this.streamlines.allStreamlinesSimple.map((s) =>
-      s.map((v) => this.domainController.worldToScreen(v.clone()))
+      s.map((v) => v.clone())
     );
   }
 
@@ -68,7 +67,7 @@ export default class RoadGUI {
 
     this.streamlines = new StreamlineGenerator(
       this.integrator,
-      this.domainController.worldDimensions,
+      this.worldDimensions,
       Object.assign({}, this.params)
     );
 
