@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { PerspectiveCamera, OrbitControls } from "@react-three/drei";
+import { PerspectiveCamera, MapControls } from "@react-three/drei";
 import styled from "styled-components";
 import { observer } from "mobx-react-lite";
 
@@ -36,7 +36,8 @@ const Camera = observer(() => {
       <PerspectiveCamera
         ref={camera}
         makeDefault
-        position={[-43, -1241, 1200]}
+        position={[80, 1000, 1200]}
+        up={[0, 0, 1]}
         near={10}
         far={999999}
         fov={fov}
@@ -45,7 +46,7 @@ const Camera = observer(() => {
       <directionalLight position={[1000, 100, 1000]} color={0xaaaaaa} />
       <directionalLight position={[100, 1000, 1000]} color={0xaaaaaa} />
       <directionalLight position={[0, 0, 1000]} color={0xaaaaaa} />
-      <OrbitControls
+      <MapControls
         addEventListener={undefined}
         hasEventListener={undefined}
         removeEventListener={undefined}
