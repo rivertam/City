@@ -7,6 +7,19 @@ import { Space } from "./Space";
 import { Piece } from "./Piece";
 import { Building } from "./Building";
 
+const GroundHeights = {
+  BaseGround: 0,
+  Water: 0.01,
+  Beach: 0.02,
+  MinorRoad: 0.03,
+  MajorRoad: 0.04,
+  CoastlineRoad: 0.05,
+  MainRoad: 0.06,
+  Park: 0.07,
+  Block: 0.08,
+  Foundation: 0.09,
+};
+
 export const City = ({ children }: { children: React.ReactNode }) => {
   const [cityState, setCityState] = useState<CityState | null>(null);
 
@@ -27,7 +40,7 @@ export const City = ({ children }: { children: React.ReactNode }) => {
   return (
     <CityState.Context.Provider value={cityState}>
       {children}
-      <group position={[0, 0, -1]}>
+      <group position={[0, 0, GroundHeights.BaseGround]}>
         <Space
           polygon={[
             [-900, -900],
@@ -39,24 +52,28 @@ export const City = ({ children }: { children: React.ReactNode }) => {
         />
       </group>
 
-      <group position={[0, 0, 0]}>
+      <group position={[0, 0, GroundHeights.Water]}>
         <Space polygon={cityState.sea.polygon} color="blue" />
       </group>
 
-      <group position={[0, 0, 1]}>
+      <group position={[0, 0, GroundHeights.Beach]}>
         <Space polygon={cityState.coastline.polygon} color="tan" />
       </group>
-      <group position={[0, 0, 3]}>
+      <group position={[0, 0, GroundHeights.Water]}>
         <Space polygon={cityState.river.polygon} color="blue" />
       </group>
-      <group position={[0, 0, 2]}>
+      <group position={[0, 0, GroundHeights.Water]}>
         <Space polygon={cityState.secondaryRiver.polygon} color="blue" />
       </group>
 
       {cityState.roads.coastline.map((road) => (
         <Road
           key={road.name}
-          line={road.polygon.map(([xx, yy]) => [xx, yy, 10])}
+          line={road.polygon.map(([xx, yy]) => [
+            xx,
+            yy,
+            GroundHeights.CoastlineRoad,
+          ])}
           color="orange"
           size={12}
         />
@@ -65,7 +82,11 @@ export const City = ({ children }: { children: React.ReactNode }) => {
       {cityState.roads.main.map((road) => (
         <Road
           key={road.name}
-          line={road.polygon.map(([xx, yy]) => [xx, yy, 5])}
+          line={road.polygon.map(([xx, yy]) => [
+            xx,
+            yy,
+            GroundHeights.MainRoad,
+          ])}
           color="yellow"
           size={12}
         />
@@ -74,7 +95,11 @@ export const City = ({ children }: { children: React.ReactNode }) => {
       {cityState.roads.major.map((road) => (
         <Road
           key={road.name}
-          line={road.polygon.map(([xx, yy]) => [xx, yy, 4])}
+          line={road.polygon.map(([xx, yy]) => [
+            xx,
+            yy,
+            GroundHeights.MajorRoad,
+          ])}
           color="white"
           size={8}
         />
@@ -83,19 +108,23 @@ export const City = ({ children }: { children: React.ReactNode }) => {
       {cityState.roads.minor.map((road) => (
         <Road
           key={road.name}
-          line={road.polygon.map(([xx, yy]) => [xx, yy, 3])}
+          line={road.polygon.map(([xx, yy]) => [
+            xx,
+            yy,
+            GroundHeights.MinorRoad,
+          ])}
           color="grey"
           size={5}
         />
       ))}
 
-      <group position={[0, 0, -30]}>
+      <group position={[0, 0, GroundHeights.Park]}>
         {cityState.parks.map((park) => (
           <Park key={park.name} park={park} />
         ))}
       </group>
 
-      <group position={[0, 0, 3]}>
+      <group position={[0, 0, GroundHeights.Block]}>
         {cityState.blocks.map((block) => (
           <Space
             key={block.shape.name}
@@ -106,7 +135,7 @@ export const City = ({ children }: { children: React.ReactNode }) => {
       </group>
 
       {/*<Space key={lot.address} polygon={lot.shape} color="#fff" /> */}
-      <group position={[0, 0, 5]}>
+      <group position={[0, 0, GroundHeights.Foundation]}>
         {cityState.lots.map((lot) => (
           <Building
             key={lot.address}
