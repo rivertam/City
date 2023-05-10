@@ -65,10 +65,6 @@ export default class StreamlineGenerator {
     protected worldDimensions: Vector,
     protected params: StreamlineParams
   ) {
-    if (worldDimensions.x !== 300) {
-      debugger;
-    }
-    console.log("worldDimensions", worldDimensions);
     if (params.dstep > params.dsep) {
       log.error("STREAMLINE SAMPLE DISTANCE BIGGER THAN DSEP");
     }
