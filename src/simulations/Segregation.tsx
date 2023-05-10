@@ -1,46 +1,35 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { CityState } from "../City/CityState";
-import { GUIState } from "../GUIState";
 import { Agent, AgentConfigurationFromState, AgentState } from "../Agents";
+import { makeButton, useTweaks } from "use-tweaks";
+import { City } from "../City/City";
+import { useStage } from "../Stage";
+import { Unit, UnitRole } from "../City/Unit";
 
 type Resident = {};
 
-type SegregationSimulationState = {
-  "Occupancy %": number;
-  "Set Up"(this: Agent<SegregationSimulationState>);
-};
-
 export const SegregationSimulation = observer(() => {
-  const cityState = CityState.use();
+  const { stage } = useStage();
 
-  const [residents, setResidents] = useState<Resident>([]);
+  const { "Occupancy %": occupancy } = useTweaks("Segregation Simulation", {
+    "Occupancy %": {
+      value: 75,
+      min: 1,
+      max: 99,
+      step: 1,
+    },
+    ...makeButton("Set Up", () => {
+      console.log("setting up with occupancy", occupancy);
+    }),
+  });
 
-  const simulationAgent = Agent.useAgent<SegregationSimulationState>(
-    "Segregation Simulation",
-    {
-      "Occupancy %": {
-        defaultValue: 75,
-        min: 1,
-        max: 99,
-        step: 1,
-      },
-      "Set Up": {
-        method(this: Agent<SegregationSimulationState>) {
-          console.log("setting up");
-          try {
-            const occupancyPercent = this.state["Occupancy %"];
-            const newResidents: Array<Resident> = [];
+  useEffect(() => {
+    setTimeout(() => {
+      console.log("after setup,", stage.getActors({ roles: [UnitRole] }));
+    }, 3000);
+  }, []);
 
-            setResidents(newResidents);
-          } catch (error) {
-            console.error("Failed to set up");
-          }
-        },
-      },
-    }
-  );
-
-  return <></>;
+  return <City></City>;
 });

@@ -7,9 +7,9 @@ import { observer } from "mobx-react-lite";
 
 import { Agent } from "./Agents";
 import { CityState } from "./City/CityState";
-import { GUI } from "./GUI";
 import { City } from "./City/City";
 import { SegregationSimulation } from "./simulations/Segregation";
+import { makeButton, useTweaks } from "use-tweaks";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -22,27 +22,26 @@ export const GameWindow = styled.div`
 
 const Camera = observer(() => {
   const camera = useRef<THREE.PerspectiveCamera>();
-  const agent = Agent.useAgent("Camera", {
-    "Field of View": {
-      defaultValue: 20,
+
+  const { fov } = useTweaks("Camera", {
+    fov: {
+      value: 20,
       min: 0.01,
       max: 100,
-      step: 0.05,
     },
   });
-
-  const fov = agent.state["Field of View"];
 
   return (
     <>
       <PerspectiveCamera
         ref={camera}
         makeDefault
-        position={[0, 0, 100000 / fov]}
+        position={[-43, -1241, 1200]}
         near={10}
         far={999999}
         fov={fov}
         aspect={window.innerWidth / window.innerHeight}
+        ref={(camera) => (window.clamera = camera)}
       ></PerspectiveCamera>
       <directionalLight position={[1000, 100, 1000]} color={0xaaaaaa} />
       <directionalLight position={[100, 1000, 1000]} color={0xaaaaaa} />
@@ -61,6 +60,16 @@ export const Game = observer((): React.ReactElement => {
   const renderer = useRef<THREE.WebGLRenderer>();
 
   const divWrapper = useRef<HTMLDivElement | null>(null);
+
+  const [Simulation, setSimulation] = React.useState<React.ReactNode | null>(
+    null
+  );
+
+  useTweaks("Game", {
+    ...makeButton("Make segregation simulation", () => {
+      setSimulation(() => SegregationSimulation);
+    }),
+  });
 
   return (
     <>
@@ -82,12 +91,9 @@ export const Game = observer((): React.ReactElement => {
           }}
         >
           <Camera />
-          <City>
-            <SegregationSimulation />
-          </City>
+          {Simulation && <Simulation />}
         </Canvas>
       </GameWindow>
-      <GUI />
     </>
   );
 });

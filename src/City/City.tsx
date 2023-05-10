@@ -5,6 +5,7 @@ import { Park } from "./Park";
 import { Road } from "./Road";
 import { Space } from "./Space";
 import { Piece } from "./Piece";
+import { Building } from "./Building";
 
 export const City = ({ children }: { children: React.ReactNode }) => {
   const [cityState, setCityState] = useState<CityState | null>(null);
@@ -107,7 +108,7 @@ export const City = ({ children }: { children: React.ReactNode }) => {
       {/*<Space key={lot.address} polygon={lot.shape} color="#fff" /> */}
       <group position={[0, 0, 5]}>
         {cityState.lots.map((lot) => (
-          <Piece
+          <Building
             key={lot.address}
             polygon={lot.shape}
             color="white"
