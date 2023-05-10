@@ -43,9 +43,22 @@ const Camera = observer(() => {
         fov={fov}
         aspect={window.innerWidth / window.innerHeight}
       ></PerspectiveCamera>
-      <directionalLight position={[1000, 100, 1000]} color={0xaaaaaa} />
-      <directionalLight position={[100, 1000, 1000]} color={0xaaaaaa} />
-      <directionalLight position={[0, 0, 1000]} color={0xaaaaaa} />
+      <directionalLight
+        position={[1000, 100, 1000]}
+        color={0xaaaaaa}
+        intensity={0.5}
+      />
+      <directionalLight
+        position={[100, 1000, 1000]}
+        color={0xaaaaaa}
+        intensity={0.5}
+      />
+      <directionalLight
+        position={[0, 0, 1000]}
+        color={0xaaaaaa}
+        intensity={0.5}
+      />
+      <ambientLight intensity={0.1} />
       <MapControls
         addEventListener={undefined}
         hasEventListener={undefined}
