@@ -1,5 +1,7 @@
+import { JSONValue, JSONArray } from "./JSONValue";
+
 export class Role<RoleData> {
-  readonly symbol = Symbol();
+  public readonly symbol = Symbol();
 
   constructor(public readonly name: string) {}
 }

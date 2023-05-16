@@ -1,15 +1,15 @@
 import React from "react";
 import * as THREE from "three";
-import { Edges } from "@react-three/drei";
 import { windows } from "../utils/windows";
 
 type Props = {
   polygon: Array<[number, number]>;
   color: string;
   height: number;
+  onClick?: () => void;
 };
 
-export function Piece({ color, height, polygon }: Props) {
+export function Piece({ color, height, polygon, onClick }: Props) {
   const geometryRef = (newGeometry?: any): void => {
     if (!newGeometry) {
       return;
@@ -93,7 +93,7 @@ export function Piece({ color, height, polygon }: Props) {
   };
 
   return (
-    <mesh>
+    <mesh onClick={onClick}>
       <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
 
       <meshLambertMaterial attach={"material"} color={color} />

@@ -6,8 +6,6 @@ import faker from "faker";
 import { GeneratedCity, MapLine } from "./CityState";
 
 export class CityGenerator {
-  private readonly STARTING_WIDTH = 1440; // Initially zooms in if width > STARTING_WIDTH
-
   private tensorField: TensorField;
   private mainGui: MainGUI; // In charge of glueing everything together
 
@@ -26,7 +24,7 @@ export class CityGenerator {
 
     this.tensorField = new TensorField(
       noiseParamsPlaceholder,
-      new Vector(300, 300)
+      new Vector(1000, 1000)
     );
     this.mainGui = new MainGUI(this.tensorField);
 
