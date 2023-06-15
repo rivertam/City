@@ -3,6 +3,7 @@ import { Actor, Role, useStage } from "../Stage";
 import { BuildingRole } from "./Building";
 import { UnitRole } from "./Unit";
 import { ResidentRole } from "./ResidentRole";
+import { LocatedRole, getNearby, useNearby } from "./Located";
 
 export function Resident({
   color,
@@ -22,47 +23,55 @@ export function Resident({
     color,
     buildingTolerance,
     neighborhoodTolerance,
-    determineHappiness() {
+  }));
+
+  // query the building demographics
+  const [buildingExists, buildingReds, buildingBlues, reds, blues, location] =
+    stage.useQuery(() => {
       const { unit: existingUnit } = actor.get(ResidentRole);
 
       if (!existingUnit) {
-        return;
+        return [false, 0, 0, null];
       }
 
       const { building } = existingUnit.get(UnitRole);
 
-      const { reds, blues } = building.get(BuildingRole);
+      const { reds: buildingReds, blues: buildingBlues } =
+        building.get(BuildingRole);
+      const location = building.get(LocatedRole);
 
-      let happiness = 1;
+      const nearbyBuildings = getNearby(stage, [BuildingRole], location, 80);
 
-      const redRatio = reds / (reds + blues);
+      const { reds, blues } = nearbyBuildings.reduce(
+        (sum, building) => {
+          const { reds, blues } = building.get(BuildingRole);
 
-      const ratioOfOthers = color === "red" ? 1 - redRatio : redRatio;
-
-      if (ratioOfOthers > buildingTolerance) {
-        happiness = 0;
-      }
-
-      console.log(
-        `I'm ${color} and my building is ${redRatio} red, so I am ${happiness} happy`
+          return {
+            reds: sum.reds + reds,
+            blues: sum.blues + blues,
+          };
+        },
+        { reds: 0, blues: 0 }
       );
-    },
-  }));
 
-  // query the building demographics
-  const [buildingExists, reds, blues] = stage.useQuery(() => {
-    const { unit: existingUnit } = actor.get(ResidentRole);
+      return [true, buildingReds, buildingBlues, reds, blues, location];
+    });
 
-    if (!existingUnit) {
-      return [false, 0, 0];
+  // a percentage happiness based on the ratio of reds to blues and a tolerance
+  const calculateHappiness = (
+    reds: number,
+    blues: number,
+    tolerance: number
+  ): number => {
+    const redRatio = reds / (reds + blues);
+    const otherRatio = color === "red" ? 1 - redRatio : redRatio;
+
+    if (otherRatio > tolerance) {
+      return 1 - otherRatio - tolerance;
     }
 
-    const { building } = existingUnit.get(UnitRole);
-
-    const { reds, blues } = building.get(BuildingRole);
-
-    return [true, reds, blues];
-  });
+    return 1;
+  };
 
   // when the demographics (or parameters) change, update the agent's happiness
   useEffect(() => {
@@ -70,22 +79,28 @@ export function Resident({
       return;
     }
 
-    let happiness = 1;
-    const redRatio = reds / (reds + blues);
-
-    const ratioOfOthers = color === "red" ? 1 - redRatio : redRatio;
-
-    if (ratioOfOthers > buildingTolerance) {
-      happiness = 0;
-    }
+    const buildingHappiness =
+      0.3 * calculateHappiness(buildingReds, buildingBlues, buildingTolerance);
+    const neighborhoodHappiness =
+      0.3 * calculateHappiness(reds, blues, neighborhoodTolerance);
 
     actor.set(ResidentRole, (data) => ({
       ...data,
-      happiness,
+      happiness: buildingHappiness + neighborhoodHappiness,
       buildingTolerance,
       color,
     }));
-  }, [actor, color, buildingTolerance, buildingExists, reds, blues]);
+  }, [
+    actor,
+    color,
+    buildingReds,
+    buildingBlues,
+    buildingTolerance,
+    neighborhoodTolerance,
+    buildingExists,
+    reds,
+    blues,
+  ]);
 
   return <></>;
 }

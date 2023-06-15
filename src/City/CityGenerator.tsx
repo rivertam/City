@@ -24,7 +24,7 @@ export class CityGenerator {
 
     this.tensorField = new TensorField(
       noiseParamsPlaceholder,
-      new Vector(1000, 1000)
+      new Vector(300, 300)
     );
     this.mainGui = new MainGUI(this.tensorField);
 

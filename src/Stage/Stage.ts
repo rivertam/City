@@ -32,7 +32,7 @@ export class Stage {
   // set doesn't grow when the same component queries multiple roles.
   private notifyingSubscribers: Set<() => void> = new Set();
 
-  actors = new Set<Actor>();
+  private actors = new Set<Actor>();
 
   constructor() {
     console.log("constructing stage");

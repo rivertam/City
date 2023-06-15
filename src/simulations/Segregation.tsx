@@ -113,6 +113,13 @@ export const SegregationSimulation = observer(() => {
       max: 1,
       step: 0.01,
     },
+    "Neighborhood tolerance": {
+      value: 0.5,
+      min: 0,
+      max: 1,
+      step: 0.01,
+    },
+
     ...makeButton("Set Up", () => setup.current?.()),
     ...makeButton("+1", () => turn()),
     ...makeButton("+10", () => {
