@@ -1,8 +1,8 @@
-import * as log from 'loglevel';
-import Vector from '../vector';
-import { Node } from './graph';
-import PolygonUtil from './polygon_util';
-import TensorField from './tensor_field';
+import * as log from "loglevel";
+import Vector from "../vector";
+import { Node } from "./graph";
+import PolygonUtil from "./polygon_util";
+import TensorField from "./tensor_field";
 
 export interface PolygonParams {
   maxLength: number;
@@ -26,7 +26,7 @@ export default class PolygonFinder {
   constructor(
     private nodes: Node[],
     private params: PolygonParams,
-    private tensorField: TensorField,
+    private tensorField: TensorField
   ) {}
 
   get polygons(): Vector[][] {
@@ -101,7 +101,7 @@ export default class PolygonFinder {
   private stepShrink(polygon: Vector[]): boolean {
     const shrunk = PolygonUtil.resizeGeometry(
       polygon,
-      -this.params.shrinkSpacing,
+      -this.params.shrinkSpacing
     );
     if (shrunk.length > 0) {
       this._shrunkPolygons.push(shrunk);
@@ -206,7 +206,7 @@ export default class PolygonFinder {
       if (index >= 0) {
         current.adj.splice(index, 1);
       } else {
-        log.error('PolygonFinder - node not in adj');
+        log.error("PolygonFinder - node not in adj");
       }
     }
   }
@@ -216,7 +216,7 @@ export default class PolygonFinder {
     // TODO backtracking to find polygons with dead end roads inside them
     const nextNode = this.getRightmostNode(
       visited[visited.length - 2],
-      visited[visited.length - 1],
+      visited[visited.length - 1]
     );
     if (nextNode === null) {
       return null; // Currently ignores polygons with dead end inside
@@ -238,7 +238,7 @@ export default class PolygonFinder {
     const backwardsDifferenceVector = nodeFrom.value.clone().sub(nodeTo.value);
     const transformAngle = Math.atan2(
       backwardsDifferenceVector.y,
-      backwardsDifferenceVector.x,
+      backwardsDifferenceVector.x
     );
 
     let rightmostNode = null;

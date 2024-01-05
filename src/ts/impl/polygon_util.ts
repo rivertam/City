@@ -1,7 +1,7 @@
-import * as log from 'loglevel';
-import * as PolyK from 'polyk';
-import Vector from '../vector';
-import * as jsts from 'jsts';
+import * as log from "loglevel";
+import * as PolyK from "polyk";
+import Vector from "../vector";
+import * as jsts from "jsts";
 
 export default class PolygonUtil {
   private static geometryFactory = new jsts.geom.GeometryFactory();
@@ -13,7 +13,7 @@ export default class PolygonUtil {
     origin: Vector,
     worldDimensions: Vector,
     p1: Vector,
-    p2: Vector,
+    p2: Vector
   ): Vector[] {
     const rectangle = [
       origin.x,
@@ -26,7 +26,7 @@ export default class PolygonUtil {
       origin.y + worldDimensions.y,
     ];
     const sliced = PolyK.Slice(rectangle, p1.x, p1.y, p2.x, p2.y).map((p) =>
-      PolygonUtil.polygonArrayToPolygon(p),
+      PolygonUtil.polygonArrayToPolygon(p)
     );
     const minArea = PolygonUtil.calcPolygonArea(sliced[0]);
 
@@ -43,7 +43,7 @@ export default class PolygonUtil {
   public static lineRectanglePolygonIntersection(
     origin: Vector,
     worldDimensions: Vector,
-    line: Vector[],
+    line: Vector[]
   ): Vector[] {
     const jstsLine = PolygonUtil.lineToJts(line);
     const bounds = [
@@ -151,15 +151,15 @@ export default class PolygonUtil {
         bisect[0].x,
         bisect[0].y,
         bisect[1].x,
-        bisect[1].y,
+        bisect[1].y
       );
       // Recursive call
       for (const s of sliced) {
         divided.push(
           ...PolygonUtil.subdividePolygon(
             PolygonUtil.polygonArrayToPolygon(s),
-            minArea,
-          ),
+            minArea
+          )
         );
       }
 
@@ -176,7 +176,7 @@ export default class PolygonUtil {
   public static resizeGeometry(
     geometry: Vector[],
     spacing: number,
-    isPolygon = true,
+    isPolygon = true
   ): Vector[] {
     try {
       const jstsGeometry = isPolygon
@@ -185,7 +185,7 @@ export default class PolygonUtil {
       const resized = jstsGeometry.buffer(
         spacing,
         undefined,
-        (jsts as any).operation.buffer.BufferParameters.CAP_FLAT,
+        (jsts as any).operation.buffer.BufferParameters.CAP_FLAT
       );
       if (!resized.isSimple()) {
         return [];
@@ -233,7 +233,7 @@ export default class PolygonUtil {
   public static pointInRectangle(
     point: Vector,
     origin: Vector,
-    dimensions: Vector,
+    dimensions: Vector
   ): boolean {
     return (
       point.x >= origin.x &&
@@ -253,7 +253,7 @@ export default class PolygonUtil {
     geoInput.push(geoInput[0]); // Create loop
     return PolygonUtil.geometryFactory.createPolygon(
       PolygonUtil.geometryFactory.createLinearRing(geoInput),
-      [],
+      []
     );
   }
 

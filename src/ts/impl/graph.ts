@@ -1,6 +1,6 @@
-import * as log from 'loglevel';
-import * as d3 from 'd3-quadtree';
-import Vector from '../vector';
+import * as log from "loglevel";
+import * as d3 from "d3-quadtree";
+import Vector from "../vector";
 
 declare global {
   const isect: {
@@ -66,13 +66,13 @@ export default class Graph {
         const node = new Node(streamline[i]);
         if (i > 0) {
           node.addSegment(
-            this.vectorsToSegment(streamline[i - 1], streamline[i]),
+            this.vectorsToSegment(streamline[i - 1], streamline[i])
           );
         }
 
         if (i < streamline.length - 1) {
           node.addSegment(
-            this.vectorsToSegment(streamline[i], streamline[i + 1]),
+            this.vectorsToSegment(streamline[i], streamline[i + 1])
           );
         }
 
@@ -83,7 +83,7 @@ export default class Graph {
     // Add all intersections
     for (const intersection of intersections) {
       const node = new Node(
-        new Vector(intersection.point.x, intersection.point.y),
+        new Vector(intersection.point.x, intersection.point.y)
       );
       for (const s of intersection.segments) node.addSegment(s);
       this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
@@ -96,7 +96,7 @@ export default class Graph {
           this.vectorsToSegment(streamline[i], streamline[i + 1]),
           quadtree,
           nodeAddRadius,
-          dstep,
+          dstep
         );
 
         if (nodesAlongSegment.length > 1) {
@@ -104,7 +104,7 @@ export default class Graph {
             nodesAlongSegment[j].addNeighbor(nodesAlongSegment[j + 1]);
           }
         } else {
-          log.error('Error Graph.js: segment with less than 2 nodes');
+          log.error("Error Graph.js: segment with less than 2 nodes");
         }
       }
     }
@@ -142,7 +142,7 @@ export default class Graph {
     segment: Segment,
     quadtree: d3.Quadtree<Node>,
     radius: number,
-    step: number,
+    step: number
   ): Node[] {
     // Walk dstep along each streamline, adding nodes within dstep/2
     // and connected to this streamline (fuzzy - nodeAddRadius) to list, removing from
@@ -168,7 +168,7 @@ export default class Graph {
       let closestNode = quadtree.find(
         currentPoint.x,
         currentPoint.y,
-        radius + step / 2,
+        radius + step / 2
       );
 
       while (closestNode !== undefined) {
@@ -190,14 +190,14 @@ export default class Graph {
         closestNode = quadtree.find(
           currentPoint.x,
           currentPoint.y,
-          radius + step / 2,
+          radius + step / 2
         );
       }
 
       nodesToAdd.sort(
         (first: Node, second: Node) =>
           this.dotProductToSegment(first, start, differenceVector) -
-          this.dotProductToSegment(second, start, differenceVector),
+          this.dotProductToSegment(second, start, differenceVector)
       );
       nodesAlongSegment.push(...nodesToAdd);
     }
@@ -209,7 +209,7 @@ export default class Graph {
   private fuzzySegmentsEqual(
     s1: Segment,
     s2: Segment,
-    tolerance = 0.0001,
+    tolerance = 0.0001
   ): boolean {
     // From
     if (s1.from.x - s2.from.x > tolerance) {
@@ -236,7 +236,7 @@ export default class Graph {
   private dotProductToSegment(
     node: Node,
     start: Vector,
-    differenceVector: Vector,
+    differenceVector: Vector
   ): number {
     const dotVector = node.value.clone().sub(start);
     return differenceVector.dot(dotVector);
@@ -245,7 +245,7 @@ export default class Graph {
   private fuzzyAddToQuadtree(
     quadtree: d3.Quadtree<Node>,
     node: Node,
-    radius: number,
+    radius: number
   ): void {
     // Only add if there isn't a node within radius
     // Remember to check for double radius when querying tree, or point might be missed

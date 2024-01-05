@@ -1,5 +1,5 @@
-import Tensor from './tensor';
-import Vector from '../vector';
+import Tensor from "./tensor";
+import Vector from "../vector";
 
 export const enum FIELD_TYPE {
   Radial,
@@ -20,7 +20,7 @@ export abstract class BasisField {
   constructor(
     centre: Vector,
     protected _size: number,
-    protected _decay: number,
+    protected _decay: number
   ) {
     this._centre = centre.clone();
   }
@@ -80,10 +80,10 @@ export abstract class BasisField {
   setGui(parent: dat.GUI, folder: dat.GUI): void {
     this.parentFolder = parent;
     this.folder = folder;
-    folder.add(this._centre, 'x');
-    folder.add(this._centre, 'y');
-    folder.add(this, '_size');
-    folder.add(this, '_decay', -50, 50);
+    folder.add(this._centre, "x");
+    folder.add(this._centre, "y");
+    folder.add(this, "_size");
+    folder.add(this, "_decay", -50, 50);
   }
 
   /**
@@ -111,7 +111,7 @@ export class Grid extends BasisField {
     centre: Vector,
     size: number,
     decay: number,
-    private _theta: number,
+    private _theta: number
   ) {
     super(centre, size, decay);
   }
@@ -125,9 +125,9 @@ export class Grid extends BasisField {
 
     // GUI in degrees, convert to rads
     const thetaProp = { theta: (this._theta * 180) / Math.PI };
-    const thetaController = folder.add(thetaProp, 'theta', -90, 90);
+    const thetaController = folder.add(thetaProp, "theta", -90, 90);
     thetaController.onChange(
-      (theta) => (this._theta = theta * (Math.PI / 180)),
+      (theta) => (this._theta = theta * (Math.PI / 180))
     );
   }
 

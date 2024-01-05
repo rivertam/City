@@ -1,4 +1,4 @@
-import * as log from 'loglevel';
+import * as log from "loglevel";
 
 export default class Vector {
   constructor(public x: number, public y: number) {}
@@ -35,7 +35,7 @@ export default class Vector {
   static isLeft(
     linePoint: Vector,
     lineDirection: Vector,
-    point: Vector,
+    point: Vector
   ): boolean {
     const perpendicularVector = new Vector(lineDirection.y, -lineDirection.x);
     return point.clone().sub(linePoint).dot(perpendicularVector) < 0;
@@ -80,7 +80,7 @@ export default class Vector {
 
   divide(v: Vector): Vector {
     if (v.x === 0 || v.y === 0) {
-      log.warn('Division by zero');
+      log.warn("Division by zero");
       return this;
     }
 
@@ -91,7 +91,7 @@ export default class Vector {
 
   divideScalar(s: number): Vector {
     if (s === 0) {
-      log.warn('Division by zero');
+      log.warn("Division by zero");
       return this;
     }
     return this.multiplyScalar(1 / s);
@@ -132,7 +132,7 @@ export default class Vector {
   normalize(): Vector {
     const l = this.length();
     if (l === 0) {
-      log.warn('Zero Vector');
+      log.warn("Zero Vector");
       return this;
     }
 

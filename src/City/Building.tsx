@@ -7,9 +7,9 @@ import { Color } from "three";
 export function Building({ ...pieceProps }: ComponentProps<typeof Piece>) {
   const { height } = pieceProps;
   const [color] = useState(() => {
-    const color = new Color()
+    const color = new Color();
 
-    color.setHSL(Math.random(), Math.random() * 0.2 + 0.2, 0.7)
+    color.setHSL(Math.random(), Math.random() * 0.2 + 0.2, 0.7);
 
     return color;
   });
@@ -25,7 +25,7 @@ export function Building({ ...pieceProps }: ComponentProps<typeof Piece>) {
       {units}
       <Piece
         onClick={() => {
-          console.log('clicked an anonymous building');
+          console.log("clicked an anonymous building");
         }}
         {...pieceProps}
         color={`#${color.getHexString()}`}

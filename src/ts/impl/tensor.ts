@@ -1,4 +1,4 @@
-import Vector from '../vector';
+import Vector from "../vector";
 
 export default class Tensor {
   private oldTheta: boolean;
@@ -39,7 +39,7 @@ export default class Tensor {
 
   add(tensor: Tensor, smooth: boolean): Tensor {
     this.matrix = this.matrix.map(
-      (v, i) => v * this.r + tensor.matrix[i] * tensor.r,
+      (v, i) => v * this.r + tensor.matrix[i] * tensor.r
     );
 
     if (smooth) {
