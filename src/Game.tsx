@@ -44,19 +44,19 @@ const Camera = observer(() => {
       <directionalLight
         position={[1000, 100, 1000]}
         color={0xaaaaaa}
-        intensity={0.5}
+        intensity={0.8}
       />
       <directionalLight
         position={[100, 1000, 1000]}
         color={0xaaaaaa}
-        intensity={0.5}
+        intensity={0.8}
       />
       <directionalLight
         position={[0, 0, 1000]}
         color={0xaaaaaa}
-        intensity={0.5}
+        intensity={0.8}
       />
-      <ambientLight intensity={0.1} />
+      <ambientLight intensity={0.5} />
       <MapControls
         addEventListener={undefined}
         hasEventListener={undefined}

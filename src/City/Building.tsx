@@ -6,7 +6,13 @@ import { Color } from "three";
 
 export function Building({ ...pieceProps }: ComponentProps<typeof Piece>) {
   const { height } = pieceProps;
-  const [color] = useState(() => new Color("gray"));
+  const [color] = useState(() => {
+    const color = new Color()
+
+    color.setHSL(Math.random(), Math.random() * 0.2 + 0.2, 0.7)
+
+    return color;
+  });
 
   const units = new Array<JSX.Element>();
 
