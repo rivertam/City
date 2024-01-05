@@ -176,7 +176,7 @@ export default class StreamlineGenerator {
   getBestNextPoint(
     point: Vector,
     previousPoint: Vector,
-    streamline: Vector[]
+    _streamline: Vector[]
   ): Vector {
     const nearbyPoints = this.majorGrid.getNearbyPoints(
       point,

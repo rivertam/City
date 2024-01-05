@@ -19,7 +19,7 @@ const GroundHeights = {
   Foundation: 0.09,
 };
 
-export const City = ({ children, size }: { children?: React.ReactNode, size?: number }) => {
+export const City = ({ children, size }: { children?: React.ReactNode; size?: number }) => {
   const [cityState, setCityState] = useState<CityState | null>(null);
   const hasGenerated = useRef(false);
 

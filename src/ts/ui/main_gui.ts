@@ -14,14 +14,14 @@ import PolygonUtil from "../impl/polygon_util";
  * Handles Map folder, glues together impl
  */
 export default class MainGUI {
-  private numBigParks: number = 2;
-  private numSmallParks: number = 0;
-  private clusterBigParks: boolean = false;
+  private numBigParks = 2;
+  private numSmallParks = 0;
+  private clusterBigParks = false;
 
   private intersections: Vector[] = [];
   public bigParks: Vector[][] = [];
   public smallParks: Vector[][] = [];
-  private animationSpeed: number = 30;
+  private animationSpeed = 30;
 
   public coastline: WaterGUI;
   public mainRoads: RoadGUI;

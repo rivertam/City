@@ -7,7 +7,7 @@ export type LotState = {
 };
 
 export const Lot = observer(
-  ({ address, shape }: { address: string; shape: Array<[number, number]> }) => {
+  ({ shape }: { address: string; shape: Array<[number, number]> }) => {
     return <Space polygon={shape} color="#fff" />;
   }
 );

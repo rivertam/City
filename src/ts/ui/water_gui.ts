@@ -1,6 +1,4 @@
-import Util from "../util";
 import FieldIntegrator from "../impl/integrator";
-import { StreamlineParams } from "../impl/streamlines";
 import { WaterParams } from "../impl/water_generator";
 import WaterGenerator from "../impl/water_generator";
 import Vector from "../vector";

@@ -1,4 +1,3 @@
-import Util from "../util";
 import FieldIntegrator from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import StreamlineGenerator from "../impl/streamlines";

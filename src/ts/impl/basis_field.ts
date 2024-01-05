@@ -12,7 +12,7 @@ export const enum FIELD_TYPE {
 export abstract class BasisField {
   abstract readonly FOLDER_NAME: string;
   abstract readonly FIELD_TYPE: number;
-  protected static folderNameIndex: number = 0;
+  protected static folderNameIndex = 0;
   protected parentFolder: dat.GUI;
   protected folder: dat.GUI;
   protected _centre: Vector;
@@ -131,7 +131,7 @@ export class Grid extends BasisField {
     );
   }
 
-  getTensor(point: Vector): Tensor {
+  getTensor(_point: Vector): Tensor {
     const cos = Math.cos(2 * this._theta);
     const sin = Math.sin(2 * this._theta);
     return new Tensor(1, [cos, sin]);

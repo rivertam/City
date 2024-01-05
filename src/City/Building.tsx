@@ -1,6 +1,6 @@
-import { ComponentProps, useEffect, useRef, useState } from "react";
+import { ComponentProps, useState } from "react";
 import { Piece } from "./Piece";
-import { Unit, UnitRole } from "./Unit";
+import { Unit } from "./Unit";
 import React from "react";
 import { Color } from "three";
 

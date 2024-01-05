@@ -128,7 +128,7 @@ export default class Graph {
   private deleteDanglingNodes(n: Node, quadtree: d3.Quadtree<Node>) {
     if (n.neighbors.size === 1) {
       quadtree.remove(n);
-      for (let neighbor of n.neighbors) {
+      for (const neighbor of n.neighbors) {
         neighbor.neighbors.delete(n);
         this.deleteDanglingNodes(neighbor, quadtree);
       }
@@ -157,15 +157,14 @@ export default class Graph {
     const differenceVector = end.clone().sub(start);
     step = Math.min(step, differenceVector.length() / 2); // Min of 2 step along vector
     const steps = Math.ceil(differenceVector.length() / step);
-    const differenceVectorLength = differenceVector.length();
 
     for (let i = 0; i <= steps; i++) {
-      let currentPoint = start
+      const currentPoint = start
         .clone()
         .add(differenceVector.clone().multiplyScalar(i / steps));
 
       // Order nodes, not by 'closeness', but by dot product
-      let nodesToAdd = [];
+      const nodesToAdd = [];
       let closestNode = quadtree.find(
         currentPoint.x,
         currentPoint.y,
@@ -177,7 +176,7 @@ export default class Graph {
         foundNodes.push(closestNode);
 
         let nodeOnSegment = false;
-        for (let s of closestNode.segments) {
+        for (const s of closestNode.segments) {
           if (this.fuzzySegmentsEqual(s, segment)) {
             nodeOnSegment = true;
             break;

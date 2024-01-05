@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext } from "react";
 
 export type MapLine = {
   name: string;
