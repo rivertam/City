@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CityGenerator } from "./CityGenerator";
 import { CityState } from "./CityState";
 import { Park } from "./Park";
 import { Road } from "./Road";
 import { Space } from "./Space";
-import { Piece } from "./Piece";
 import { Building } from "./Building";
 
 const GroundHeights = {
@@ -20,18 +19,27 @@ const GroundHeights = {
   Foundation: 0.09,
 };
 
-export const City = ({ children }: { children: React.ReactNode }) => {
+export const City = ({ children, size }: { children?: React.ReactNode, size?: number }) => {
   const [cityState, setCityState] = useState<CityState | null>(null);
+  const hasGenerated = useRef(false);
 
   useEffect(() => {
+    if (hasGenerated.current) {
+      console.warn('City generation props changed after generation. The prop change will be ignored.');
+
+      return;
+    }
+
+    hasGenerated.current = true;
+
     (async () => {
-      const generator = new CityGenerator();
+      const generator = new CityGenerator({ size });
 
       const generatedCity = await generator.generate();
 
       setCityState(new CityState(generatedCity));
     })();
-  }, []);
+  }, [size]);
 
   if (!cityState) {
     return <></>;

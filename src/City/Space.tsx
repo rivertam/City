@@ -1,4 +1,4 @@
-import { Edges, Line } from "@react-three/drei";
+import { Edges } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
 

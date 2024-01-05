@@ -1,7 +1,6 @@
 import React from "react";
-import { MapLine, CityState } from "./CityState";
+import { MapLine } from "./CityState";
 import { Piece } from "./Piece";
-import { Line } from "@react-three/drei";
 
 export const Park: React.FC<{ park: MapLine }> = ({ park }) => {
   return (

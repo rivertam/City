@@ -5,11 +5,9 @@ import { PerspectiveCamera, MapControls } from "@react-three/drei";
 import styled from "styled-components";
 import { observer } from "mobx-react-lite";
 
-import { Agent } from "./Agents";
-import { CityState } from "./City/CityState";
-import { City } from "./City/City";
-import { SegregationSimulation } from "./simulations/Segregation";
+import { wait } from './utils/wait';
 import { makeButton, useTweaks } from "use-tweaks";
+import { Simple } from "./simulations/Simple";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -78,10 +76,18 @@ export const Game = observer((): React.ReactElement => {
     null
   );
 
-  useTweaks("Game", {
-    ...makeButton("Make segregation simulation", () => {
-      setSimulation(() => SegregationSimulation);
+  const tweaks = useTweaks("Game", {
+    ...makeButton("Make simple city", async () => {
+      setSimulation(() => null);
+      await wait(100);
+      setSimulation(() => Simple);
     }),
+    size: {
+      min: 100,
+      max: 1000,
+      value: 500,
+      step: 20,
+    },
   });
 
   return (
@@ -104,7 +110,7 @@ export const Game = observer((): React.ReactElement => {
           }}
         >
           <Camera />
-          {Simulation && <Simulation />}
+          {Simulation && <Simulation size={tweaks.size} />}
         </Canvas>
       </GameWindow>
     </>

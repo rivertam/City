@@ -5,6 +5,10 @@ import ModelGenerator from "../ts/model_generator";
 import faker from "faker";
 import { GeneratedCity, MapLine } from "./CityState";
 
+export type CityGenerationParameters = {
+  size?: number;
+};
+
 export class CityGenerator {
   private tensorField: TensorField;
   private mainGui: MainGUI; // In charge of glueing everything together
@@ -12,7 +16,7 @@ export class CityGenerator {
   private firstGenerate = true; // Don't randomise tensor field on first generate
   private modelGenerator: ModelGenerator;
 
-  constructor() {
+  constructor({ size = 800 }: CityGenerationParameters) {
     const noiseParamsPlaceholder: NoiseParams = {
       // Placeholder values for park + water noise
       globalNoise: false,
@@ -24,7 +28,7 @@ export class CityGenerator {
 
     this.tensorField = new TensorField(
       noiseParamsPlaceholder,
-      new Vector(300, 300)
+      new Vector(size, size)
     );
     this.mainGui = new MainGUI(this.tensorField);
 
