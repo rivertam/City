@@ -152,8 +152,8 @@ export default class Buildings {
       this.tensorField
     );
     this.polygonFinder.findPolygons();
-    await this.polygonFinder.shrink(false);
-    await this.polygonFinder.divide(false);
+    this.polygonFinder.shrink();
+    this.polygonFinder.divide();
     this._models = new BuildingModels(this.polygonFinder.polygons);
 
     this.postGenerateCallback();

@@ -74,28 +74,15 @@ export default class PolygonFinder {
   /**
    * Properly shrink polygon so the edges are all the same distance from the road
    */
-  async shrink(animate = false): Promise<void> {
-    return new Promise<void>((resolve) => {
-      if (this._polygons.length === 0) {
-        this.findPolygons();
-      }
+  shrink() {
+    if (this._polygons.length === 0) {
+      this.findPolygons();
+    }
 
-      if (animate) {
-        if (this._polygons.length === 0) {
-          resolve();
-          return;
-        }
-
-        this.toShrink = this._polygons.slice();
-        this.resolveShrink = resolve;
-      } else {
-        this._shrunkPolygons = [];
-        for (const p of this._polygons) {
-          this.stepShrink(p);
-        }
-        resolve();
-      }
-    });
+    this._shrunkPolygons = [];
+    for (const p of this._polygons) {
+      this.stepShrink(p);
+    }
   }
 
   private stepShrink(polygon: Vector[]): boolean {
@@ -110,33 +97,20 @@ export default class PolygonFinder {
     return false;
   }
 
-  async divide(animate = false): Promise<void> {
-    return new Promise<void>((resolve) => {
-      if (this._polygons.length === 0) {
-        this.findPolygons();
-      }
+  divide() {
+    if (this._polygons.length === 0) {
+      this.findPolygons();
+    }
 
-      let polygons = this._polygons;
-      if (this._shrunkPolygons.length > 0) {
-        polygons = this._shrunkPolygons;
-      }
+    let polygons = this._polygons;
+    if (this._shrunkPolygons.length > 0) {
+      polygons = this._shrunkPolygons;
+    }
 
-      if (animate) {
-        if (polygons.length === 0) {
-          resolve();
-          return;
-        }
-
-        this.toDivide = polygons.slice();
-        this.resolveDivide = resolve;
-      } else {
-        this._dividedPolygons = [];
-        for (const p of polygons) {
-          this.stepDivide(p);
-        }
-        resolve();
-      }
-    });
+    this._dividedPolygons = [];
+    for (const p of polygons) {
+      this.stepDivide(p);
+    }
   }
 
   private stepDivide(polygon: Vector[]): boolean {
