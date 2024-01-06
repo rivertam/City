@@ -237,7 +237,7 @@ export default class MainGUI {
     await this.mainRoads.generateRoads();
     await this.majorRoads.generateRoads();
     await this.minorRoads.generateRoads();
-    await this.buildings.generate();
+    this.buildings.generate();
   }
 
   update() {
@@ -291,7 +291,7 @@ export default class MainGUI {
     return this.buildings.models;
   }
 
-  public getBlocks(): Promise<Vector[][]> {
+  public getBlocks(): Vector[][] {
     return this.buildings.getBlocks();
   }
 

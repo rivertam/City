@@ -75,18 +75,6 @@ export abstract class BasisField {
   }
 
   /**
-   * Creates a folder and adds it to the GUI to control params
-   */
-  setGui(parent: dat.GUI, folder: dat.GUI): void {
-    this.parentFolder = parent;
-    this.folder = folder;
-    folder.add(this._centre, "x");
-    folder.add(this._centre, "y");
-    folder.add(this, "_size");
-    folder.add(this, "_decay", -50, 50);
-  }
-
-  /**
    * Interpolates between (0 and 1)^decay
    */
   protected getTensorWeight(point: Vector, smooth: boolean): number {
@@ -118,17 +106,6 @@ export class Grid extends BasisField {
 
   set theta(theta: number) {
     this._theta = theta;
-  }
-
-  setGui(parent: dat.GUI, folder: dat.GUI): void {
-    super.setGui(parent, folder);
-
-    // GUI in degrees, convert to rads
-    const thetaProp = { theta: (this._theta * 180) / Math.PI };
-    const thetaController = folder.add(thetaProp, "theta", -90, 90);
-    thetaController.onChange(
-      (theta) => (this._theta = theta * (Math.PI / 180))
-    );
   }
 
   getTensor(_point: Vector): Tensor {

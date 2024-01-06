@@ -106,7 +106,7 @@ export default class Buildings {
   /**
    * Only used when creating the 3D model to 'fake' the roads
    */
-  async getBlocks(): Promise<Vector[][]> {
+  getBlocks() {
     const g = new Graph(this.allStreamlines, this.dstep, true);
     const blockParams = Object.assign({}, this.buildingParams);
     blockParams.shrinkSpacing = blockParams.shrinkSpacing / 2;
@@ -116,7 +116,7 @@ export default class Buildings {
       this.tensorField
     );
     polygonFinder.findPolygons();
-    await polygonFinder.shrink(false);
+    polygonFinder.shrink();
     return polygonFinder.polygons.map((p) => p.map((v) => v.clone()));
   }
 
@@ -141,7 +141,7 @@ export default class Buildings {
   /**
    * Finds blocks, shrinks and divides them to create building lots
    */
-  async generate(): Promise<void> {
+  generate() {
     this.preGenerateCallback();
     this._models = new BuildingModels([]);
     const g = new Graph(this.allStreamlines, this.dstep, true);
