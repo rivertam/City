@@ -77,8 +77,9 @@ class BuildingModels {
  * Finds building lots and optionally pseudo3D buildings
  */
 export default class Buildings {
+  public allStreamlines: Vector[][] = [];
+
   private polygonFinder: PolygonFinder;
-  private allStreamlines: Vector[][] = [];
   private preGenerateCallback: () => any = () => {};
   private postGenerateCallback: () => any = () => {};
   private _models: BuildingModels = new BuildingModels([]);
@@ -144,10 +145,10 @@ export default class Buildings {
   generate() {
     this.preGenerateCallback();
     this._models = new BuildingModels([]);
-    const g = new Graph(this.allStreamlines, this.dstep, true);
+    const graph = new Graph(this.allStreamlines, this.dstep, true);
 
     this.polygonFinder = new PolygonFinder(
-      g.nodes,
+      graph.nodes,
       this.buildingParams,
       this.tensorField
     );

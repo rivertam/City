@@ -116,7 +116,7 @@ export class CityGenerator {
       return name;
     };
 
-    const blocks = await this.mainGui.getBlocks();
+    const blocks = this.mainGui.getBlocks();
 
     return {
       sea: convertLine(this.mainGui.seaPolygon, "sea"),
@@ -150,6 +150,7 @@ export class CityGenerator {
           shape: convertLine(building.lotScreen, createLotName()),
         };
       }),
+      streetGraph: this.mainGui.getStreetGraph(),
     };
   }
 }

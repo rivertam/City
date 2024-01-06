@@ -1,5 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
+import Graph from "../ts/impl/graph";
 
 export type MapLine = {
   name: string;
@@ -169,4 +170,6 @@ export type GeneratedCity = {
   lots: Array<{
     shape: MapLine;
   }>;
+
+  streetGraph: Graph;
 };

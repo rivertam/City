@@ -2,7 +2,7 @@ import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import { WaterParams } from "../impl/water_generator";
-import Graph from "../impl/graph";
+import Graph, { Node } from "../impl/graph";
 import RoadGUI from "./road_gui";
 import WaterGUI from "./water_gui";
 import Vector from "../vector";
@@ -175,12 +175,7 @@ export default class MainGUI {
   }
 
   addParks(): void {
-    const graph = new Graph(
-      this.majorRoads.allStreamlines
-        .concat(this.mainRoads.allStreamlines)
-        .concat(this.minorRoads.allStreamlines),
-      this.minorParams.dstep
-    );
+    const graph = this.getStreetGraph();
     this.intersections = graph.intersections;
 
     const polygonFinder = new PolygonFinder(
@@ -293,6 +288,15 @@ export default class MainGUI {
 
   public getBlocks(): Vector[][] {
     return this.buildings.getBlocks();
+  }
+
+  public getStreetGraph(): Graph {
+    return new Graph(
+      this.majorRoads.allStreamlines
+        .concat(this.mainRoads.allStreamlines)
+        .concat(this.minorRoads.allStreamlines),
+      this.minorParams.dstep
+    );
   }
 
   public get minorRoadPolygons(): Vector[][] {
