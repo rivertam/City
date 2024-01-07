@@ -60,17 +60,14 @@ export class CityState {
 
   public parks: Array<MapLine>;
 
+  public streetGraph: Graph;
+
   public constructor(generatedCity: GeneratedCity) {
     this.sea = generatedCity.sea;
     this.coastline = generatedCity.coastline;
     this.river = generatedCity.river;
     this.secondaryRiver = generatedCity.secondaryRiver;
-    this.roads = {
-      main: generatedCity.mainRoads,
-      major: generatedCity.majorRoads,
-      minor: generatedCity.minorRoads,
-      coastline: generatedCity.coastlineRoads,
-    };
+    this.roads = generatedCity.roads;
 
     this.blocks = generatedCity.blocks;
     this.lots = generatedCity.lots.map(({ shape: { name, polygon } }) => {
@@ -78,48 +75,8 @@ export class CityState {
     });
     this.parks = generatedCity.parks;
 
-    console.time("Centralizing city");
-    // average all vertices and normalize so the average is 0, 0
-    const vertices: Array<[number, number]> = [];
-    this.sea.polygon.forEach((vertex) => vertices.push(vertex));
-    this.coastline.polygon.forEach((vertex) => vertices.push(vertex));
-    this.river.polygon.forEach((vertex) => vertices.push(vertex));
-    this.secondaryRiver.polygon.forEach((vertex) => vertices.push(vertex));
-    this.roads.main.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
-    );
-    this.roads.major.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
-    );
-    this.roads.minor.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
-    );
+    this.streetGraph = generatedCity.streetGraph;
 
-    this.roads.coastline.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
-    );
-    this.blocks.forEach((block) =>
-      block.shape.polygon.forEach((vertex) => vertices.push(vertex))
-    );
-    this.lots.forEach((lot) =>
-      lot.shape.forEach((vertex) => vertices.push(vertex))
-    );
-    this.parks.forEach((park) =>
-      park.polygon.forEach((vertex) => vertices.push(vertex))
-    );
-
-    const averageX =
-      vertices.reduce((current, [x]) => current + x, 0) / vertices.length;
-    const averageY =
-      vertices.reduce((current, [, y]) => current + y, 0) / vertices.length;
-
-    vertices.forEach((vertex) => {
-      vertex[0] -= averageX;
-      vertex[1] -= averageY;
-    });
-
-    console.timeEnd("Centralizing city");
-    console.log(`${vertices.length} points`);
     makeAutoObservable(this);
   }
 
@@ -159,10 +116,12 @@ export type GeneratedCity = {
   coastline: MapLine;
   river: MapLine;
   secondaryRiver: MapLine;
-  mainRoads: Array<MapLine>;
-  majorRoads: Array<MapLine>;
-  minorRoads: Array<MapLine>;
-  coastlineRoads: Array<MapLine>;
+  roads: {
+    main: Array<MapLine>;
+    major: Array<MapLine>;
+    minor: Array<MapLine>;
+    coastline: Array<MapLine>;
+  };
   parks: Array<MapLine>;
   blocks: Array<{
     shape: MapLine;

@@ -118,7 +118,7 @@ export class CityGenerator {
 
     const blocks = this.mainGui.getBlocks();
 
-    return {
+    const city = {
       sea: convertLine(this.mainGui.seaPolygon, "sea"),
       coastline: convertLine(this.mainGui.coastlinePolygon, "coastline"),
       river: convertLine(this.mainGui.riverPolygon, createRiverName()),
@@ -130,18 +130,20 @@ export class CityGenerator {
         convertLine(park, createParkName())
       ),
 
-      coastlineRoads: this.mainGui.coastline.roads.map((poly) =>
-        convertLine(poly, createRoadName())
-      ),
-      mainRoads: this.mainGui.mainRoads.roads.map((poly) =>
-        convertLine(poly, createRoadName())
-      ),
-      majorRoads: this.mainGui.majorRoads.roads.map((poly) =>
-        convertLine(poly, createRoadName())
-      ),
-      minorRoads: this.mainGui.minorRoads.roads.map((poly) =>
-        convertLine(poly, createRoadName())
-      ),
+      roads: {
+        coastline: this.mainGui.coastline.roads.map((poly) =>
+          convertLine(poly, createRoadName())
+        ),
+        main: this.mainGui.mainRoads.roads.map((poly) =>
+          convertLine(poly, createRoadName())
+        ),
+        major: this.mainGui.majorRoads.roads.map((poly) =>
+          convertLine(poly, createRoadName())
+        ),
+        minor: this.mainGui.minorRoads.roads.map((poly) =>
+          convertLine(poly, createRoadName())
+        ),
+      },
       blocks: blocks.map((block) => ({
         shape: convertLine(block, createLotName()),
       })),
@@ -152,5 +154,50 @@ export class CityGenerator {
       }),
       streetGraph: this.mainGui.getStreetGraph(),
     };
+
+    // average all vertices and normalize so the average is 0, 0
+    const vertices: Array<[number, number]> = [];
+    city.sea.polygon.forEach((vertex) => vertices.push(vertex));
+    city.coastline.polygon.forEach((vertex) => vertices.push(vertex));
+    city.river.polygon.forEach((vertex) => vertices.push(vertex));
+    city.secondaryRiver.polygon.forEach((vertex) => vertices.push(vertex));
+    city.roads.main.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    city.roads.major.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    city.roads.minor.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+
+    city.roads.coastline.forEach((road) =>
+      road.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    city.blocks.forEach((block) =>
+      block.shape.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    city.lots.forEach((lot) =>
+      lot.shape.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+    city.parks.forEach((park) =>
+      park.polygon.forEach((vertex) => vertices.push(vertex))
+    );
+
+    console.time("Centralizing city");
+    const averageX =
+      vertices.reduce((current, [x]) => current + x, 0) / vertices.length;
+    const averageY =
+      vertices.reduce((current, [, y]) => current + y, 0) / vertices.length;
+
+    vertices.forEach((vertex) => {
+      vertex[0] -= averageX;
+      vertex[1] -= averageY;
+    });
+
+    console.timeEnd("Centralizing city");
+    console.log(`${vertices.length} points`);
+
+    return city;
   }
 }
