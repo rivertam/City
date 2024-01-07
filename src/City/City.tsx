@@ -168,6 +168,7 @@ export const City = ({
           <Sphere
             position={[node.value.x, node.value.y, 2]}
             rotation={[Math.PI / 2, 0, 0]}
+            key={`${node.value.x},${node.value.y}`}
           >
             <meshPhongMaterial attach="material" color="white" />
           </Sphere>
