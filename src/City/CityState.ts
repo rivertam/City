@@ -19,20 +19,16 @@ export class Road {
 export class Lot {
   public address: string;
   public shape: Array<[number, number]>;
-  public height: number;
 
   public constructor({
     address,
     shape,
-    height,
   }: {
     address: string;
     shape: Array<[number, number]>;
-    height: number;
   }) {
     this.address = address;
     this.shape = shape;
-    this.height = height;
 
     makeAutoObservable(this);
   }
@@ -74,11 +70,9 @@ export class CityState {
     this.roads = generatedCity.roads;
 
     this.blocks = generatedCity.blocks;
-    this.lots = generatedCity.lots.map(
-      ({ shape: { name, polygon }, height }) => {
-        return new Lot({ address: name, shape: polygon, height });
-      }
-    );
+    this.lots = generatedCity.lots.map(({ shape: { name, polygon } }) => {
+      return new Lot({ address: name, shape: polygon });
+    });
     this.parks = generatedCity.parks;
 
     this.streetGraph = generatedCity.streetGraph;
@@ -134,7 +128,6 @@ export type GeneratedCity = {
   }>;
   lots: Array<{
     shape: MapLine;
-    height: number;
   }>;
 
   streetGraph: Graph;
