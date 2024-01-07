@@ -195,6 +195,9 @@ export class CityGenerator {
       vertex[1] -= averageY;
     });
 
+    city.streetGraph.flipY();
+    city.streetGraph.translate(new Vector(-averageX, -averageY));
+
     console.timeEnd("Centralizing city");
     console.log(`${vertices.length} points`);
 

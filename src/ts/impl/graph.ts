@@ -123,6 +123,24 @@ export default class Graph {
   }
 
   /**
+   * Translate all data (nodes, intersections) by vector v
+   */
+  public translate(translation: Vector): void {
+    for (const n of this.nodes) n.value.add(translation);
+    for (const i of this.intersections) i.add(translation);
+  }
+
+  public flipX() {
+    for (const n of this.nodes) n.value.x *= -1;
+    for (const i of this.intersections) i.x *= -1;
+  }
+
+  public flipY() {
+    for (const n of this.nodes) n.value.y *= -1;
+    for (const i of this.intersections) i.y *= -1;
+  }
+
+  /**
    * Remove dangling edges from graph to facilitate polygon finding
    */
   private deleteDanglingNodes(n: Node, quadtree: d3.Quadtree<Node>) {

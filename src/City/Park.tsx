@@ -5,7 +5,7 @@ import { Piece } from "./Piece";
 export const Park: React.FC<{ park: MapLine }> = ({ park }) => {
   return (
     <>
-      <Piece height={5} color="green" polygon={park.polygon} />
+      <Piece height={1} color="green" polygon={park.polygon} />
     </>
   );
 };

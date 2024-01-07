@@ -5,6 +5,7 @@ import { Park } from "./Park";
 import { Road } from "./Road";
 import { Space } from "./Space";
 import { Building } from "./Building";
+import { Cylinder, Sphere } from "@react-three/drei";
 
 const GroundHeights = {
   BaseGround: 0,
@@ -19,13 +20,21 @@ const GroundHeights = {
   Foundation: 0.09,
 };
 
-export const City = ({ children, size }: { children?: React.ReactNode; size?: number }) => {
+export const City = ({
+  children,
+  size,
+}: {
+  children?: React.ReactNode;
+  size?: number;
+}) => {
   const [cityState, setCityState] = useState<CityState | null>(null);
   const hasGenerated = useRef(false);
 
   useEffect(() => {
     if (hasGenerated.current) {
-      console.warn('City generation props changed after generation. The prop change will be ignored.');
+      console.warn(
+        "City generation props changed after generation. The prop change will be ignored."
+      );
 
       return;
     }
@@ -151,6 +160,17 @@ export const City = ({ children, size }: { children?: React.ReactNode; size?: nu
             color="white"
             height={(lot.address.length - 6) * 2}
           />
+        ))}
+      </group>
+
+      <group position={[0, 0, GroundHeights.Foundation]}>
+        {cityState.streetGraph.nodes.map((node) => (
+          <Sphere
+            position={[node.value.x, node.value.y, 2]}
+            rotation={[Math.PI / 2, 0, 0]}
+          >
+            <meshPhongMaterial attach="material" color="white" />
+          </Sphere>
         ))}
       </group>
     </CityState.Context.Provider>
