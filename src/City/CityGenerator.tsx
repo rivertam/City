@@ -150,6 +150,7 @@ export class CityGenerator {
       lots: this.mainGui.buildingModels.map((building) => {
         return {
           shape: convertLine(building.lotScreen, createLotName()),
+          height: building.height,
         };
       }),
       streetGraph: this.mainGui.getStreetGraph(),
@@ -195,6 +196,7 @@ export class CityGenerator {
       vertex[1] -= averageY;
     });
 
+    // not sure why, but the Graph data is upside-down
     city.streetGraph.flipY();
     city.streetGraph.translate(new Vector(-averageX, -averageY));
 
