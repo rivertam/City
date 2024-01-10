@@ -106,13 +106,8 @@ export default class MainGUI {
 
     this.buildings = new Buildings(tensorField, this.minorParams.dstep);
     this.buildings.setPreGenerateCallback(() => {
-      const allStreamlines = [];
-      allStreamlines.push(...this.mainRoads.allStreamlines);
-      console.log(this.mainRoads);
-      allStreamlines.push(...this.majorRoads.allStreamlines);
-      allStreamlines.push(...this.minorRoads.allStreamlines);
-      allStreamlines.push(...this.coastline.streamlinesWithSecondaryRoad);
-      this.buildings.setAllStreamlines(allStreamlines);
+      this.buildings.setLotBoundaryGraph(this.getLotBoundaryGraph());
+      this.buildings.setStreetGraph(this.getStreetGraph());
     });
 
     this.minorRoads.setExistingStreamlines([
@@ -175,7 +170,7 @@ export default class MainGUI {
   }
 
   addParks(): void {
-    const graph = this.getStreetGraph();
+    const graph = this.createStreetGraph();
     this.intersections = graph.intersections;
 
     const polygonFinder = new PolygonFinder(
@@ -290,13 +285,42 @@ export default class MainGUI {
     return this.buildings.getBlocks();
   }
 
+  /**
+   * Shared street graph used to place buildings at the end of generation
+   */
+  private streetGraph: Graph | null = null;
+
   public getStreetGraph(): Graph {
+    if (!this.streetGraph) {
+      this.streetGraph = this.createStreetGraph();
+    }
+
+    return this.streetGraph;
+  }
+
+  public createStreetGraph(): Graph {
     return new Graph(
       this.majorRoads.allStreamlines
         .concat(this.mainRoads.allStreamlines)
         .concat(this.minorRoads.allStreamlines),
       this.minorParams.dstep
     );
+  }
+
+  private lotBoundaryGraph: Graph | null = null;
+
+  public getLotBoundaryGraph(): Graph {
+    if (!this.lotBoundaryGraph) {
+      const allStreamlines = [];
+      allStreamlines.push(...this.mainRoads.allStreamlines);
+      allStreamlines.push(...this.majorRoads.allStreamlines);
+      allStreamlines.push(...this.minorRoads.allStreamlines);
+      allStreamlines.push(...this.coastline.streamlinesWithSecondaryRoad);
+
+      this.lotBoundaryGraph = new Graph(allStreamlines, this.minorParams.dstep);
+    }
+
+    return this.lotBoundaryGraph;
   }
 
   public get minorRoadPolygons(): Vector[][] {

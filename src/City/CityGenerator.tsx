@@ -150,6 +150,7 @@ export class CityGenerator {
       lots: this.mainGui.buildingModels.map((building) => {
         return {
           shape: convertLine(building.lotScreen, createLotName()),
+          entryPoint: building.entryPoint,
         };
       }),
       streetGraph: this.mainGui.getStreetGraph(),

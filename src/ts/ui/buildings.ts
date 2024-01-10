@@ -10,7 +10,7 @@ export interface BuildingModel {
   lotScreen: Vector[]; // In screen space
   roof: Vector[]; // In screen space
   sides: Vector[][]; // In screen space
-  entryPoint: Node;
+  entryPoint: Node; // node in the street graph
 }
 
 /**
@@ -19,7 +19,7 @@ export interface BuildingModel {
 class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
-  constructor(lots: Vector[][], private streetGraph: Graph) {
+  constructor(lots: Vector[][], streetGraph: Graph) {
     // Lots in world space
     for (const lot of lots) {
       this._buildingModels.push({
@@ -79,7 +79,8 @@ class BuildingModels {
  * Finds building lots and optionally pseudo3D buildings
  */
 export default class Buildings {
-  public allStreamlines: Vector[][] = [];
+  public lotBoundaryGraph: Graph;
+  public streetGraph: Graph;
 
   private polygonFinder: PolygonFinder;
   private preGenerateCallback: () => any = () => {};
@@ -110,11 +111,10 @@ export default class Buildings {
    * Only used when creating the 3D model to 'fake' the roads
    */
   getBlocks() {
-    const g = new Graph(this.allStreamlines, this.dstep, true);
     const blockParams = Object.assign({}, this.buildingParams);
     blockParams.shrinkSpacing = blockParams.shrinkSpacing / 2;
     const polygonFinder = new PolygonFinder(
-      g.nodes,
+      this.lotBoundaryGraph.nodes,
       blockParams,
       this.tensorField
     );
@@ -128,8 +128,12 @@ export default class Buildings {
     return this._models.buildingModels;
   }
 
-  setAllStreamlines(s: Vector[][]): void {
-    this.allStreamlines = s;
+  setStreetGraph(graph: Graph): void {
+    this.streetGraph = graph;
+  }
+
+  setLotBoundaryGraph(graph: Graph): void {
+    this.lotBoundaryGraph = graph;
   }
 
   reset(): void {
@@ -147,17 +151,48 @@ export default class Buildings {
   generate() {
     this.preGenerateCallback();
     this._models = null;
-    const graph = new Graph(this.allStreamlines, this.dstep, true);
 
     this.polygonFinder = new PolygonFinder(
-      graph.nodes,
+      this.lotBoundaryGraph.nodes,
       this.buildingParams,
       this.tensorField
     );
     this.polygonFinder.findPolygons();
     this.polygonFinder.shrink();
     this.polygonFinder.divide();
-    this._models = new BuildingModels(this.polygonFinder.polygons, graph);
+
+    const averagePositionPolygons = { x: 0, y: 0 };
+
+    let points = 0;
+
+    for (const polygon of this.polygonFinder.polygons) {
+      for (const vertex of polygon) {
+        points++;
+        averagePositionPolygons.x += vertex.x;
+        averagePositionPolygons.y += vertex.y;
+      }
+    }
+
+    averagePositionPolygons.x /= points;
+    averagePositionPolygons.y /= points;
+
+    const averagePositionGraph = { x: 0, y: 0 };
+
+    for (const node of this.lotBoundaryGraph.nodes) {
+      averagePositionGraph.x += node.value.x;
+      averagePositionGraph.y += node.value.y;
+    }
+
+    averagePositionGraph.x /= this.lotBoundaryGraph.nodes.length;
+    averagePositionGraph.y /= this.lotBoundaryGraph.nodes.length;
+
+    console.log("averagePositionPolygons", averagePositionPolygons);
+    console.log("averagePositionGraph", averagePositionGraph);
+
+    this._models = new BuildingModels(
+      this.polygonFinder.polygons,
+      this.streetGraph
+    );
 
     this.postGenerateCallback();
   }

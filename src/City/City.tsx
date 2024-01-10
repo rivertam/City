@@ -151,7 +151,6 @@ export const City = ({
         ))}
       </group>
 
-      {/*<Space key={lot.address} polygon={lot.shape} color="#fff" /> */}
       <group position={[0, 0, GroundHeights.Foundation]}>
         {cityState.lots.map((lot) => (
           <Building
@@ -159,6 +158,10 @@ export const City = ({
             polygon={lot.shape}
             color="white"
             height={(lot.address.length - 6) * 2}
+            entryPoint={{
+              x: lot.entryPoint.value.x,
+              y: lot.entryPoint.value.y,
+            }}
           />
         ))}
       </group>

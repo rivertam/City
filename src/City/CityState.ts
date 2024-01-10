@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
-import Graph from "../ts/impl/graph";
+import Graph, { Node } from "../ts/impl/graph";
 
 export type MapLine = {
   name: string;
@@ -19,16 +19,20 @@ export class Road {
 export class Lot {
   public address: string;
   public shape: Array<[number, number]>;
+  public entryPoint: Node;
 
   public constructor({
     address,
     shape,
+    entryPoint,
   }: {
     address: string;
     shape: Array<[number, number]>;
+    entryPoint: Node;
   }) {
     this.address = address;
     this.shape = shape;
+    this.entryPoint = entryPoint;
 
     makeAutoObservable(this);
   }
@@ -70,9 +74,11 @@ export class CityState {
     this.roads = generatedCity.roads;
 
     this.blocks = generatedCity.blocks;
-    this.lots = generatedCity.lots.map(({ shape: { name, polygon } }) => {
-      return new Lot({ address: name, shape: polygon });
-    });
+    this.lots = generatedCity.lots.map(
+      ({ shape: { name, polygon }, entryPoint }) => {
+        return new Lot({ address: name, shape: polygon, entryPoint });
+      }
+    );
     this.parks = generatedCity.parks;
 
     this.streetGraph = generatedCity.streetGraph;
@@ -128,6 +134,7 @@ export type GeneratedCity = {
   }>;
   lots: Array<{
     shape: MapLine;
+    entryPoint: Node;
   }>;
 
   streetGraph: Graph;
