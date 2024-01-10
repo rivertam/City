@@ -161,34 +161,6 @@ export default class Buildings {
     this.polygonFinder.shrink();
     this.polygonFinder.divide();
 
-    const averagePositionPolygons = { x: 0, y: 0 };
-
-    let points = 0;
-
-    for (const polygon of this.polygonFinder.polygons) {
-      for (const vertex of polygon) {
-        points++;
-        averagePositionPolygons.x += vertex.x;
-        averagePositionPolygons.y += vertex.y;
-      }
-    }
-
-    averagePositionPolygons.x /= points;
-    averagePositionPolygons.y /= points;
-
-    const averagePositionGraph = { x: 0, y: 0 };
-
-    for (const node of this.lotBoundaryGraph.nodes) {
-      averagePositionGraph.x += node.value.x;
-      averagePositionGraph.y += node.value.y;
-    }
-
-    averagePositionGraph.x /= this.lotBoundaryGraph.nodes.length;
-    averagePositionGraph.y /= this.lotBoundaryGraph.nodes.length;
-
-    console.log("averagePositionPolygons", averagePositionPolygons);
-    console.log("averagePositionGraph", averagePositionGraph);
-
     this._models = new BuildingModels(
       this.polygonFinder.polygons,
       this.streetGraph
