@@ -27,7 +27,6 @@ interface Intersection {
  */
 export class Node {
   public segments = new Set<Segment>();
-  public adj: Node[];
 
   constructor(public value: Vector, public neighbors = new Set<Node>()) {}
 
@@ -113,7 +112,6 @@ export default class Graph {
       if (deleteDangling) {
         this.deleteDanglingNodes(n, quadtree);
       }
-      n.adj = Array.from(n.neighbors);
     }
 
     this.nodes = quadtree.data();

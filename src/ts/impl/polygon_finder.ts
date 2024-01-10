@@ -133,7 +133,7 @@ export default class PolygonFinder {
 
   findPolygons(): void {
     // Node
-    // x, y, value (Vector2), adj (list of node refs)
+    // x, y, value (Vector2), neighbors (list of node refs)
     // Gonna edit adj for now
 
     // Walk a clockwise path until polygon found or limit reached
@@ -145,8 +145,8 @@ export default class PolygonFinder {
     const polygons = [];
 
     for (const node of this.nodes) {
-      if (node.adj.length < 2) continue;
-      for (const nextNode of node.adj) {
+      if (node.neighbors.size < 2) continue;
+      for (const nextNode of node.neighbors) {
         const polygon = this.recursiveWalk([node, nextNode]);
         if (polygon !== null && polygon.length < this.params.maxLength) {
           this.removePolygonAdjacencies(polygon);
@@ -176,12 +176,7 @@ export default class PolygonFinder {
       const current = polygon[i];
       const next = polygon[(i + 1) % polygon.length];
 
-      const index = current.adj.indexOf(next);
-      if (index >= 0) {
-        current.adj.splice(index, 1);
-      } else {
-        log.error("PolygonFinder - node not in adj");
-      }
+      current.neighbors.delete(next);
     }
   }
 
@@ -207,7 +202,7 @@ export default class PolygonFinder {
 
   private getRightmostNode(nodeFrom: Node, nodeTo: Node): Node {
     // We want to turn right at every junction
-    if (nodeTo.adj.length === 0) return null;
+    if (nodeTo.neighbors.size === 0) return null;
 
     const backwardsDifferenceVector = nodeFrom.value.clone().sub(nodeTo.value);
     const transformAngle = Math.atan2(
@@ -218,7 +213,7 @@ export default class PolygonFinder {
     let rightmostNode = null;
     let smallestTheta = Math.PI * 2;
 
-    for (const nextNode of nodeTo.adj) {
+    for (const nextNode of nodeTo.neighbors) {
       if (nextNode !== nodeFrom) {
         const nextVector = nextNode.value.clone().sub(nodeTo.value);
         let nextAngle = Math.atan2(nextVector.y, nextVector.x) - transformAngle;
