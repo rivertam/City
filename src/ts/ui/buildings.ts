@@ -10,7 +10,7 @@ export interface BuildingModel {
   lotScreen: Vector[]; // In screen space
   roof: Vector[]; // In screen space
   sides: Vector[][]; // In screen space
-  // entryPoint: Node;
+  entryPoint: Node;
 }
 
 /**
@@ -28,6 +28,7 @@ class BuildingModels {
         lotScreen: [],
         roof: [],
         sides: [],
+        entryPoint: streetGraph.getEntryPoint(lot),
       });
     }
     this._buildingModels.sort((a, b) => a.height - b.height);

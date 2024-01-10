@@ -293,4 +293,27 @@ export default class Graph {
       to: v2,
     };
   }
+
+  /**
+   * Computes the entrypoint for a lot (i.e. where people enter and exit a building onto the street)
+   *
+   * @param lot the polygon describing the lot
+   * @returns the entry point node on the street graph
+   */
+  public getEntryPoint(lot: Vector[]): Node {
+    let closestNode = this.nodes[0];
+    let closestDistance = Infinity;
+
+    for (const node of this.nodes) {
+      for (const point of lot) {
+        const distance = point.distanceTo(node.value);
+        if (distance < closestDistance) {
+          closestNode = node;
+          closestDistance = distance;
+        }
+      }
+    }
+
+    return closestNode;
+  }
 }
