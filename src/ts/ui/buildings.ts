@@ -1,5 +1,5 @@
 import TensorField from "../impl/tensor_field";
-import Graph from "../impl/graph";
+import Graph, { Node } from "../impl/graph";
 import Vector from "../vector";
 import PolygonFinder from "../impl/polygon_finder";
 import { PolygonParams } from "../impl/polygon_finder";
@@ -10,6 +10,7 @@ export interface BuildingModel {
   lotScreen: Vector[]; // In screen space
   roof: Vector[]; // In screen space
   sides: Vector[][]; // In screen space
+  // entryPoint: Node;
 }
 
 /**
@@ -18,7 +19,7 @@ export interface BuildingModel {
 class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
-  constructor(lots: Vector[][]) {
+  constructor(lots: Vector[][], private streetGraph: Graph) {
     // Lots in world space
     for (const lot of lots) {
       this._buildingModels.push({
@@ -82,7 +83,7 @@ export default class Buildings {
   private polygonFinder: PolygonFinder;
   private preGenerateCallback: () => any = () => {};
   private postGenerateCallback: () => any = () => {};
-  private _models: BuildingModels = new BuildingModels([]);
+  private _models: BuildingModels | null = null;
   private _blocks: Vector[][] = [];
 
   private buildingParams: PolygonParams = {
@@ -132,7 +133,7 @@ export default class Buildings {
 
   reset(): void {
     this.polygonFinder.reset();
-    this._models = new BuildingModels([]);
+    this._models = null;
   }
 
   update(): boolean {
@@ -144,7 +145,7 @@ export default class Buildings {
    */
   generate() {
     this.preGenerateCallback();
-    this._models = new BuildingModels([]);
+    this._models = null;
     const graph = new Graph(this.allStreamlines, this.dstep, true);
 
     this.polygonFinder = new PolygonFinder(
@@ -155,7 +156,7 @@ export default class Buildings {
     this.polygonFinder.findPolygons();
     this.polygonFinder.shrink();
     this.polygonFinder.divide();
-    this._models = new BuildingModels(this.polygonFinder.polygons);
+    this._models = new BuildingModels(this.polygonFinder.polygons, graph);
 
     this.postGenerateCallback();
   }
