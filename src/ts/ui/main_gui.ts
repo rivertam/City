@@ -302,7 +302,11 @@ export default class MainGUI {
     return new Graph(
       this.majorRoads.allStreamlines
         .concat(this.mainRoads.allStreamlines)
-        .concat(this.minorRoads.allStreamlines),
+        .concat(this.minorRoads.allStreamlines)
+        .map((streamline) => ({
+          name: this.getStreetName(streamline),
+          points: streamline,
+        })),
       this.minorParams.dstep
     );
   }
@@ -317,10 +321,27 @@ export default class MainGUI {
       allStreamlines.push(...this.minorRoads.allStreamlines);
       allStreamlines.push(...this.coastline.streamlinesWithSecondaryRoad);
 
-      this.lotBoundaryGraph = new Graph(allStreamlines, this.minorParams.dstep);
+      this.lotBoundaryGraph = new Graph(
+        allStreamlines.map((streamline) => ({
+          name: this.getStreetName(streamline),
+          points: streamline,
+        })),
+        this.minorParams.dstep
+      );
     }
 
     return this.lotBoundaryGraph;
+  }
+
+  private streetNames = new Map<Vector[], string>();
+  private getStreetName(street: Vector[]): string {
+    let name = this.streetNames.get(street);
+    if (!name) {
+      name = `Street ${this.streetNames.size + 1}`;
+      this.streetNames.set(street, name);
+    }
+
+    return name;
   }
 
   public get minorRoadPolygons(): Vector[][] {

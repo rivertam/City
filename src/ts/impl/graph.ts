@@ -22,16 +22,21 @@ interface Intersection {
   segments: Segment[];
 }
 
+type NamedStreamline = {
+  name: string;
+  points: Vector[];
+};
+
 /**
  * Node located along any intersection or point along the simplified road polylines
  */
 export class Node {
-  public segments = new Set<Segment>();
+  public segments = new Map<string, Segment>();
 
   constructor(public value: Vector, public neighbors = new Set<Node>()) {}
 
-  addSegment(segment: Segment): void {
-    this.segments.add(segment);
+  addSegment(streamlineName: string, segment: Segment): void {
+    this.segments.set(streamlineName, segment);
   }
 
   addNeighbor(node: Node): void {
@@ -50,9 +55,13 @@ export default class Graph {
    * Create a graph from a set of streamlines
    * Finds all intersections, and creates a list of Nodes
    */
-  constructor(streamlines: Vector[][], dstep: number, deleteDangling = false) {
+  constructor(
+    streamlines: NamedStreamline[],
+    dstep: number,
+    deleteDangling = false
+  ) {
     const intersections = isect
-      .bush(this.streamlinesToSegment(streamlines))
+      .bush(this.streamlinesToSegment(streamlines.map((s) => s.points)))
       .run();
     const quadtree = (d3.quadtree() as d3.Quadtree<Node>)
       .x((n) => n.value.x)
@@ -61,17 +70,20 @@ export default class Graph {
 
     // Add all segment start and endpoints
     for (const streamline of streamlines) {
-      for (let i = 0; i < streamline.length; i++) {
-        const node = new Node(streamline[i]);
+      const { points, name } = streamline;
+      for (let i = 0; i < points.length; i++) {
+        const node = new Node(points[i]);
         if (i > 0) {
           node.addSegment(
-            this.vectorsToSegment(streamline[i - 1], streamline[i])
+            name,
+            this.vectorsToSegment(points[i - 1], points[i])
           );
         }
 
-        if (i < streamline.length - 1) {
+        if (i < points.length - 1) {
           node.addSegment(
-            this.vectorsToSegment(streamline[i], streamline[i + 1])
+            name,
+            this.vectorsToSegment(points[i], points[i + 1])
           );
         }
 
@@ -84,15 +96,20 @@ export default class Graph {
       const node = new Node(
         new Vector(intersection.point.x, intersection.point.y)
       );
-      for (const s of intersection.segments) node.addSegment(s);
+      for (const s of intersection.segments)
+        node.addSegment(
+          `intersection segment ${this.intersectionSectionNumber++}`,
+          s
+        );
       this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
     }
 
-    // For each simplified streamline, build list of nodes in order along streamline
+    // For each simplified streamline, set neighbors on nodes along streamline
     for (const streamline of streamlines) {
-      for (let i = 0; i < streamline.length - 1; i++) {
+      const { points } = streamline;
+      for (let i = 0; i < points.length - 1; i++) {
         const nodesAlongSegment = this.getNodesAlongSegment(
-          this.vectorsToSegment(streamline[i], streamline[i + 1]),
+          this.vectorsToSegment(points[i], points[i + 1]),
           quadtree,
           nodeAddRadius,
           dstep
@@ -119,6 +136,8 @@ export default class Graph {
     for (const i of intersections)
       this.intersections.push(new Vector(i.point.x, i.point.y));
   }
+
+  private intersectionSectionNumber = 0;
 
   /**
    * Translate all data (nodes, intersections) by vector v
@@ -192,7 +211,7 @@ export default class Graph {
         foundNodes.push(closestNode);
 
         let nodeOnSegment = false;
-        for (const s of closestNode.segments) {
+        for (const s of closestNode.segments.values()) {
           if (this.fuzzySegmentsEqual(s, segment)) {
             nodeOnSegment = true;
             break;
@@ -270,7 +289,8 @@ export default class Graph {
       quadtree.add(node);
     } else {
       for (const neighbor of node.neighbors) existingNode.addNeighbor(neighbor);
-      for (const segment of node.segments) existingNode.addSegment(segment);
+      for (const [name, segment] of node.segments.entries())
+        existingNode.addSegment(name, segment);
     }
   }
 
