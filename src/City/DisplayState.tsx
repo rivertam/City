@@ -1,8 +1,9 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
+import { FocusedItem } from "../ui/FocusedItem";
 
 export class DisplayState {
-  public focusedStreet: string | null = null;
+  public focusedItem: FocusedItem | null = null;
 
   public constructor() {
     makeAutoObservable(this);
@@ -12,5 +13,9 @@ export class DisplayState {
 
   public static use(): DisplayState {
     return useContext(DisplayState.Context);
+  }
+
+  public focusItem(item: FocusedItem | null) {
+    this.focusedItem = item;
   }
 }

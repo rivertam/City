@@ -10,7 +10,7 @@ import { useControls } from "leva";
 import { City } from "./City/City";
 import { CityState } from "./City/CityState";
 import { CityGenerator } from "./City/CityGenerator";
-import { FocusedItem, FocusedItemContext } from "./ui/FocusedItem";
+import { FocusedItem } from "./ui/FocusedItem";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -123,39 +123,29 @@ export const Game = observer((): React.ReactElement => {
 
   return (
     <CityState.Context.Provider value={cityState}>
-      <FocusedItemContext.Provider
-        value={{
-          item: focusedItem,
-          setItem: setFocusedItem,
-        }}
-      >
-        <Leva />
-        <GameWindow ref={divWrapper}>
-          <Canvas
-            gl={(canvas) => {
-              renderer.current = new THREE.WebGLRenderer({
-                logarithmicDepthBuffer: true,
-                canvas,
-              });
+      <Leva />
+      <GameWindow ref={divWrapper}>
+        <Canvas
+          gl={(canvas) => {
+            renderer.current = new THREE.WebGLRenderer({
+              logarithmicDepthBuffer: true,
+              canvas,
+            });
 
-              renderer.current.setClearColor(0x333333);
-              renderer.current.setPixelRatio(window.devicePixelRatio);
-              if (divWrapper.current) {
-                renderer.current.setSize(
-                  canvas.offsetWidth,
-                  canvas.offsetHeight
-                );
-              }
+            renderer.current.setClearColor(0x333333);
+            renderer.current.setPixelRatio(window.devicePixelRatio);
+            if (divWrapper.current) {
+              renderer.current.setSize(canvas.offsetWidth, canvas.offsetHeight);
+            }
 
-              return renderer.current;
-            }}
-          >
-            <Camera />
-            <City size={tweaks.size} />
-          </Canvas>
-        </GameWindow>
-        <FocusedItem />
-      </FocusedItemContext.Provider>
+            return renderer.current;
+          }}
+        >
+          <Camera />
+          <City size={tweaks.size} />
+        </Canvas>
+      </GameWindow>
+      <FocusedItem />
     </CityState.Context.Provider>
   );
 });

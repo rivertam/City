@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useMemo } from "react";
-import { Sphere } from "@react-three/drei";
+import React from "react";
 
 import { Park } from "./Park";
 import { Road } from "./Road";
@@ -7,7 +6,7 @@ import { Space } from "./Space";
 import { Building } from "./Building";
 import { CityState } from "./CityState";
 import { DisplayState } from "./DisplayState";
-import { FocusedItemContext } from "../ui/FocusedItem";
+import { StreetGraphVisualization } from "./StreetGraphVisualization";
 
 const GroundHeights = {
   BaseGround: 0,
@@ -30,8 +29,6 @@ export const City = ({
 }) => {
   const cityState = CityState.use();
   const displayState = DisplayState.use();
-
-  const focusedItem = useContext(FocusedItemContext);
 
   return (
     <>
@@ -144,54 +141,8 @@ export const City = ({
           />
         ))}
       </group>
-
       <group position={[0, 0, GroundHeights.Foundation]}>
-        {cityState.streetGraph.nodes.map((node) => {
-          const color = (() => {
-            if (
-              displayState.focusedStreet &&
-              node.segments.has(displayState.focusedStreet)
-            ) {
-              return "green";
-            }
-
-            const includesIntersection = Array.from(node.segments.keys()).some(
-              (streetName) => {
-                return streetName.includes("intersection");
-              }
-            );
-
-            if (includesIntersection) {
-              return "red";
-            }
-
-            if (node.segments.size === 1) {
-              return "yellow";
-            }
-
-            if (node.segments.size === 2) {
-              return "white";
-            }
-
-            return "blue";
-          })();
-
-          return (
-            <Sphere
-              position={[node.value.x, node.value.y, 2]}
-              rotation={[Math.PI / 2, 0, 0]}
-              key={`${node.value.x},${node.value.y}`}
-              onClick={() => {
-                focusedItem.setItem({
-                  kind: "streetNode",
-                  node,
-                });
-              }}
-            >
-              <meshPhongMaterial attach="material" color={color} />
-            </Sphere>
-          );
-        })}
+        <StreetGraphVisualization />
       </group>
     </>
   );

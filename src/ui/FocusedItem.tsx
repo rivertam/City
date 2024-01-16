@@ -1,7 +1,9 @@
-import React, { createContext, useContext } from "react";
+import React from "react";
 import styled from "styled-components";
 
 import { Node } from "../ts/impl/graph";
+import { DisplayState } from "../City/DisplayState";
+import { observer } from "mobx-react-lite";
 
 export type FocusedStreetNode = {
   kind: "streetNode";
@@ -9,16 +11,6 @@ export type FocusedStreetNode = {
 };
 
 export type FocusedItem = FocusedStreetNode;
-
-export const FocusedItemContext = createContext<{
-  item: FocusedItem | null;
-  setItem: (item: FocusedItem | null) => void;
-}>({
-  item: null,
-  setItem: () => {
-    throw new Error("not provided");
-  },
-});
 
 const FocusedItemWindow = styled.div`
   position: fixed;
@@ -33,23 +25,23 @@ const FocusedItemWindow = styled.div`
   z-index: 1;
 `;
 
-export function FocusedItem() {
-  const { item } = useContext(FocusedItemContext);
+export const FocusedItem = observer(() => {
+  const { focusedItem } = DisplayState.use();
 
-  if (!item) {
+  if (!focusedItem) {
     return <FocusedItemWindow>nothing</FocusedItemWindow>;
   }
 
-  if (item.kind === "streetNode") {
+  if (focusedItem.kind === "streetNode") {
     return (
       <FocusedItemWindow>
-        <FocusedStreetNode focusedItem={item} />
+        <FocusedStreetNode focusedItem={focusedItem} />
       </FocusedItemWindow>
     );
   }
 
   return null;
-}
+});
 
 function FocusedStreetNode({
   focusedItem,
