@@ -1,3 +1,4 @@
+import { Leva, button } from "leva";
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
@@ -5,9 +6,7 @@ import { PerspectiveCamera, MapControls } from "@react-three/drei";
 import styled from "styled-components";
 import { observer } from "mobx-react-lite";
 
-import { wait } from "./utils/wait";
-import { makeButton, useTweaks } from "use-tweaks";
-import { Simple } from "./simulations/Simple";
+import { useControls } from "leva";
 import { City } from "./City/City";
 import { CityState } from "./City/CityState";
 import { CityGenerator } from "./City/CityGenerator";
@@ -24,7 +23,7 @@ export const GameWindow = styled.div`
 const Camera = observer(() => {
   const camera = useRef<THREE.PerspectiveCamera>();
 
-  const { fov } = useTweaks("Camera", {
+  const { fov } = useControls("Camera", {
     fov: {
       value: 20,
       min: 0.01,
@@ -75,12 +74,8 @@ export const Game = observer((): React.ReactElement => {
 
   const divWrapper = useRef<HTMLDivElement | null>(null);
 
-  const [Simulation, setSimulation] = React.useState<React.ReactNode | null>(
-    null
-  );
-
-  const tweaks = useTweaks("Game", {
-    ...makeButton("Make simple city", async () => {
+  const tweaks = useControls("Game", {
+    "Make simple city": button(async () => {
       setShouldGenerate(true);
     }),
     size: {
@@ -125,6 +120,7 @@ export const Game = observer((): React.ReactElement => {
 
   return (
     <CityState.Context.Provider value={cityState}>
+      <Leva />
       <GameWindow ref={divWrapper}>
         <Canvas
           gl={(canvas) => {

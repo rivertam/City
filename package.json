@@ -37,6 +37,7 @@
     "interactjs": "^1.9.8",
     "jsts": "^2.6.2",
     "jszip": "^3.4.0",
+    "leva": "^0.9.35",
     "lodash": "^4.17.21",
     "loglevel": "^1.6.7",
     "mobx": "^6.3.12",
@@ -53,9 +54,7 @@
     "three-csg-ts": "^1.0.4",
     "three-stdlib": "^2.6.4",
     "threejs-export-stl": "^0.0.4",
-    "tweakpane": "^1.6.1",
     "type-zoo": "^3.4.1",
-    "use-tweaks": "^0.3.1",
     "uuid": "^8.3.2",
     "zod": "^3.17.3",
     "zustand": "^4.3.8"
