@@ -1,13 +1,16 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera, MapControls } from "@react-three/drei";
 import styled from "styled-components";
 import { observer } from "mobx-react-lite";
 
-import { wait } from './utils/wait';
+import { wait } from "./utils/wait";
 import { makeButton, useTweaks } from "use-tweaks";
 import { Simple } from "./simulations/Simple";
+import { City } from "./City/City";
+import { CityState } from "./City/CityState";
+import { CityGenerator } from "./City/CityGenerator";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -78,9 +81,7 @@ export const Game = observer((): React.ReactElement => {
 
   const tweaks = useTweaks("Game", {
     ...makeButton("Make simple city", async () => {
-      setSimulation(() => null);
-      await wait(100);
-      setSimulation(() => Simple);
+      setShouldGenerate(true);
     }),
     size: {
       min: 100,
@@ -90,8 +91,40 @@ export const Game = observer((): React.ReactElement => {
     },
   });
 
+  const [cityState, setCityState] = useState<CityState | null>(null);
+  const [shouldGenerate, setShouldGenerate] = useState(false);
+  const hasGenerated = useRef(false);
+
+  useEffect(() => {
+    if (!shouldGenerate) {
+      return;
+    }
+
+    if (hasGenerated.current) {
+      console.warn(
+        "City generation props changed after generation. The prop change will be ignored."
+      );
+
+      return;
+    }
+
+    hasGenerated.current = true;
+
+    (async () => {
+      const generator = new CityGenerator({ size: tweaks.size });
+
+      const generatedCity = await generator.generate();
+
+      setCityState(new CityState(generatedCity));
+    })();
+  }, [shouldGenerate, tweaks.size]);
+
+  if (!cityState) {
+    return <></>;
+  }
+
   return (
-    <>
+    <CityState.Context.Provider value={cityState}>
       <GameWindow ref={divWrapper}>
         <Canvas
           gl={(canvas) => {
@@ -110,9 +143,9 @@ export const Game = observer((): React.ReactElement => {
           }}
         >
           <Camera />
-          {Simulation && <Simulation size={tweaks.size} />}
+          <City size={tweaks.size} />
         </Canvas>
       </GameWindow>
-    </>
+    </CityState.Context.Provider>
   );
 });

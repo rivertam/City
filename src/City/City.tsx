@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import { CityGenerator } from "./CityGenerator";
-import { CityState } from "./CityState";
+import React from "react";
 import { Park } from "./Park";
 import { Road } from "./Road";
 import { Space } from "./Space";
 import { Building } from "./Building";
-import { Cylinder, Sphere } from "@react-three/drei";
+import { Sphere } from "@react-three/drei";
+import { CityState } from "./CityState";
 
 const GroundHeights = {
   BaseGround: 0,
@@ -22,40 +21,14 @@ const GroundHeights = {
 
 export const City = ({
   children,
-  size,
 }: {
   children?: React.ReactNode;
   size?: number;
 }) => {
-  const [cityState, setCityState] = useState<CityState | null>(null);
-  const hasGenerated = useRef(false);
-
-  useEffect(() => {
-    if (hasGenerated.current) {
-      console.warn(
-        "City generation props changed after generation. The prop change will be ignored."
-      );
-
-      return;
-    }
-
-    hasGenerated.current = true;
-
-    (async () => {
-      const generator = new CityGenerator({ size });
-
-      const generatedCity = await generator.generate();
-
-      setCityState(new CityState(generatedCity));
-    })();
-  }, [size]);
-
-  if (!cityState) {
-    return <></>;
-  }
+  const cityState = CityState.use();
 
   return (
-    <CityState.Context.Provider value={cityState}>
+    <>
       {children}
       <group position={[0, 0, GroundHeights.BaseGround]}>
         <Space
@@ -182,6 +155,6 @@ export const City = ({
           );
         })}
       </group>
-    </CityState.Context.Provider>
+    </>
   );
 };
