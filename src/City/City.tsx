@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
+import { Sphere } from "@react-three/drei";
+import { useControls } from "leva";
+
 import { Park } from "./Park";
 import { Road } from "./Road";
 import { Space } from "./Space";
 import { Building } from "./Building";
-import { Sphere } from "@react-three/drei";
 import { CityState } from "./CityState";
+import { DisplayState } from "./DisplayState";
 
 const GroundHeights = {
   BaseGround: 0,
@@ -26,6 +29,30 @@ export const City = ({
   size?: number;
 }) => {
   const cityState = CityState.use();
+  const displayState = DisplayState.use();
+
+  const streetNames = useMemo(() => {
+    const names = new Set<string>();
+    cityState.streetGraph.nodes.forEach((node) => {
+      for (const name of node.segments.keys()) {
+        names.add(name);
+      }
+    });
+
+    return names;
+  }, [cityState.streetGraph]);
+
+  const { Display } = useControls({
+    Display: {
+      value: "Street",
+      options: Array.from(streetNames.values()).sort(),
+    },
+  });
+
+  useEffect(() => {
+    console.log("focusing on", Display);
+    displayState.focusedStreet = Display;
+  }, [Display]);
 
   return (
     <>
@@ -141,6 +168,11 @@ export const City = ({
 
       <group position={[0, 0, GroundHeights.Foundation]}>
         {cityState.streetGraph.nodes.map((node) => {
+          const color =
+            displayState.focusedStreet &&
+            node.segments.has(displayState.focusedStreet)
+              ? "red"
+              : "white";
           return (
             <Sphere
               position={[node.value.x, node.value.y, 2]}
@@ -150,7 +182,7 @@ export const City = ({
                 console.log(node.segments.keys());
               }}
             >
-              <meshPhongMaterial attach="material" color="white" />
+              <meshPhongMaterial attach="material" color={color} />
             </Sphere>
           );
         })}
