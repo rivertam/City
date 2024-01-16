@@ -5,7 +5,6 @@ import { Road } from "./Road";
 import { Space } from "./Space";
 import { Building } from "./Building";
 import { CityState } from "./CityState";
-import { DisplayState } from "./DisplayState";
 import { StreetGraphVisualization } from "./StreetGraphVisualization";
 
 const GroundHeights = {
@@ -28,7 +27,6 @@ export const City = ({
   size?: number;
 }) => {
   const cityState = CityState.use();
-  const displayState = DisplayState.use();
 
   return (
     <>

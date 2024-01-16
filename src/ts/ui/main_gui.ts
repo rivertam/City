@@ -2,7 +2,7 @@ import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import { WaterParams } from "../impl/water_generator";
-import Graph, { Node } from "../impl/graph";
+import Graph from "../impl/graph";
 import RoadGUI from "./road_gui";
 import WaterGUI from "./water_gui";
 import Vector from "../vector";
