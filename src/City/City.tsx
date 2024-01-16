@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 import { Sphere } from "@react-three/drei";
-import { useControls } from "leva";
 
 import { Park } from "./Park";
 import { Road } from "./Road";
@@ -8,6 +7,7 @@ import { Space } from "./Space";
 import { Building } from "./Building";
 import { CityState } from "./CityState";
 import { DisplayState } from "./DisplayState";
+import { FocusedItemContext } from "../ui/FocusedItem";
 
 const GroundHeights = {
   BaseGround: 0,
@@ -31,28 +31,7 @@ export const City = ({
   const cityState = CityState.use();
   const displayState = DisplayState.use();
 
-  const streetNames = useMemo(() => {
-    const names = new Set<string>();
-    cityState.streetGraph.nodes.forEach((node) => {
-      for (const name of node.segments.keys()) {
-        names.add(name);
-      }
-    });
-
-    return names;
-  }, [cityState.streetGraph]);
-
-  const { Display } = useControls({
-    Display: {
-      value: "Street",
-      options: Array.from(streetNames.values()).sort(),
-    },
-  });
-
-  useEffect(() => {
-    console.log("focusing on", Display);
-    displayState.focusedStreet = Display;
-  }, [Display]);
+  const focusedItem = useContext(FocusedItemContext);
 
   return (
     <>
@@ -179,7 +158,10 @@ export const City = ({
               rotation={[Math.PI / 2, 0, 0]}
               key={`${node.value.x},${node.value.y}`}
               onClick={() => {
-                console.log(node.segments.keys());
+                focusedItem.setItem({
+                  kind: "streetNode",
+                  node,
+                });
               }}
             >
               <meshPhongMaterial attach="material" color={color} />

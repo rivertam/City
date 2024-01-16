@@ -10,6 +10,7 @@ import { useControls } from "leva";
 import { City } from "./City/City";
 import { CityState } from "./City/CityState";
 import { CityGenerator } from "./City/CityGenerator";
+import { FocusedItem, FocusedItemContext } from "./ui/FocusedItem";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -18,6 +19,7 @@ export const GameWindow = styled.div`
   height: 100%;
 
   background-color: blue;
+  z-index: 0;
 `;
 
 const Camera = observer(() => {
@@ -87,6 +89,7 @@ export const Game = observer((): React.ReactElement => {
   });
 
   const [cityState, setCityState] = useState<CityState | null>(null);
+  const [focusedItem, setFocusedItem] = useState<FocusedItem | null>(null);
   const [shouldGenerate, setShouldGenerate] = useState(false);
   const hasGenerated = useRef(false);
 
@@ -120,28 +123,39 @@ export const Game = observer((): React.ReactElement => {
 
   return (
     <CityState.Context.Provider value={cityState}>
-      <Leva />
-      <GameWindow ref={divWrapper}>
-        <Canvas
-          gl={(canvas) => {
-            renderer.current = new THREE.WebGLRenderer({
-              logarithmicDepthBuffer: true,
-              canvas,
-            });
+      <FocusedItemContext.Provider
+        value={{
+          item: focusedItem,
+          setItem: setFocusedItem,
+        }}
+      >
+        <Leva />
+        <GameWindow ref={divWrapper}>
+          <Canvas
+            gl={(canvas) => {
+              renderer.current = new THREE.WebGLRenderer({
+                logarithmicDepthBuffer: true,
+                canvas,
+              });
 
-            renderer.current.setClearColor(0x333333);
-            renderer.current.setPixelRatio(window.devicePixelRatio);
-            if (divWrapper.current) {
-              renderer.current.setSize(canvas.offsetWidth, canvas.offsetHeight);
-            }
+              renderer.current.setClearColor(0x333333);
+              renderer.current.setPixelRatio(window.devicePixelRatio);
+              if (divWrapper.current) {
+                renderer.current.setSize(
+                  canvas.offsetWidth,
+                  canvas.offsetHeight
+                );
+              }
 
-            return renderer.current;
-          }}
-        >
-          <Camera />
-          <City size={tweaks.size} />
-        </Canvas>
-      </GameWindow>
+              return renderer.current;
+            }}
+          >
+            <Camera />
+            <City size={tweaks.size} />
+          </Canvas>
+        </GameWindow>
+        <FocusedItem />
+      </FocusedItemContext.Provider>
     </CityState.Context.Provider>
   );
 });
