@@ -4,18 +4,9 @@ import * as isect from "isect";
 
 import Vector from "../vector";
 
-interface DetectIntersections {
-  run: () => Intersection[];
-}
-
 interface Segment {
   from: Vector;
   to: Vector;
-}
-
-interface Intersection {
-  point: Vector;
-  segments: Segment[];
 }
 
 type NamedStreamline = {
