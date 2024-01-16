@@ -147,11 +147,35 @@ export const City = ({
 
       <group position={[0, 0, GroundHeights.Foundation]}>
         {cityState.streetGraph.nodes.map((node) => {
-          const color =
-            displayState.focusedStreet &&
-            node.segments.has(displayState.focusedStreet)
-              ? "red"
-              : "white";
+          const color = (() => {
+            if (
+              displayState.focusedStreet &&
+              node.segments.has(displayState.focusedStreet)
+            ) {
+              return "green";
+            }
+
+            const includesIntersection = Array.from(node.segments.keys()).some(
+              (streetName) => {
+                return streetName.includes("intersection");
+              }
+            );
+
+            if (includesIntersection) {
+              return "red";
+            }
+
+            if (node.segments.size === 1) {
+              return "yellow";
+            }
+
+            if (node.segments.size === 2) {
+              return "white";
+            }
+
+            return "blue";
+          })();
+
           return (
             <Sphere
               position={[node.value.x, node.value.y, 2]}

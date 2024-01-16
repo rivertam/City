@@ -43,7 +43,7 @@ export function FocusedItem() {
   if (item.kind === "streetNode") {
     return (
       <FocusedItemWindow>
-        Street Node: {item.node.value.x}, {item.node.value.y}
+        <FocusedStreetNode focusedItem={item} />
       </FocusedItemWindow>
     );
   }
@@ -51,14 +51,30 @@ export function FocusedItem() {
   return null;
 }
 
-export function FocusedStreetNode({
+function FocusedStreetNode({
   focusedItem,
 }: {
   focusedItem: FocusedStreetNode;
 }) {
+  let nodeName: string;
+
+  if (focusedItem.node.segments.size === 1) {
+    nodeName = focusedItem.node.segments.keys().next().value;
+  } else if (focusedItem.node.segments.size === 2) {
+    nodeName = Array.from(focusedItem.node.segments.keys()).join(" and ");
+  } else {
+    const streetNames = Array.from(focusedItem.node.segments.keys());
+    nodeName = streetNames[0];
+    for (let ii = 1; ii < streetNames.length - 1; ii++) {
+      nodeName += `, ${streetNames[ii]}`;
+    }
+
+    nodeName += `, and ${streetNames[streetNames.length - 1]}`;
+  }
+
   return (
-    <FocusedItemWindow>
-      {Array.from(focusedItem.node.segments.keys()).join(", ")}
-    </FocusedItemWindow>
+    <div>
+      <h1>{nodeName}</h1>
+    </div>
   );
 }
