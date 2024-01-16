@@ -56,9 +56,6 @@ export default class Graph {
     dstep: number,
     deleteDangling = false
   ) {
-    const intersections = isect
-      .bush(this.streamlinesToSegment(streamlines.map((s) => s.points)), {})
-      .run();
     const quadtree = (d3.quadtree() as d3.Quadtree<Node>)
       .x((n) => n.value.x)
       .y((n) => n.value.y);
@@ -83,10 +80,13 @@ export default class Graph {
           );
         }
 
-        console.log("adding start/end node", node.value.x, node.value.y);
         this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
       }
     }
+
+    const intersections = isect
+      .bush(this.streamlinesToSegment(streamlines.map((s) => s.points)), {})
+      .run();
 
     // Add all intersections
     for (const intersection of intersections) {
@@ -211,22 +211,23 @@ export default class Graph {
         quadtree.remove(closestNode);
         foundNodes.push(closestNode);
 
-        let nodeOnSegment = false;
+        const duplicateSegmentNames = new Array<string>();
         for (const [
-          nodeSegmentName,
+          segmentName,
           nodeSegment,
         ] of closestNode.segments.entries()) {
           if (this.fuzzySegmentsEqual(nodeSegment, segment)) {
-            // change node's segment name to match the streamline name
-            closestNode.segments.delete(nodeSegmentName);
-            closestNode.segments.set(segmentName, nodeSegment);
-            nodeOnSegment = true;
-            break;
+            duplicateSegmentNames.push(segmentName);
           }
         }
 
-        if (nodeOnSegment) {
+        if (duplicateSegmentNames.length > 0) {
           nodesToAdd.push(closestNode);
+
+          closestNode.segments.set(segmentName, segment);
+          for (const name of duplicateSegmentNames) {
+            closestNode.segments.delete(name);
+          }
         }
 
         closestNode = quadtree.find(
@@ -296,14 +297,6 @@ export default class Graph {
       quadtree.add(node);
       return true;
     }
-
-    console.log(
-      "merging nodes",
-      node.value.x,
-      existingNode.value.x,
-      node.value.y,
-      existingNode.value.y
-    );
 
     for (const neighbor of node.neighbors) existingNode.addNeighbor(neighbor);
     for (const [name, segment] of node.segments.entries()) {
