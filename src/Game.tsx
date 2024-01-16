@@ -89,7 +89,6 @@ export const Game = observer((): React.ReactElement => {
   });
 
   const [cityState, setCityState] = useState<CityState | null>(null);
-  const [focusedItem, setFocusedItem] = useState<FocusedItem | null>(null);
   const [shouldGenerate, setShouldGenerate] = useState(false);
   const hasGenerated = useRef(false);
 
