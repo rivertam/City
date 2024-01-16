@@ -66,7 +66,7 @@ export default class Graph {
     const quadtree = (d3.quadtree() as d3.Quadtree<Node>)
       .x((n) => n.value.x)
       .y((n) => n.value.y);
-    const nodeAddRadius = 0.001;
+    const nodeAddRadius = 0.01;
 
     // Add all segment start and endpoints
     for (const streamline of streamlines) {
@@ -96,20 +96,26 @@ export default class Graph {
       const node = new Node(
         new Vector(intersection.point.x, intersection.point.y)
       );
-      for (const s of intersection.segments)
-        node.addSegment(
-          `intersection segment ${this.intersectionSectionNumber++}`,
-          s
-        );
-      this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
+
+      let index = 0;
+      for (const s of intersection.segments) {
+        node.addSegment(`intersection segment ${index++}`, s);
+      }
+
+      const duplicate = this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
+      if (!duplicate) {
+        log.debug("Intersection added to graph");
+      }
     }
 
-    // For each simplified streamline, set neighbors on nodes along streamline
+    // For each simplified streamline, find nodes along it and connect them
+    // This mostly affects intersections
     for (const streamline of streamlines) {
-      const { points } = streamline;
+      const { name, points } = streamline;
       for (let i = 0; i < points.length - 1; i++) {
-        const nodesAlongSegment = this.getNodesAlongSegment(
+        const nodesAlongSegment = this.visitNodesAlongSegment(
           this.vectorsToSegment(points[i], points[i + 1]),
+          name,
           quadtree,
           nodeAddRadius,
           dstep
@@ -136,8 +142,6 @@ export default class Graph {
     for (const i of intersections)
       this.intersections.push(new Vector(i.point.x, i.point.y));
   }
-
-  private intersectionSectionNumber = 0;
 
   /**
    * Translate all data (nodes, intersections) by vector v
@@ -172,9 +176,12 @@ export default class Graph {
 
   /**
    * Given a segment, step along segment and find all nodes along it
+   *
+   * Also modifies the node's copy of the segment to match the segment.
    */
-  private getNodesAlongSegment(
+  private visitNodesAlongSegment(
     segment: Segment,
+    segmentName: string,
     quadtree: d3.Quadtree<Node>,
     radius: number,
     step: number
@@ -211,8 +218,14 @@ export default class Graph {
         foundNodes.push(closestNode);
 
         let nodeOnSegment = false;
-        for (const s of closestNode.segments.values()) {
-          if (this.fuzzySegmentsEqual(s, segment)) {
+        for (const [
+          nodeSegmentName,
+          nodeSegment,
+        ] of closestNode.segments.entries()) {
+          if (this.fuzzySegmentsEqual(nodeSegment, segment)) {
+            // change node's segment name to match the streamline name
+            closestNode.segments.delete(nodeSegmentName);
+            closestNode.segments.set(segmentName, nodeSegment);
             nodeOnSegment = true;
             break;
           }
@@ -281,17 +294,21 @@ export default class Graph {
     quadtree: d3.Quadtree<Node>,
     node: Node,
     radius: number
-  ): void {
+  ): boolean {
     // Only add if there isn't a node within radius
     // Remember to check for double radius when querying tree, or point might be missed
     const existingNode = quadtree.find(node.value.x, node.value.y, radius);
     if (existingNode === undefined) {
       quadtree.add(node);
-    } else {
-      for (const neighbor of node.neighbors) existingNode.addNeighbor(neighbor);
-      for (const [name, segment] of node.segments.entries())
-        existingNode.addSegment(name, segment);
+      return true;
     }
+
+    for (const neighbor of node.neighbors) existingNode.addNeighbor(neighbor);
+    for (const [name, segment] of node.segments.entries()) {
+      existingNode.addSegment(name, segment);
+    }
+
+    return false;
   }
 
   private streamlinesToSegment(streamlines: Vector[][]): Segment[] {

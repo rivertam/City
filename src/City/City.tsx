@@ -167,15 +167,20 @@ export const City = ({
       </group>
 
       <group position={[0, 0, GroundHeights.Foundation]}>
-        {cityState.streetGraph.nodes.map((node) => (
-          <Sphere
-            position={[node.value.x, node.value.y, 2]}
-            rotation={[Math.PI / 2, 0, 0]}
-            key={`${node.value.x},${node.value.y}`}
-          >
-            <meshPhongMaterial attach="material" color="white" />
-          </Sphere>
-        ))}
+        {cityState.streetGraph.nodes.map((node) => {
+          return (
+            <Sphere
+              position={[node.value.x, node.value.y, 2]}
+              rotation={[Math.PI / 2, 0, 0]}
+              key={`${node.value.x},${node.value.y}`}
+              onClick={() => {
+                console.log(node.segments.keys());
+              }}
+            >
+              <meshPhongMaterial attach="material" color="white" />
+            </Sphere>
+          );
+        })}
       </group>
     </CityState.Context.Provider>
   );
