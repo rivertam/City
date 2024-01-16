@@ -53,6 +53,9 @@ dependencies:
   interactjs:
     specifier: ^1.9.8
     version: 1.10.26
+  isect:
+    specifier: ^3.0.2
+    version: 3.0.2
   jsts:
     specifier: ^2.6.2
     version: 2.6.2
@@ -5350,6 +5353,12 @@ packages:
   /isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
 
+  /isect@3.0.2:
+    resolution: {integrity: sha512-HMzl1S9rnhjhenLDKCmS1y4UPqFuVfVD9VM96mmBiiowrDuy7LNEuBNzTU2UHpFov4EK83f/WF2imktZhoP9Nw==}
+    dependencies:
+      splaytree: 2.0.3
+    dev: false
+
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
@@ -7096,6 +7105,10 @@ packages:
   /spdx-license-ids@3.0.16:
     resolution: {integrity: sha512-eWN+LnM3GR6gPu35WxNgbGl8rmY1AEmoMDvL/QD6zYmPWgywxWqJWNdLGT+ke8dKNWrcYgYjPpG5gbTfghP8rw==}
     dev: true
+
+  /splaytree@2.0.3:
+    resolution: {integrity: sha512-IziTvWQv9F1EiKq9XveosQRGTLrdUW0jLokpmAXz0+hnLgBZitvU0j4gUvCGASKwUQvCZaofhff1H8OmE2LRdA==}
+    dev: false
 
   /split-string@3.1.0:
     resolution: {integrity: sha512-NzNVhJDYpwceVVii8/Hu6DKfD2G+NrQHlS/V/qgv763EYudVwEcMQNxd2lh+0VrUByXN/oJkl5grOhYWvQUYiw==}

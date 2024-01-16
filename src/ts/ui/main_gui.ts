@@ -303,6 +303,7 @@ export default class MainGUI {
       this.majorRoads.allStreamlines
         .concat(this.mainRoads.allStreamlines)
         .concat(this.minorRoads.allStreamlines)
+        .concat(this.coastline.streamlinesWithSecondaryRoad)
         .map((streamline) => ({
           name: this.getStreetName(streamline),
           points: streamline,

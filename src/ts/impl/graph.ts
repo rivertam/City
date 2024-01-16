@@ -1,12 +1,8 @@
 import * as log from "loglevel";
 import * as d3 from "d3-quadtree";
-import Vector from "../vector";
+import * as isect from "isect";
 
-declare global {
-  const isect: {
-    bush(lines: Segment[]): DetectIntersections;
-  };
-}
+import Vector from "../vector";
 
 interface DetectIntersections {
   run: () => Intersection[];
@@ -61,12 +57,12 @@ export default class Graph {
     deleteDangling = false
   ) {
     const intersections = isect
-      .bush(this.streamlinesToSegment(streamlines.map((s) => s.points)))
+      .bush(this.streamlinesToSegment(streamlines.map((s) => s.points)), {})
       .run();
     const quadtree = (d3.quadtree() as d3.Quadtree<Node>)
       .x((n) => n.value.x)
       .y((n) => n.value.y);
-    const nodeAddRadius = 0.01;
+    const nodeAddRadius = 0.1;
 
     // Add all segment start and endpoints
     for (const streamline of streamlines) {
@@ -87,6 +83,7 @@ export default class Graph {
           );
         }
 
+        console.log("adding start/end node", node.value.x, node.value.y);
         this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
       }
     }
@@ -102,10 +99,7 @@ export default class Graph {
         node.addSegment(`intersection segment ${index++}`, s);
       }
 
-      const duplicate = this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
-      if (!duplicate) {
-        log.debug("Intersection added to graph");
-      }
+      this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
     }
 
     // For each simplified streamline, find nodes along it and connect them
@@ -302,6 +296,14 @@ export default class Graph {
       quadtree.add(node);
       return true;
     }
+
+    console.log(
+      "merging nodes",
+      node.value.x,
+      existingNode.value.x,
+      node.value.y,
+      existingNode.value.y
+    );
 
     for (const neighbor of node.neighbors) existingNode.addNeighbor(neighbor);
     for (const [name, segment] of node.segments.entries()) {
