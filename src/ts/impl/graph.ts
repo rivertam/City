@@ -110,8 +110,6 @@ export default class Graph {
           for (let j = 0; j < nodesAlongSegment.length - 1; j++) {
             nodesAlongSegment[j].addNeighbor(nodesAlongSegment[j + 1]);
           }
-        } else {
-          log.error("Error Graph.js: segment with less than 2 nodes");
         }
       }
     }
@@ -190,7 +188,6 @@ export default class Graph {
         .clone()
         .add(differenceVector.clone().multiplyScalar(i / steps));
 
-      // Order nodes, not by 'closeness', but by dot product
       const nodesToAdd = [];
       let closestNode = quadtree.find(
         currentPoint.x,
@@ -228,6 +225,7 @@ export default class Graph {
         );
       }
 
+      // Order nodes, not by 'closeness', but by dot product
       nodesToAdd.sort(
         (first: Node, second: Node) =>
           this.dotProductToSegment(first, start, differenceVector) -
