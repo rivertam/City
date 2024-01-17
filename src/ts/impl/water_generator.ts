@@ -1,4 +1,6 @@
 import * as log from "loglevel";
+import * as seedrandom from "seedrandom";
+
 import Vector from "../vector";
 import FieldIntegrator from "./integrator";
 import StreamlineGenerator from "./streamlines";
@@ -31,12 +33,13 @@ export default class WaterGenerator extends StreamlineGenerator {
   private _riverSecondaryRoad: Vector[] = [];
 
   constructor(
+    rng: seedrandom.PRNG,
     integrator: FieldIntegrator,
     worldDimensions: Vector,
     protected params: WaterParams,
     private tensorField: TensorField
   ) {
-    super(integrator, worldDimensions, params);
+    super(rng, integrator, worldDimensions, params);
   }
 
   get coastline(): Vector[] {
@@ -67,7 +70,7 @@ export default class WaterGenerator extends StreamlineGenerator {
       );
     }
     for (let i = 0; i < this.TRIES; i++) {
-      major = Math.random() < 0.5;
+      major = this.rng() < 0.5;
       seed = this.getSeed(major);
       coastStreamline = this.extendStreamline(
         this.integrateStreamline(seed, major)

@@ -1,7 +1,9 @@
 import * as log from "loglevel";
 import * as PolyK from "polyk";
-import Vector from "../vector";
+import * as seedrandom from "seedrandom";
 import * as jsts from "jsts";
+
+import Vector from "../vector";
 
 export default class PolygonUtil {
   private static geometryFactory = new jsts.geom.GeometryFactory();
@@ -92,7 +94,11 @@ export default class PolygonUtil {
   /**
    * Recursively divide a polygon by its longest side until the minArea stopping condition is met
    */
-  public static subdividePolygon(p: Vector[], minArea: number): Vector[][] {
+  public static subdividePolygon(
+    rng: seedrandom.PRNG,
+    p: Vector[],
+    minArea: number
+  ): Vector[][] {
     const area = PolygonUtil.calcPolygonArea(p);
     if (area < 0.5 * minArea) {
       return [];
@@ -128,7 +134,7 @@ export default class PolygonUtil {
     }
 
     // Between 0.4 and 0.6
-    const deviation = Math.random() * 0.2 + 0.4;
+    const deviation = rng() * 0.2 + 0.4;
 
     const averagePoint = longestSide[0]
       .clone()
@@ -157,6 +163,7 @@ export default class PolygonUtil {
       for (const s of sliced) {
         divided.push(
           ...PolygonUtil.subdividePolygon(
+            rng,
             PolygonUtil.polygonArrayToPolygon(s),
             minArea
           )

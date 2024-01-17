@@ -1,8 +1,10 @@
+import * as seedrandom from "seedrandom";
+import faker from "faker";
+
 import TensorField, { NoiseParams } from "../ts/impl/tensor_field";
 import MainGUI from "../ts/ui/main_gui";
 import Vector from "../ts/vector";
 import ModelGenerator from "../ts/model_generator";
-import faker from "faker";
 import { GeneratedCity, MapLine } from "./CityState";
 
 export type CityGenerationParameters = {
@@ -16,6 +18,10 @@ export class CityGenerator {
   private firstGenerate = true; // Don't randomise tensor field on first generate
   private modelGenerator: ModelGenerator;
 
+  private rng = seedrandom(
+    new URLSearchParams(document.location.search).get("seed") ?? undefined
+  );
+
   constructor({ size = 800 }: CityGenerationParameters) {
     const noiseParamsPlaceholder: NoiseParams = {
       // Placeholder values for park + water noise
@@ -24,13 +30,14 @@ export class CityGenerator {
       noiseAnglePark: 90,
       noiseSizeGlobal: 30,
       noiseAngleGlobal: 20,
+      rng: this.rng,
     };
 
     this.tensorField = new TensorField(
       noiseParamsPlaceholder,
       new Vector(size, size)
     );
-    this.mainGui = new MainGUI(this.tensorField);
+    this.mainGui = new MainGUI(this.rng, this.tensorField);
 
     this.tensorField.setRecommended();
     requestAnimationFrame(() => this.update());

@@ -1,3 +1,5 @@
+import * as seedrandom from "seedrandom";
+
 import FieldIntegrator from "../impl/integrator";
 import { WaterParams } from "../impl/water_generator";
 import WaterGenerator from "../impl/water_generator";
@@ -12,13 +14,15 @@ export default class WaterGUI extends RoadGUI {
   protected streamlines: WaterGenerator;
 
   constructor(
+    rng: seedrandom.PRNG,
     private tensorField: TensorField,
     protected params: WaterParams,
     integrator: FieldIntegrator,
     protected worldDimensions: Vector
   ) {
-    super(params, integrator, worldDimensions);
+    super(rng, params, integrator, worldDimensions);
     this.streamlines = new WaterGenerator(
+      rng,
       this.integrator,
       this.worldDimensions,
       Object.assign({}, this.params),
@@ -30,6 +34,7 @@ export default class WaterGUI extends RoadGUI {
     this.preGenerateCallback();
 
     this.streamlines = new WaterGenerator(
+      this.rng,
       this.integrator,
       this.worldDimensions,
       Object.assign({}, this.params),

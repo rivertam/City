@@ -1,5 +1,7 @@
 import * as log from "loglevel";
 import * as simplify from "simplify-js";
+import * as seedrandom from "seedrandom";
+
 import Vector from "../vector";
 import GridStorage from "./grid_storage";
 import FieldIntegrator from "./integrator";
@@ -61,6 +63,7 @@ export default class StreamlineGenerator {
    * Uses world-space coordinates
    */
   constructor(
+    protected rng: seedrandom.PRNG,
     protected integrator: FieldIntegrator,
     protected worldDimensions: Vector,
     protected params: StreamlineParams
@@ -331,8 +334,8 @@ export default class StreamlineGenerator {
   protected samplePoint(): Vector {
     // TODO better seeding scheme
     return new Vector(
-      Math.random() * this.worldDimensions.x,
-      Math.random() * this.worldDimensions.y
+      this.rng() * this.worldDimensions.x,
+      this.rng() * this.worldDimensions.y
     );
   }
 
@@ -534,7 +537,7 @@ export default class StreamlineGenerator {
 
     // Whether or not to test validity using both grid storages
     // (Collide with both major and minor)
-    const collideBoth = Math.random() < this.params.collideEarly;
+    const collideBoth = this.rng() < this.params.collideEarly;
 
     const d = this.integrator.integrate(seed, major);
 

@@ -1,3 +1,5 @@
+import * as seedrandom from "seedrandom";
+
 import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
@@ -46,7 +48,7 @@ export default class MainGUI {
     collideEarly: 0,
   };
 
-  constructor(private tensorField: TensorField) {
+  constructor(private rng: seedrandom.PRNG, private tensorField: TensorField) {
     this.coastlineParams = Object.assign(
       {
         coastNoise: {
@@ -82,29 +84,37 @@ export default class MainGUI {
     const integrator = new RK4Integrator(tensorField, this.minorParams);
 
     this.coastline = new WaterGUI(
+      this.rng,
       tensorField,
       this.coastlineParams,
       integrator,
       this.worldDimensions.clone()
     );
     this.mainRoads = new RoadGUI(
+      this.rng,
       this.mainParams,
       integrator,
       this.worldDimensions.clone()
     );
     this.majorRoads = new RoadGUI(
+      this.rng,
       this.majorParams,
       integrator,
       this.worldDimensions.clone()
     );
 
     this.minorRoads = new RoadGUI(
+      this.rng,
       this.minorParams,
       integrator,
       this.worldDimensions.clone()
     );
 
-    this.buildings = new Buildings(tensorField, this.minorParams.dstep);
+    this.buildings = new Buildings(
+      this.rng,
+      tensorField,
+      this.minorParams.dstep
+    );
     this.buildings.setPreGenerateCallback(() => {
       this.buildings.setLotBoundaryGraph(this.getLotBoundaryGraph());
       this.buildings.setStreetGraph(this.getStreetGraph());
@@ -174,6 +184,7 @@ export default class MainGUI {
     this.intersections = graph.intersections;
 
     const polygonFinder = new PolygonFinder(
+      this.rng,
       graph.nodes,
       {
         maxLength: 20,
@@ -194,14 +205,14 @@ export default class MainGUI {
         if (this.clusterBigParks) {
           // Group in adjacent polygons
           const parkIndex = Math.floor(
-            Math.random() * (polygons.length - this.numBigParks)
+            this.rng() * (polygons.length - this.numBigParks)
           );
           for (let i = parkIndex; i < parkIndex + this.numBigParks; i++) {
             this.bigParks.push(polygons[i]);
           }
         } else {
           for (let i = 0; i < this.numBigParks; i++) {
-            const parkIndex = Math.floor(Math.random() * polygons.length);
+            const parkIndex = Math.floor(this.rng() * polygons.length);
             this.bigParks.push(polygons[parkIndex]);
           }
         }
@@ -212,7 +223,7 @@ export default class MainGUI {
       // Small parks
       this.smallParks = [];
       for (let i = 0; i < this.numSmallParks; i++) {
-        const parkIndex = Math.floor(Math.random() * polygons.length);
+        const parkIndex = Math.floor(this.rng() * polygons.length);
         this.smallParks.push(polygons[parkIndex]);
       }
     }

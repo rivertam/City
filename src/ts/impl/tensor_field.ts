@@ -1,5 +1,7 @@
 // import * as noise from 'noisejs';
 import * as SimplexNoise from "simplex-noise";
+import * as seedrandom from "seedrandom";
+
 import Tensor from "./tensor";
 import Vector from "../vector";
 import { Grid, Radial, BasisField } from "./basis_field";
@@ -12,6 +14,7 @@ export interface NoiseParams {
   noiseAnglePark: number; // Degrees
   noiseSizeGlobal: number;
   noiseAngleGlobal: number;
+  rng: seedrandom.PRNG;
 }
 
 /**
@@ -31,8 +34,11 @@ export default class TensorField {
 
   public smooth = false;
 
+  private rng: seedrandom.PRNG;
+
   constructor(public noiseParams: NoiseParams, public worldDimensions: Vector) {
     this.noise = new SimplexNoise();
+    this.rng = noiseParams.rng;
   }
 
   /**
@@ -177,8 +183,8 @@ export default class TensorField {
     const width = this.worldDimensions.x;
     this.addRadial(
       this.randomLocation(),
-      Util.randomRange(width / 10, width / 5), // Size
-      Util.randomRange(50)
+      Util.randomRange(this.rng, width / 10, width / 5), // Size
+      Util.randomRange(this.rng, 50)
     ); // Decay
   }
 
@@ -190,9 +196,9 @@ export default class TensorField {
     const width = this.worldDimensions.x;
     this.addGrid(
       location,
-      Util.randomRange(width / 4, width), // Size
-      Util.randomRange(50), // Decay
-      Util.randomRange(Math.PI / 2)
+      Util.randomRange(this.rng, width / 4, width), // Size
+      Util.randomRange(this.rng, 50), // Decay
+      Util.randomRange(this.rng, Math.PI / 2)
     );
   }
 
@@ -202,7 +208,10 @@ export default class TensorField {
    */
   private randomLocation(): Vector {
     const size = this.worldDimensions.multiplyScalar(this.TENSOR_SPAWN_SCALE);
-    const location = new Vector(Math.random(), Math.random()).multiply(size);
+    const location = new Vector(
+      this.noiseParams.rng(),
+      this.noiseParams.rng()
+    ).multiply(size);
     const newOrigin = this.worldDimensions.multiplyScalar(
       (1 - this.TENSOR_SPAWN_SCALE) / 2
     );

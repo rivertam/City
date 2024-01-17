@@ -1,3 +1,4 @@
+import * as seedrandom from "seedrandom";
 import FieldIntegrator from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import StreamlineGenerator from "../impl/streamlines";
@@ -13,11 +14,13 @@ export default class RoadGUI {
   protected postGenerateCallback: () => any = () => {};
 
   constructor(
+    protected rng: seedrandom.PRNG,
     protected params: StreamlineParams,
     protected integrator: FieldIntegrator,
     protected worldDimensions: Vector
   ) {
     this.streamlines = new StreamlineGenerator(
+      this.rng,
       this.integrator,
       this.worldDimensions.clone(),
       this.params
@@ -65,6 +68,7 @@ export default class RoadGUI {
     this.preGenerateCallback();
 
     this.streamlines = new StreamlineGenerator(
+      this.rng,
       this.integrator,
       this.worldDimensions,
       Object.assign({}, this.params)

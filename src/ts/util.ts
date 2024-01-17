@@ -1,3 +1,5 @@
+import * as seedrandom from "seedrandom";
+
 export interface RandomRange {
   min?: number;
   max: number;
@@ -24,7 +26,7 @@ export default class Util {
     }
   }
 
-  static randomRange(max: number, min = 0): number {
-    return Math.random() * (max - min) + min;
+  static randomRange(rng: seedrandom.PRNG, max: number, min = 0): number {
+    return rng() * (max - min) + min;
   }
 }

@@ -1,4 +1,6 @@
 import * as log from "loglevel";
+import * as seedrandom from "seedrandom";
+
 import Vector from "../vector";
 import { Node } from "./graph";
 import PolygonUtil from "./polygon_util";
@@ -24,6 +26,7 @@ export default class PolygonFinder {
   private resolveDivide: () => void;
 
   constructor(
+    private rng: seedrandom.PRNG,
     private nodes: Node[],
     private params: PolygonParams,
     private tensorField: TensorField
@@ -118,12 +121,16 @@ export default class PolygonFinder {
     // this skips the filter in PolygonUtil.subdividePolygon
     if (
       this.params.chanceNoDivide > 0 &&
-      Math.random() < this.params.chanceNoDivide
+      this.rng() < this.params.chanceNoDivide
     ) {
       this._dividedPolygons.push(polygon);
       return true;
     }
-    const divided = PolygonUtil.subdividePolygon(polygon, this.params.minArea);
+    const divided = PolygonUtil.subdividePolygon(
+      this.rng,
+      polygon,
+      this.params.minArea
+    );
     if (divided.length > 0) {
       this._dividedPolygons.push(...divided);
       return true;

@@ -1,3 +1,5 @@
+import * as seedrandom from "seedrandom";
+
 import TensorField from "../impl/tensor_field";
 import Graph, { Node } from "../impl/graph";
 import Vector from "../vector";
@@ -19,11 +21,11 @@ export interface BuildingModel {
 class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
-  constructor(lots: Vector[][], streetGraph: Graph) {
+  constructor(rng: seedrandom.PRNG, lots: Vector[][], streetGraph: Graph) {
     // Lots in world space
     for (const lot of lots) {
       this._buildingModels.push({
-        height: Math.random() * 20 + 20,
+        height: rng() * 20 + 20,
         lotWorld: lot,
         lotScreen: [],
         roof: [],
@@ -95,8 +97,13 @@ export default class Buildings {
     chanceNoDivide: 0.05,
   };
 
-  constructor(private tensorField: TensorField, private dstep: number) {
+  constructor(
+    private rng: seedrandom.PRNG,
+    private tensorField: TensorField,
+    private dstep: number
+  ) {
     this.polygonFinder = new PolygonFinder(
+      this.rng,
       [],
       this.buildingParams,
       this.tensorField
@@ -114,6 +121,7 @@ export default class Buildings {
     const blockParams = Object.assign({}, this.buildingParams);
     blockParams.shrinkSpacing = blockParams.shrinkSpacing / 2;
     const polygonFinder = new PolygonFinder(
+      this.rng,
       this.lotBoundaryGraph.nodes,
       blockParams,
       this.tensorField
@@ -153,6 +161,7 @@ export default class Buildings {
     this._models = null;
 
     this.polygonFinder = new PolygonFinder(
+      this.rng,
       this.lotBoundaryGraph.nodes,
       this.buildingParams,
       this.tensorField
@@ -162,6 +171,7 @@ export default class Buildings {
     this.polygonFinder.divide();
 
     this._models = new BuildingModels(
+      this.rng,
       this.polygonFinder.polygons,
       this.streetGraph
     );
