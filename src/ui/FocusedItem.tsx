@@ -43,6 +43,15 @@ export const FocusedItem = observer(() => {
   return null;
 });
 
+const Coordinates = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: #000000;
+  opacity: 0.5;
+  z-index: 2;
+`;
+
 function FocusedStreetNode({
   focusedItem,
 }: {
@@ -50,12 +59,13 @@ function FocusedStreetNode({
 }) {
   let nodeName: string;
 
-  if (focusedItem.node.segments.size === 1) {
-    nodeName = focusedItem.node.segments.keys().next().value;
-  } else if (focusedItem.node.segments.size === 2) {
-    nodeName = Array.from(focusedItem.node.segments.keys()).join(" and ");
+  const streetNames = Array.from(focusedItem.node.segments.keys());
+
+  if (streetNames.length === 1) {
+    nodeName = streetNames[0];
+  } else if (streetNames.length === 2) {
+    nodeName = streetNames.join(" and ");
   } else {
-    const streetNames = Array.from(focusedItem.node.segments.keys());
     nodeName = streetNames[0];
     for (let ii = 1; ii < streetNames.length - 1; ii++) {
       nodeName += `, ${streetNames[ii]}`;
@@ -67,6 +77,19 @@ function FocusedStreetNode({
   return (
     <div>
       <h1>{nodeName}</h1>
+
+      <hr />
+
+      <h3>Streets</h3>
+
+      {streetNames.map((streetName) => {
+        return <div key={streetName}>{streetName}</div>;
+      })}
+
+      <Coordinates>
+        {focusedItem.node.value.x.toFixed(3)},{" "}
+        {focusedItem.node.value.y.toFixed(3)}
+      </Coordinates>
     </div>
   );
 }

@@ -23,11 +23,15 @@ export const StreetGraphVisualization = observer(() => {
             displayState.focusedItem?.kind === "streetNode" &&
             displayState.focusedItem.node === node
           ) {
-            return "rgba(100, 255, 100, 0.5)";
+            return "rgba(100, 255, 100)";
           }
 
           if (includesIntersection) {
             return "red";
+          }
+
+          if (node.segments.size === 0) {
+            return "rgb(255, 100, 100)";
           }
 
           if (node.segments.size === 1) {

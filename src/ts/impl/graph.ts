@@ -50,7 +50,7 @@ export default class Graph {
     const quadtree = (d3.quadtree() as d3.Quadtree<Node>)
       .x((n) => n.value.x)
       .y((n) => n.value.y);
-    const nodeAddRadius = 0.1;
+    const nodeAddRadius = 1;
 
     // Add all segment start and endpoints
     for (const streamline of streamlines) {
@@ -215,10 +215,10 @@ export default class Graph {
         if (duplicateSegmentNames.length > 0) {
           nodesToAdd.push(closestNode);
 
-          closestNode.segments.set(segmentName, segment);
           for (const name of duplicateSegmentNames) {
             closestNode.segments.delete(name);
           }
+          closestNode.segments.set(segmentName, segment);
         }
 
         closestNode = quadtree.find(
@@ -286,6 +286,7 @@ export default class Graph {
     const existingNode = quadtree.find(node.value.x, node.value.y, radius);
     if (existingNode === undefined) {
       quadtree.add(node);
+
       return true;
     }
 

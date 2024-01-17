@@ -9,13 +9,13 @@ import { StreetGraphVisualization } from "./StreetGraphVisualization";
 
 const GroundHeights = {
   BaseGround: 0,
-  Water: 0.01,
-  Beach: 0.02,
-  MinorRoad: 0.03,
-  MajorRoad: 0.04,
-  CoastlineRoad: 0.05,
-  MainRoad: 0.06,
-  Park: 0.07,
+  Park: 0.01,
+  Water: 0.02,
+  Beach: 0.03,
+  MinorRoad: 0.04,
+  MajorRoad: 0.05,
+  CoastlineRoad: 0.06,
+  MainRoad: 0.07,
   Block: 0.08,
   Foundation: 0.09,
 };
