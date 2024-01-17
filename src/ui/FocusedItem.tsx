@@ -45,8 +45,8 @@ export const FocusedItem = observer(() => {
 
 const Coordinates = styled.div`
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 5px;
+  right: 15px;
   color: #000000;
   opacity: 0.5;
   z-index: 2;
