@@ -1,4 +1,4 @@
-import * as seedrandom from "seedrandom";
+import { RNG } from "../../utils/random";
 import FieldIntegrator from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import StreamlineGenerator from "../impl/streamlines";
@@ -14,7 +14,7 @@ export default class RoadGUI {
   protected postGenerateCallback: () => any = () => {};
 
   constructor(
-    protected rng: seedrandom.PRNG,
+    protected rng: RNG,
     protected params: StreamlineParams,
     protected integrator: FieldIntegrator,
     protected worldDimensions: Vector

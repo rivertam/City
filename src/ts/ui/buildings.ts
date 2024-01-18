@@ -1,4 +1,4 @@
-import * as seedrandom from "seedrandom";
+import { RNG } from "../../utils/random";
 
 import TensorField from "../impl/tensor_field";
 import Graph, { Node } from "../impl/graph";
@@ -21,11 +21,11 @@ export interface BuildingModel {
 class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
-  constructor(rng: seedrandom.PRNG, lots: Vector[][], streetGraph: Graph) {
+  constructor(rng: RNG, lots: Vector[][], streetGraph: Graph) {
     // Lots in world space
     for (const lot of lots) {
       this._buildingModels.push({
-        height: rng() * 20 + 20,
+        height: rng.random() * 20 + 20,
         lotWorld: lot,
         lotScreen: [],
         roof: [],
@@ -98,7 +98,7 @@ export default class Buildings {
   };
 
   constructor(
-    private rng: seedrandom.PRNG,
+    private rng: RNG,
     private tensorField: TensorField,
     private dstep: number
   ) {

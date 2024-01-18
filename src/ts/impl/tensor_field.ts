@@ -1,6 +1,6 @@
 // import * as noise from 'noisejs';
 import * as SimplexNoise from "simplex-noise";
-import * as seedrandom from "seedrandom";
+import { RNG } from "../../utils/random";
 
 import Tensor from "./tensor";
 import Vector from "../vector";
@@ -14,7 +14,7 @@ export interface NoiseParams {
   noiseAnglePark: number; // Degrees
   noiseSizeGlobal: number;
   noiseAngleGlobal: number;
-  rng: seedrandom.PRNG;
+  rng: RNG;
 }
 
 /**
@@ -34,7 +34,7 @@ export default class TensorField {
 
   public smooth = false;
 
-  private rng: seedrandom.PRNG;
+  private rng: RNG;
 
   constructor(public noiseParams: NoiseParams, public worldDimensions: Vector) {
     this.noise = new SimplexNoise();
@@ -208,10 +208,9 @@ export default class TensorField {
    */
   private randomLocation(): Vector {
     const size = this.worldDimensions.multiplyScalar(this.TENSOR_SPAWN_SCALE);
-    const location = new Vector(
-      this.noiseParams.rng(),
-      this.noiseParams.rng()
-    ).multiply(size);
+    const location = new Vector(this.rng.random(), this.rng.random()).multiply(
+      size
+    );
     const newOrigin = this.worldDimensions.multiplyScalar(
       (1 - this.TENSOR_SPAWN_SCALE) / 2
     );

@@ -1,4 +1,4 @@
-import * as seedrandom from "seedrandom";
+import { RNG } from "../../utils/random";
 
 import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
@@ -48,7 +48,7 @@ export default class MainGUI {
     collideEarly: 0,
   };
 
-  constructor(private rng: seedrandom.PRNG, private tensorField: TensorField) {
+  constructor(private rng: RNG, private tensorField: TensorField) {
     this.coastlineParams = Object.assign(
       {
         coastNoise: {
@@ -181,6 +181,7 @@ export default class MainGUI {
 
   addParks(): void {
     const graph = this.createStreetGraph();
+    console.log(graph);
     this.intersections = graph.intersections;
 
     const polygonFinder = new PolygonFinder(
@@ -205,14 +206,15 @@ export default class MainGUI {
         if (this.clusterBigParks) {
           // Group in adjacent polygons
           const parkIndex = Math.floor(
-            this.rng() * (polygons.length - this.numBigParks)
+            this.rng.random() * (polygons.length - this.numBigParks)
           );
           for (let i = parkIndex; i < parkIndex + this.numBigParks; i++) {
             this.bigParks.push(polygons[i]);
           }
         } else {
           for (let i = 0; i < this.numBigParks; i++) {
-            const parkIndex = Math.floor(this.rng() * polygons.length);
+            const parkIndex = Math.floor(this.rng.random() * polygons.length);
+            console.log("park index", parkIndex);
             this.bigParks.push(polygons[parkIndex]);
           }
         }
@@ -223,7 +225,7 @@ export default class MainGUI {
       // Small parks
       this.smallParks = [];
       for (let i = 0; i < this.numSmallParks; i++) {
-        const parkIndex = Math.floor(this.rng() * polygons.length);
+        const parkIndex = Math.floor(this.rng.random() * polygons.length);
         this.smallParks.push(polygons[parkIndex]);
       }
     }

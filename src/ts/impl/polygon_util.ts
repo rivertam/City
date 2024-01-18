@@ -1,6 +1,6 @@
 import * as log from "loglevel";
 import * as PolyK from "polyk";
-import * as seedrandom from "seedrandom";
+import { RNG } from "../../utils/random";
 import * as jsts from "jsts";
 
 import Vector from "../vector";
@@ -134,7 +134,7 @@ export default class PolygonUtil {
     }
 
     // Between 0.4 and 0.6
-    const deviation = rng() * 0.2 + 0.4;
+    const deviation = rng.random() * 0.2 + 0.4;
 
     const averagePoint = longestSide[0]
       .clone()

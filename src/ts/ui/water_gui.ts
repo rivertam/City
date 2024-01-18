@@ -1,4 +1,4 @@
-import * as seedrandom from "seedrandom";
+import { RNG } from "../../utils/random";
 
 import FieldIntegrator from "../impl/integrator";
 import { WaterParams } from "../impl/water_generator";
@@ -14,7 +14,7 @@ export default class WaterGUI extends RoadGUI {
   protected streamlines: WaterGenerator;
 
   constructor(
-    rng: seedrandom.PRNG,
+    rng: RNG,
     private tensorField: TensorField,
     protected params: WaterParams,
     integrator: FieldIntegrator,
