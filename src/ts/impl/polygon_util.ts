@@ -95,7 +95,7 @@ export default class PolygonUtil {
    * Recursively divide a polygon by its longest side until the minArea stopping condition is met
    */
   public static subdividePolygon(
-    rng: seedrandom.PRNG,
+    rng: RNG,
     p: Vector[],
     minArea: number
   ): Vector[][] {

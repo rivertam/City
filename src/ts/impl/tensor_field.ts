@@ -25,7 +25,7 @@ export default class TensorField {
   private TENSOR_SPAWN_SCALE = 0.7; // How much to shrink worldDimensions to find spawn point
 
   private basisFields: BasisField[] = [];
-  private noise: SimplexNoise;
+  private noise: ReturnType<typeof SimplexNoise.createNoise2D>;
 
   public parks: Vector[][] = [];
   public sea: Vector[] = [];
@@ -37,7 +37,7 @@ export default class TensorField {
   private rng: RNG;
 
   constructor(public noiseParams: NoiseParams, public worldDimensions: Vector) {
-    this.noise = new SimplexNoise();
+    this.noise = SimplexNoise.createNoise2D(noiseParams.rng.random);
     this.rng = noiseParams.rng;
   }
 
@@ -140,7 +140,7 @@ export default class TensorField {
     noiseAngle: number
   ): number {
     return (
-      (this.noise.noise2D(point.x / noiseSize, point.y / noiseSize) *
+      (this.noise(point.x / noiseSize, point.y / noiseSize) *
         noiseAngle *
         Math.PI) /
       180

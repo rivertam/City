@@ -1,4 +1,4 @@
-import { Leva, button } from "leva";
+import { Leva, button, useControls } from "leva";
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
@@ -6,11 +6,12 @@ import { PerspectiveCamera, MapControls } from "@react-three/drei";
 import styled from "styled-components";
 import { observer } from "mobx-react-lite";
 
-import { useControls } from "leva";
 import { City } from "./City/City";
 import { CityState } from "./City/CityState";
 import { CityGenerator } from "./City/CityGenerator";
 import { FocusedItem } from "./ui/FocusedItem";
+import { wait } from "./utils/wait";
+import { RNG } from "./utils/random";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -76,8 +77,16 @@ export const Game = observer((): React.ReactElement => {
 
   const divWrapper = useRef<HTMLDivElement | null>(null);
 
+  const [shouldGenerate, setShouldGenerate] = useState(false);
+  const hasGenerated = useRef(false);
+
   const tweaks = useControls("Game", {
     "Make simple city": button(async () => {
+      RNG.reset();
+      setShouldGenerate(false);
+      hasGenerated.current = false;
+
+      await wait(100);
       setShouldGenerate(true);
     }),
     size: {
@@ -89,8 +98,6 @@ export const Game = observer((): React.ReactElement => {
   });
 
   const [cityState, setCityState] = useState<CityState | null>(null);
-  const [shouldGenerate, setShouldGenerate] = useState(false);
-  const hasGenerated = useRef(false);
 
   useEffect(() => {
     if (!shouldGenerate) {

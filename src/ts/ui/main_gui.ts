@@ -181,7 +181,6 @@ export default class MainGUI {
 
   addParks(): void {
     const graph = this.createStreetGraph();
-    console.log(graph);
     this.intersections = graph.intersections;
 
     const polygonFinder = new PolygonFinder(
@@ -214,7 +213,6 @@ export default class MainGUI {
         } else {
           for (let i = 0; i < this.numBigParks; i++) {
             const parkIndex = Math.floor(this.rng.random() * polygons.length);
-            console.log("park index", parkIndex);
             this.bigParks.push(polygons[parkIndex]);
           }
         }

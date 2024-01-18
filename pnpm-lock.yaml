@@ -96,8 +96,8 @@ dependencies:
     specifier: ^3.0.5
     version: 3.0.5
   simplex-noise:
-    specifier: ^2.4.0
-    version: 2.4.0
+    specifier: ^4.0.1
+    version: 4.0.1
   simplify-js:
     specifier: ^1.2.4
     version: 1.2.4
@@ -7016,8 +7016,8 @@ packages:
     resolution: {integrity: sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==}
     dev: true
 
-  /simplex-noise@2.4.0:
-    resolution: {integrity: sha512-OjyDWm/QZjVbMrPxDVi9b2as+SeNn9EBXlrWVRlFW+TSyWMSXouDryXkQN0vf5YP+QZKobrmkvx1eQYPLtuqfw==}
+  /simplex-noise@4.0.1:
+    resolution: {integrity: sha512-zl/+bdSqW7HJOQ0oDbxrNYaF4F5ik0i7M6YOYmEoIJNtg16NpvWaTTM1Y7oV/7T0jFljawLgYPS81Uu2rsfo1A==}
     dev: false
 
   /simplify-js@1.2.4:
