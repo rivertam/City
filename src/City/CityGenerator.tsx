@@ -53,7 +53,7 @@ export class CityGenerator {
 
     await this.mainGui.generateEverything();
 
-    this.rng.random("after");
+    this.rng.random();
     return await this.getGeneratedCity();
   }
 

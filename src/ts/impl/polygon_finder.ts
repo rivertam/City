@@ -1,5 +1,6 @@
 import * as log from "loglevel";
 
+import { RNG } from "../../utils/random";
 import Vector from "../vector";
 import { Node } from "./graph";
 import PolygonUtil from "./polygon_util";
