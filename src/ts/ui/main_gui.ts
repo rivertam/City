@@ -90,24 +90,40 @@ export default class MainGUI {
       integrator,
       this.worldDimensions.clone()
     );
+
+    const roadNames = new Set<string>();
+
+    while (roadNames.size < 1000) {
+      roadNames.add(this.rng.faker().location.street());
+    }
+
+    const roadNamesArray = Array.from(roadNames);
+
     this.mainRoads = new RoadGUI(
       this.rng,
       this.mainParams,
       integrator,
-      this.worldDimensions.clone()
+      this.worldDimensions.clone(),
+      roadNamesArray.slice(0, roadNamesArray.length / 3)
     );
+
     this.majorRoads = new RoadGUI(
       this.rng,
       this.majorParams,
       integrator,
-      this.worldDimensions.clone()
+      this.worldDimensions.clone(),
+      roadNamesArray.slice(
+        roadNamesArray.length / 3,
+        (roadNamesArray.length / 3) * 2
+      )
     );
 
     this.minorRoads = new RoadGUI(
       this.rng,
       this.minorParams,
       integrator,
-      this.worldDimensions.clone()
+      this.worldDimensions.clone(),
+      roadNamesArray.slice((roadNamesArray.length / 3) * 2)
     );
 
     this.buildings = new Buildings(
@@ -311,14 +327,10 @@ export default class MainGUI {
 
   public createStreetGraph(): Graph {
     return new Graph(
-      this.majorRoads.allStreamlines
-        .concat(this.mainRoads.allStreamlines)
-        .concat(this.minorRoads.allStreamlines)
-        .concat(this.coastline.streamlinesWithSecondaryRoad)
-        .map((streamline) => ({
-          name: this.getStreetName(streamline),
-          points: streamline,
-        })),
+      this.majorRoads.roads
+        .concat(this.mainRoads.roads)
+        .concat(this.minorRoads.roads)
+        .concat(this.coastline.roads),
       this.minorParams.dstep
     );
   }
@@ -328,49 +340,32 @@ export default class MainGUI {
   public getLotBoundaryGraph(): Graph {
     if (!this.lotBoundaryGraph) {
       const allStreamlines = [];
-      allStreamlines.push(...this.mainRoads.allStreamlines);
-      allStreamlines.push(...this.majorRoads.allStreamlines);
-      allStreamlines.push(...this.minorRoads.allStreamlines);
-      allStreamlines.push(...this.coastline.streamlinesWithSecondaryRoad);
+      allStreamlines.push(...this.mainRoads.roads);
+      allStreamlines.push(...this.majorRoads.roads);
+      allStreamlines.push(...this.minorRoads.roads);
+      allStreamlines.push(...this.coastline.namedStreamlines);
 
-      this.lotBoundaryGraph = new Graph(
-        allStreamlines.map((streamline) => ({
-          name: this.getStreetName(streamline),
-          points: streamline,
-        })),
-        this.minorParams.dstep
-      );
+      this.lotBoundaryGraph = new Graph(allStreamlines, this.minorParams.dstep);
     }
 
     return this.lotBoundaryGraph;
   }
 
-  private streetNames = new Map<Vector[], string>();
-  private getStreetName(street: Vector[]): string {
-    let name = this.streetNames.get(street);
-    if (!name) {
-      name = `Street ${this.streetNames.size + 1}`;
-      this.streetNames.set(street, name);
-    }
-
-    return name;
-  }
-
   public get minorRoadPolygons(): Vector[][] {
-    return this.minorRoads.roads.map((r) =>
+    return this.minorRoads.roadPolygons.map((r) =>
       PolygonUtil.resizeGeometry(r, 1, false)
     );
   }
 
   public get majorRoadPolygons(): Vector[][] {
-    return this.majorRoads.roads
+    return this.majorRoads.roadPolygons
       .concat([this.coastline.secondaryRiver])
       .map((r) => PolygonUtil.resizeGeometry(r, 2, false));
   }
 
   public get mainRoadPolygons(): Vector[][] {
-    return this.mainRoads.roads
-      .concat(this.coastline.roads)
+    return this.mainRoads.roadPolygons
+      .concat(this.coastline.roadPolygons)
       .map((r) => PolygonUtil.resizeGeometry(r, 2.5, false));
   }
 

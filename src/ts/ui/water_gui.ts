@@ -20,7 +20,8 @@ export default class WaterGUI extends RoadGUI {
     integrator: FieldIntegrator,
     protected worldDimensions: Vector
   ) {
-    super(rng, params, integrator, worldDimensions);
+    const names = ["river", "coastline"];
+    super(rng, params, integrator, worldDimensions, names);
     this.streamlines = new WaterGenerator(
       rng,
       this.integrator,
@@ -55,6 +56,16 @@ export default class WaterGUI extends RoadGUI {
     const withSecondary = this.streamlines.allStreamlinesSimple.slice();
     withSecondary.push(this.streamlines.riverSecondaryRoad);
     return withSecondary;
+  }
+
+  get namedStreamlines(): Array<{ name: string; points: Vector[] }> {
+    return [
+      ...this.streamlines.namedStreamlines,
+      {
+        name: "Riverside",
+        points: this.streamlines.riverSecondaryRoad,
+      },
+    ];
   }
 
   get river(): Vector[] {

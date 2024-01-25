@@ -4,20 +4,28 @@ import { StreamlineParams } from "../impl/streamlines";
 import StreamlineGenerator from "../impl/streamlines";
 import Vector from "../vector";
 
+export type Road = {
+  points: Vector[];
+  name: string;
+};
+
 /**
  * Handles creation of roads
  */
 export default class RoadGUI {
   protected streamlines: StreamlineGenerator;
   private existingStreamlines: RoadGUI[] = [];
-  protected preGenerateCallback: () => any = () => {};
-  protected postGenerateCallback: () => any = () => {};
+  private roadNames = new Map<Vector[], string>();
+
+  protected preGenerateCallback: () => void = () => {};
+  protected postGenerateCallback: () => void = () => {};
 
   constructor(
     protected rng: RNG,
     protected params: StreamlineParams,
     protected integrator: FieldIntegrator,
-    protected worldDimensions: Vector
+    protected worldDimensions: Vector,
+    private nameBag: Array<string>
   ) {
     this.streamlines = new StreamlineGenerator(
       this.rng,
@@ -37,7 +45,14 @@ export default class RoadGUI {
     );
   }
 
-  get roads(): Vector[][] {
+  get roads(): Array<Road> {
+    return this.streamlines.allStreamlinesSimple.map((streamline) => ({
+      points: streamline,
+      name: this.roadNames.get(streamline),
+    }));
+  }
+
+  get roadPolygons(): Vector[][] {
     // For drawing not generation, probably fine to leave map
     return this.streamlines.allStreamlinesSimple.map((s) =>
       s.map((v) => v.clone())
@@ -52,11 +67,11 @@ export default class RoadGUI {
     this.existingStreamlines = existingStreamlines;
   }
 
-  setPreGenerateCallback(callback: () => any) {
+  setPreGenerateCallback(callback: () => void) {
     this.preGenerateCallback = callback;
   }
 
-  setPostGenerateCallback(callback: () => any) {
+  setPostGenerateCallback(callback: () => void) {
     this.postGenerateCallback = callback;
   }
 
@@ -64,7 +79,7 @@ export default class RoadGUI {
     this.streamlines.clearStreamlines();
   }
 
-  async generateRoads(animate = false): Promise<unknown> {
+  async generateRoads(): Promise<void> {
     this.preGenerateCallback();
 
     this.streamlines = new StreamlineGenerator(
@@ -78,9 +93,23 @@ export default class RoadGUI {
       this.streamlines.addExistingStreamlines(s.streamlines);
     }
 
-    return this.streamlines
-      .createAllStreamlines(animate)
-      .then(() => this.postGenerateCallback());
+    await this.streamlines.createAllStreamlines();
+
+    this.setRoadNames();
+
+    this.postGenerateCallback();
+  }
+
+  private setRoadNames() {
+    for (const streamline of this.streamlines.allStreamlinesSimple) {
+      const name = this.nameBag.shift();
+
+      if (name === undefined) {
+        throw new Error("Ran out of road names");
+      }
+
+      this.roadNames.set(streamline, name);
+    }
   }
 
   /**

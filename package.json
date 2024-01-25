@@ -19,6 +19,8 @@
   },
   "homepage": "https://github.com/ProbableTrain/MapGenerator#readme",
   "dependencies": {
+    "@faker-js/faker": "^8.4.0",
+    "@fakerjs/faker": "^3.0.0",
     "@interactjs/types": "^1.9.8",
     "@react-three/drei": "^9.8.1",
     "@react-three/fiber": "^8.0.16",

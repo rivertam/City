@@ -16,7 +16,6 @@ interface StreamlineIntegration {
 }
 
 export interface StreamlineParams {
-  [key: string]: any;
   dsep: number; // Streamline seed separating distance
   dtest: number; // Streamline integration separating distance
   dstep: number; // Step size
@@ -324,7 +323,9 @@ export default class StreamlineGenerator {
 
   protected setParamsSq(): void {
     this.paramsSq = Object.assign({}, this.params);
-    for (const p in this.paramsSq) {
+    for (const p of Object.keys(this.paramsSq) as Array<
+      keyof StreamlineParams
+    >) {
       if (typeof this.paramsSq[p] === "number") {
         this.paramsSq[p] *= this.paramsSq[p];
       }

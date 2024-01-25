@@ -1,10 +1,8 @@
-import faker from "faker";
-
 import TensorField, { NoiseParams } from "../ts/impl/tensor_field";
 import MainGUI from "../ts/ui/main_gui";
 import Vector from "../ts/vector";
 import ModelGenerator from "../ts/model_generator";
-import { RNG } from "../utils/random";
+import { RNG, faker } from "../utils/random";
 import { GeneratedCity, MapLine } from "./CityState";
 
 export type CityGenerationParameters = {
@@ -77,7 +75,7 @@ export class CityGenerator {
       let name: string;
       do {
         const fish = faker.animal.fish();
-        const kind = faker.random.arrayElement(["Stream", "Creek", "River"]);
+        const kind = faker.helpers.arrayElement(["Stream", "Creek", "River"]);
         name = `${fish} ${kind}`;
       } while (usedNames.has(name));
 
@@ -88,7 +86,7 @@ export class CityGenerator {
     const createRoadName = (): string => {
       let name: string;
       do {
-        name = faker.address.streetName();
+        name = faker.location.street();
       } while (usedNames.has(name));
 
       usedNames.add(name);
@@ -98,7 +96,7 @@ export class CityGenerator {
     const createParkName = (): string => {
       let name: string;
       do {
-        name = `${faker.name.lastName()} park`;
+        name = `${faker.person.lastName()} park`;
       } while (usedNames.has(name));
 
       usedNames.add(name);
@@ -116,7 +114,7 @@ export class CityGenerator {
       let name: string;
       let num = 0;
       do {
-        name = `${num++} ${faker.address.streetAddress()}`;
+        name = `${num++} ${faker.location.streetAddress()}`;
       } while (usedNames.has(name));
 
       return name;
@@ -137,16 +135,16 @@ export class CityGenerator {
       ),
 
       roads: {
-        coastline: this.mainGui.coastline.roads.map((poly) =>
+        coastline: this.mainGui.coastline.roadPolygons.map((poly) =>
           convertLine(poly, createRoadName())
         ),
-        main: this.mainGui.mainRoads.roads.map((poly) =>
+        main: this.mainGui.mainRoads.roadPolygons.map((poly) =>
           convertLine(poly, createRoadName())
         ),
-        major: this.mainGui.majorRoads.roads.map((poly) =>
+        major: this.mainGui.majorRoads.roadPolygons.map((poly) =>
           convertLine(poly, createRoadName())
         ),
-        minor: this.mainGui.minorRoads.roads.map((poly) =>
+        minor: this.mainGui.minorRoads.roadPolygons.map((poly) =>
           convertLine(poly, createRoadName())
         ),
       },

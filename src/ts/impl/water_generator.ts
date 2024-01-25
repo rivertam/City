@@ -87,7 +87,7 @@ export default class WaterGenerator extends StreamlineGenerator {
 
     const road = this.simplifyStreamline(coastStreamline);
     this._seaPolygon = this.getSeaPolygon(road);
-    this.allStreamlinesSimple.push(road);
+    this.namedStreamlines.push({ points: road, name: "Sea" });
     this.tensorField.sea = this._seaPolygon;
 
     // Create intermediate samples
@@ -96,6 +96,8 @@ export default class WaterGenerator extends StreamlineGenerator {
     this.streamlines(major).push(complex);
     this.allStreamlines.push(complex);
   }
+
+  public namedStreamlines = new Array<{ name: string; points: Vector[] }>();
 
   createRiver(): void {
     let riverStreamline;
@@ -171,7 +173,7 @@ export default class WaterGenerator extends StreamlineGenerator {
     this.tensorField.river = road1Simple.concat(road2Simple);
 
     // Road 1
-    this.allStreamlinesSimple.push(road1Simple);
+    this.namedStreamlines.push({ points: road1Simple, name: "River" });
     this._riverSecondaryRoad = road2Simple;
 
     this.grid(!this.coastlineMajor).addPolyline(road1);
