@@ -3,6 +3,7 @@ import * as d3 from "d3-quadtree";
 import * as isect from "isect";
 
 import Vector from "../vector";
+import { NodeAssociatedPolygon } from "./polygon_finder";
 
 interface Segment {
   from: Vector;
@@ -31,6 +32,10 @@ export class Node {
       this.neighbors.add(node);
       node.neighbors.add(this);
     }
+  }
+
+  streamlineNames(): Array<string> {
+    return Array.from(this.segments.keys());
   }
 }
 
@@ -320,12 +325,18 @@ export default class Graph {
    * @param lot the polygon describing the lot
    * @returns the entry point node on the street graph
    */
-  public getEntryPoint(lot: Vector[]): Node {
+  public getEntryPoint(lot: NodeAssociatedPolygon): Node {
+    // console.count(`nodes ${lot.nodes.length}`);
+
+    if (lot.nodes.length > 0) {
+      return lot.nodes[0];
+    }
+
     let closestNode = this.nodes[0];
     let closestDistance = Infinity;
 
     for (const node of this.nodes) {
-      for (const point of lot) {
+      for (const point of lot.polygon) {
         const distance = point.distanceTo(node.value);
         if (distance < closestDistance) {
           closestNode = node;

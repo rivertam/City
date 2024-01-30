@@ -3,12 +3,12 @@ import { RNG } from "../../utils/random";
 import TensorField from "../impl/tensor_field";
 import Graph, { Node } from "../impl/graph";
 import Vector from "../vector";
-import PolygonFinder from "../impl/polygon_finder";
+import PolygonFinder, { NodeAssociatedPolygon } from "../impl/polygon_finder";
 import { PolygonParams } from "../impl/polygon_finder";
 
 export interface BuildingModel {
   height: number;
-  lotWorld: Vector[]; // In world space
+  lotWorld: NodeAssociatedPolygon; // In world space
   lotScreen: Vector[]; // In screen space
   roof: Vector[]; // In screen space
   sides: Vector[][]; // In screen space
@@ -21,7 +21,7 @@ export interface BuildingModel {
 class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
-  constructor(rng: RNG, lots: Vector[][], streetGraph: Graph) {
+  constructor(rng: RNG, lots: NodeAssociatedPolygon[], streetGraph: Graph) {
     // Lots in world space
     for (const lot of lots) {
       this._buildingModels.push({
@@ -46,7 +46,7 @@ class BuildingModels {
   setBuildingProjections(): void {
     const d = 1000 / 1;
     for (const b of this._buildingModels) {
-      b.lotScreen = b.lotWorld.map((v) => v.clone());
+      b.lotScreen = b.lotWorld.polygon.map((v) => v.clone());
       b.roof = b.lotScreen.map((v) =>
         this.heightVectorToScreen(v, b.height, d)
       );
@@ -111,7 +111,7 @@ export default class Buildings {
   }
 
   get lots(): Vector[][] {
-    return this.polygonFinder.polygons.map((p) => p.map((v) => v.clone()));
+    return this.polygonFinder.polygons.map((p) => p.polygon.map((v) => v.clone()));
   }
 
   /**
@@ -128,7 +128,7 @@ export default class Buildings {
     );
     polygonFinder.findPolygons();
     polygonFinder.shrink();
-    return polygonFinder.polygons.map((p) => p.map((v) => v.clone()));
+    return polygonFinder.polygons.map((p) => p.polygon.map((v) => v.clone()));
   }
 
   get models(): BuildingModel[] {

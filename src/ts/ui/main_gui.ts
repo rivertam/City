@@ -211,7 +211,7 @@ export default class MainGUI {
       this.tensorField
     );
     polygonFinder.findPolygons();
-    const polygons = polygonFinder.polygons;
+    const polygons = polygonFinder.polygons.map(({ polygon }) => polygon);
 
     if (this.minorRoads.allStreamlines.length === 0) {
       // Big parks

@@ -13,16 +13,54 @@ export interface PolygonParams {
   chanceNoDivide: number;
 }
 
+export class NodeAssociatedPolygon {
+  private _polygon: Map<Vector, Node | null>;
+
+  // excess nodes are when there are more street nodes than sides of the geometry.
+  // this happens after shrinking (jsts.buffer can reduce the number of points in
+  // a polygon when shrinking)
+  private _excessNodes = new Set<Node>();
+
+  constructor(polygon: Vector[], nodes: Node[]) {
+    // if (polygon.length < nodes.length) {
+    //   throw new Error("Polygon must have at least as many points as nodes");
+    // }
+
+    this._polygon = new Map<Vector, Node | null>();
+
+    for (let index = 0; index < polygon.length; index++) {
+      const point = polygon[index];
+      this._polygon.set(point, nodes[index] ?? null);
+    }
+
+    for (let index = polygon.length; index < nodes.length; index++) {
+      this._excessNodes.add(nodes[index]);
+    }
+  }
+
+  public get nodes(): Node[] {
+    return Array.from(this._polygon.values()).filter((n) => n !== null);
+  }
+
+  public get polygon(): Vector[] {
+    return Array.from(this._polygon.keys());
+  }
+
+  public hasExcessNodes(): boolean {
+    return this._excessNodes.size > 0;
+  }
+}
+
 /**
  * Finds polygons in a graph, used for finding lots and parks
  */
 export default class PolygonFinder {
-  private _polygons: Vector[][] = [];
-  private _shrunkPolygons: Vector[][] = [];
-  private _dividedPolygons: Vector[][] = [];
-  private toShrink: Vector[][] = [];
+  private _polygons: Array<NodeAssociatedPolygon> = [];
+  private _shrunkPolygons: Array<NodeAssociatedPolygon> = [];
+  private _dividedPolygons: Array<NodeAssociatedPolygon> = [];
+  private toShrink: Array<NodeAssociatedPolygon> = [];
   private resolveShrink: () => void;
-  private toDivide: Vector[][] = [];
+  private toDivide: Array<NodeAssociatedPolygon> = [];
   private resolveDivide: () => void;
 
   constructor(
@@ -32,7 +70,7 @@ export default class PolygonFinder {
     private tensorField: TensorField
   ) {}
 
-  get polygons(): Vector[][] {
+  get polygons(): Array<NodeAssociatedPolygon> {
     if (this._dividedPolygons.length > 0) {
       return this._dividedPolygons;
     }
@@ -88,13 +126,15 @@ export default class PolygonFinder {
     }
   }
 
-  private stepShrink(polygon: Vector[]): boolean {
+  private stepShrink(polygon: NodeAssociatedPolygon): boolean {
     const shrunk = PolygonUtil.resizeGeometry(
-      polygon,
+      polygon.polygon,
       -this.params.shrinkSpacing
     );
     if (shrunk.length > 0) {
-      this._shrunkPolygons.push(shrunk);
+      this._shrunkPolygons.push(
+        new NodeAssociatedPolygon(shrunk, polygon.nodes)
+      );
       return true;
     }
     return false;
@@ -116,7 +156,7 @@ export default class PolygonFinder {
     }
   }
 
-  private stepDivide(polygon: Vector[]): boolean {
+  private stepDivide(polygon: NodeAssociatedPolygon): boolean {
     // TODO need to filter shrunk polygons using aspect ratio, area
     // this skips the filter in PolygonUtil.subdividePolygon
     if (
@@ -128,14 +168,25 @@ export default class PolygonFinder {
     }
     const divided = PolygonUtil.subdividePolygon(
       this.rng,
-      polygon,
+      polygon.polygon,
       this.params.minArea
     );
-    if (divided.length > 0) {
-      this._dividedPolygons.push(...divided);
-      return true;
+
+    for (const subPolygon of divided) {
+      const relevantNodes = [];
+      for (const point of subPolygon) {
+        const node = polygon.nodes.find((n) => n.value.equals(point));
+        if (node !== undefined) {
+          relevantNodes.push(node);
+        }
+      }
+
+      this._dividedPolygons.push(
+        new NodeAssociatedPolygon(subPolygon, relevantNodes)
+      );
     }
-    return false;
+
+    return divided.length > 0;
   }
 
   findPolygons(): void {
@@ -157,25 +208,31 @@ export default class PolygonFinder {
         const polygon = this.recursiveWalk([node, nextNode]);
         if (polygon !== null && polygon.length < this.params.maxLength) {
           this.removePolygonAdjacencies(polygon);
-          polygons.push(polygon.map((n) => n.value.clone()));
+          polygons.push(
+            new NodeAssociatedPolygon(
+              polygon.map((n) => n.value.clone()),
+              polygon
+            )
+          );
         }
       }
     }
 
-    this._polygons = this.filterPolygonsByWater(polygons);
+    this._polygons = polygons;
+    this.filterCollidingPolygons();
   }
 
-  private filterPolygonsByWater(polygons: Vector[][]): Vector[][] {
-    const out: Vector[][] = [];
-    for (const p of polygons) {
-      const averagePoint = PolygonUtil.averagePoint(p);
-      if (
+  /**
+   * Removes polygons that are in the water or parks
+   */
+  private filterCollidingPolygons() {
+    this._polygons = this._polygons.filter((p) => {
+      const averagePoint = PolygonUtil.averagePoint(p.polygon);
+      return (
         this.tensorField.onLand(averagePoint) &&
         !this.tensorField.inParks(averagePoint)
-      )
-        out.push(p);
-    }
-    return out;
+      );
+    });
   }
 
   private removePolygonAdjacencies(polygon: Node[]): void {
