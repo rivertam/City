@@ -3,17 +3,30 @@ import * as THREE from "three";
 import { windows } from "../utils/windows";
 
 type Props = {
-  polygon: Array<[number, number]>;
+  polygon: Array<[number, number] | { x: number; y: number }>;
   color: string;
   height: number;
   onClick?: () => void;
 };
 
-export function Piece({ color, height, polygon, onClick }: Props) {
+export function Piece({
+  color,
+  height,
+  polygon: nonNormalizedPolygon,
+  onClick,
+}: Props) {
   const geometryRef = (newGeometry?: any): void => {
     if (!newGeometry) {
       return;
     }
+
+    const polygon = nonNormalizedPolygon.map((point) => {
+      if (Array.isArray(point)) {
+        return point;
+      }
+
+      return [point.x, point.y];
+    });
     // construct buffer geometry from polygon by adding the points for
     // each triangular face to the points with corresponding normals, uvs, and faces.
     const positions: Array<number> = [];
