@@ -111,7 +111,9 @@ export default class Buildings {
   }
 
   get lots(): Vector[][] {
-    return this.polygonFinder.polygons.map((p) => p.polygon.map((v) => v.clone()));
+    return this.polygonFinder.polygons.map((p) =>
+      p.polygon.map((v) => v.clone())
+    );
   }
 
   /**

@@ -1,6 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
 import Graph, { Node } from "../ts/impl/graph";
+import Vector from "../ts/vector";
+import { NodeAssociatedPolygon } from "../ts/impl/polygon_finder";
 
 export type MapLine = {
   name: string;
@@ -18,23 +20,31 @@ export class Road {
 
 export class Lot {
   public address: string;
-  public shape: Array<[number, number]>;
   public entryPoint: Node;
+  private polygon: NodeAssociatedPolygon;
 
   public constructor({
     address,
-    shape,
     entryPoint,
+    polygon,
   }: {
     address: string;
-    shape: Array<[number, number]>;
     entryPoint: Node;
+    polygon: NodeAssociatedPolygon;
   }) {
     this.address = address;
-    this.shape = shape;
     this.entryPoint = entryPoint;
+    this.polygon = polygon;
 
     makeAutoObservable(this);
+  }
+
+  public get shape(): Array<Vector> {
+    return this.polygon.polygon;
+  }
+
+  public get hasExcessNodes(): boolean {
+    return this.polygon.hasExcessNodes();
   }
 }
 
@@ -74,11 +84,9 @@ export class CityState {
     this.roads = generatedCity.roads;
 
     this.blocks = generatedCity.blocks;
-    this.lots = generatedCity.lots.map(
-      ({ shape: { name, polygon }, entryPoint }) => {
-        return new Lot({ address: name, shape: polygon, entryPoint });
-      }
-    );
+    this.lots = generatedCity.lots.map(({ address, polygon, entryPoint }) => {
+      return new Lot({ address, polygon, entryPoint });
+    });
     this.parks = generatedCity.parks;
 
     this.streetGraph = generatedCity.streetGraph;
@@ -133,8 +141,9 @@ export type GeneratedCity = {
     shape: MapLine;
   }>;
   lots: Array<{
-    shape: MapLine;
+    address: string;
     entryPoint: Node;
+    polygon: NodeAssociatedPolygon;
   }>;
 
   streetGraph: Graph;

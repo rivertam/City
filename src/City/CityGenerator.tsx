@@ -106,7 +106,7 @@ export class CityGenerator {
     const convertLine = (poly: Array<Vector>, name: string): MapLine => {
       return {
         name,
-        polygon: poly.map((vec) => [vec.x, -vec.y]),
+        polygon: poly.map((vec) => [vec.x, vec.y]),
       };
     };
 
@@ -153,7 +153,8 @@ export class CityGenerator {
       })),
       lots: this.mainGui.buildingModels.map((building) => {
         return {
-          shape: convertLine(building.lotScreen, createLotName()),
+          address: createLotName(),
+          polygon: building.lotWorld,
           entryPoint: building.entryPoint,
         };
       }),
@@ -161,7 +162,7 @@ export class CityGenerator {
     };
 
     // average all vertices and normalize so the average is 0, 0
-    const vertices: Array<[number, number]> = [];
+    const vertices: Array<[number, number] | { x: number; y: number }> = [];
     city.sea.polygon.forEach((vertex) => vertices.push(vertex));
     city.coastline.polygon.forEach((vertex) => vertices.push(vertex));
     city.river.polygon.forEach((vertex) => vertices.push(vertex));
@@ -183,7 +184,7 @@ export class CityGenerator {
       block.shape.polygon.forEach((vertex) => vertices.push(vertex))
     );
     city.lots.forEach((lot) =>
-      lot.shape.polygon.forEach((vertex) => vertices.push(vertex))
+      lot.polygon.polygon.forEach((vertex) => vertices.push(vertex))
     );
     city.parks.forEach((park) =>
       park.polygon.forEach((vertex) => vertices.push(vertex))
@@ -191,16 +192,25 @@ export class CityGenerator {
 
     console.time("Centralizing city");
     const averageX =
-      vertices.reduce((current, [x]) => current + x, 0) / vertices.length;
+      vertices.reduce((current, vertex) => {
+        return current + (Array.isArray(vertex) ? vertex[0] : vertex.x);
+      }, 0) / vertices.length;
+
     const averageY =
-      vertices.reduce((current, [, y]) => current + y, 0) / vertices.length;
+      vertices.reduce((current, vertex) => {
+        return current + (Array.isArray(vertex) ? vertex[1] : vertex.y);
+      }, 0) / vertices.length;
 
     vertices.forEach((vertex) => {
-      vertex[0] -= averageX;
-      vertex[1] -= averageY;
+      if (Array.isArray(vertex)) {
+        vertex[0] -= averageX;
+        vertex[1] -= averageY;
+      } else {
+        vertex.x -= averageX;
+        vertex.y -= averageY;
+      }
     });
 
-    city.streetGraph.flipY();
     city.streetGraph.translate(new Vector(-averageX, -averageY));
 
     console.timeEnd("Centralizing city");

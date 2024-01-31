@@ -53,7 +53,7 @@ export function Building({
           setDisplayingEntry((d) => !d);
         }}
         {...pieceProps}
-        color={`#${color.getHexString()}`}
+        color={pieceProps.color ?? `#${color.getHexString()}`}
       />
     </>
   );

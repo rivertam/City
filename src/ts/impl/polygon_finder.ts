@@ -175,7 +175,9 @@ export default class PolygonFinder {
     for (const subPolygon of divided) {
       const relevantNodes = [];
       for (const point of subPolygon) {
-        const node = polygon.nodes.find((n) => n.value.equals(point));
+        const nodeIndex = polygon.polygon.findIndex((n) => n.equals(point));
+        const node = polygon.nodes[nodeIndex];
+
         if (node !== undefined) {
           relevantNodes.push(node);
         }
