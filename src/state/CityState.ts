@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
-import Graph, { Node } from "../ts/impl/graph";
-import Vector from "../ts/vector";
-import { NodeAssociatedPolygon } from "../ts/impl/polygon_finder";
+import Graph, { Node } from "../generation/impl/graph";
+import Vector from "../generation/vector";
+import { NodeAssociatedPolygon } from "../generation/impl/polygon_finder";
 
 export type MapLine = {
   name: string;

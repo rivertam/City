@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { Node } from "../ts/impl/graph";
+import { Node } from "../generation/impl/graph";
 import { DisplayState } from "../City/DisplayState";
 import { observer } from "mobx-react-lite";
 

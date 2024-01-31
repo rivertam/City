@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite";
 
 import { City } from "./City/City";
 import { CityState } from "./state/CityState";
-import { CityGenerator } from "./City/CityGenerator";
+import { CityGenerator } from "./generation/CityGenerator";
 import { FocusedItem } from "./ui/FocusedItem";
 import { wait } from "./utils/wait";
 import { RNG } from "./utils/random";

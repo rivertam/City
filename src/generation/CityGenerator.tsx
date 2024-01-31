@@ -1,7 +1,6 @@
-import TensorField, { NoiseParams } from "../ts/impl/tensor_field";
-import MainGUI from "../ts/ui/main_gui";
-import Vector from "../ts/vector";
-import ModelGenerator from "../ts/model_generator";
+import TensorField, { NoiseParams } from "./impl/tensor_field";
+import MainGUI from "./ui/main_gui";
+import Vector from "./vector";
 import { RNG, faker } from "../utils/random";
 import { GeneratedCity, MapLine } from "../state/CityState";
 
@@ -14,7 +13,6 @@ export class CityGenerator {
   private mainGui: MainGUI; // In charge of glueing everything together
 
   private firstGenerate = true; // Don't randomise tensor field on first generate
-  private modelGenerator: ModelGenerator;
 
   private rng = RNG.default;
 
