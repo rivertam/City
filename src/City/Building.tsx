@@ -5,7 +5,7 @@ import React from "react";
 import { Color } from "three";
 import { Cylinder } from "@react-three/drei";
 import { toJS } from "mobx";
-import { CityState } from "./CityState";
+import { CityState } from "../state/CityState";
 
 type BuildingProps = {
   entryPoint: { x: number; y: number };

@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { observer } from "mobx-react-lite";
 
 import { City } from "./City/City";
-import { CityState } from "./City/CityState";
+import { CityState } from "./state/CityState";
 import { CityGenerator } from "./City/CityGenerator";
 import { FocusedItem } from "./ui/FocusedItem";
 import { wait } from "./utils/wait";

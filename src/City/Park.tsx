@@ -1,5 +1,5 @@
 import React from "react";
-import { MapLine } from "./CityState";
+import { MapLine } from "../state/CityState";
 import { Piece } from "./Piece";
 
 export const Park: React.FC<{ park: MapLine }> = ({ park }) => {

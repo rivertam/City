@@ -3,7 +3,7 @@ import MainGUI from "../ts/ui/main_gui";
 import Vector from "../ts/vector";
 import ModelGenerator from "../ts/model_generator";
 import { RNG, faker } from "../utils/random";
-import { GeneratedCity, MapLine } from "./CityState";
+import { GeneratedCity, MapLine } from "../state/CityState";
 
 export type CityGenerationParameters = {
   size?: number;
