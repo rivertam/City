@@ -257,19 +257,6 @@ export default class MainGUI {
     this.buildings.generate();
   }
 
-  update() {
-    let continueUpdate = true;
-    const start = performance.now();
-    while (continueUpdate && performance.now() - start < this.animationSpeed) {
-      const minorChanged = this.minorRoads.update();
-      const majorChanged = this.majorRoads.update();
-      const mainChanged = this.mainRoads.update();
-      const buildingsChanged = this.buildings.update();
-      continueUpdate =
-        minorChanged || majorChanged || mainChanged || buildingsChanged;
-    }
-  }
-
   public get worldDimensions(): Vector {
     return this.tensorField.worldDimensions;
   }

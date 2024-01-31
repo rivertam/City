@@ -151,10 +151,6 @@ export default class Buildings {
     this._models = null;
   }
 
-  update(): boolean {
-    return this.polygonFinder.update();
-  }
-
   /**
    * Finds blocks, shrinks and divides them to create building lots
    */

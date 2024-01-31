@@ -113,13 +113,6 @@ export default class RoadGUI {
   }
 
   /**
-   * Returns true if streamlines changes
-   */
-  update(): boolean {
-    return this.streamlines.update();
-  }
-
-  /**
    * Sets path iterations so that a road can cover the screen
    */
   private setPathIterations(): void {

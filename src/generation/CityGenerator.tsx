@@ -34,7 +34,6 @@ export class CityGenerator {
     this.mainGui = new MainGUI(this.rng, this.tensorField);
 
     this.tensorField.setRecommended();
-    requestAnimationFrame(() => this.update());
   }
 
   /**
@@ -51,19 +50,6 @@ export class CityGenerator {
 
     this.rng.random();
     return await this.getGeneratedCity();
-  }
-
-  update(): void {
-    if (this.modelGenerator) {
-      let continueUpdate = true;
-      const start = performance.now();
-      while (continueUpdate && performance.now() - start < 100) {
-        continueUpdate = this.modelGenerator.update();
-      }
-    }
-
-    this.mainGui.update();
-    requestAnimationFrame(this.update.bind(this));
   }
 
   public async getGeneratedCity(): Promise<GeneratedCity> {

@@ -96,7 +96,6 @@ export default class StreamlineGenerator {
    * Edits streamlines
    */
   joinDanglingStreamlines(): void {
-    // TODO do in update method
     for (const major of [true, false]) {
       for (const streamline of this.streamlines(major)) {
         // Ignore circles
@@ -249,36 +248,19 @@ export default class StreamlineGenerator {
   }
 
   /**
-   * returns true if state updates
-   */
-  update(): boolean {
-    if (!this.streamlinesDone) {
-      this.lastStreamlineMajor = !this.lastStreamlineMajor;
-      if (!this.createStreamline(this.lastStreamlineMajor)) {
-        this.streamlinesDone = true;
-        this.resolve();
-      }
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
    * All at once - will freeze if dsep small
    */
-  async createAllStreamlines(animate = false): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this.resolve = resolve;
-      this.streamlinesDone = false;
+  async createAllStreamlines(): Promise<void> {
+    this.streamlinesDone = false;
 
-      if (!animate) {
-        let major = true;
-        while (this.createStreamline(major)) {
-          major = !major;
-        }
-      }
-    }).then(() => this.joinDanglingStreamlines());
+    let major = true;
+    while (this.createStreamline(major)) {
+      major = !major;
+    }
+
+    this.joinDanglingStreamlines();
+
+    this.streamlinesDone = true;
   }
 
   protected simplifyStreamline(streamline: Vector[]): Vector[] {
