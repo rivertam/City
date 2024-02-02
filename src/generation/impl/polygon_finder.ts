@@ -206,7 +206,7 @@ export default class PolygonFinder {
 
     for (const node of this.nodes) {
       if (node.neighbors.size < 2) continue;
-      for (const nextNode of node.neighbors) {
+      for (const nextNode of node.neighbors.values()) {
         const polygon = this.recursiveWalk([node, nextNode]);
         if (polygon !== null && polygon.length < this.params.maxLength) {
           this.removePolygonAdjacencies(polygon);

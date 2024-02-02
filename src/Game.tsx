@@ -1,5 +1,6 @@
 import { Leva, button, useControls } from "leva";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as React from 'react';
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera, MapControls } from "@react-three/drei";

@@ -1,7 +1,7 @@
 import { ComponentProps, useState } from "react";
 import { Piece } from "./Piece";
 import { Unit } from "./Unit";
-import React from "react";
+import * as React from "react";
 import { Color } from "three";
 import { Cylinder } from "@react-three/drei";
 import { toJS } from "mobx";

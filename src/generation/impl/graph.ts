@@ -155,7 +155,7 @@ export default class Graph {
   private deleteDanglingNodes(n: Node, quadtree: d3.Quadtree<Node>) {
     if (n.neighbors.size === 1) {
       quadtree.remove(n);
-      for (const neighbor of n.neighbors) {
+      for (const neighbor of n.neighbors.values()) {
         neighbor.neighbors.delete(n);
         this.deleteDanglingNodes(neighbor, quadtree);
       }

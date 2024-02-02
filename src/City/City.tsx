@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 import { Park } from "./Park";
 import { Road } from "./Road";

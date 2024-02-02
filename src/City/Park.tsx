@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { MapLine } from "../state/CityState";
 import { Piece } from "./Piece";
 

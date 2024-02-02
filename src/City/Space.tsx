@@ -1,5 +1,5 @@
 import { Edges } from "@react-three/drei";
-import React from "react";
+import * as React from "react";
 import * as THREE from "three";
 
 type Props = {
