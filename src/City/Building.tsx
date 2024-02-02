@@ -15,7 +15,6 @@ export function Building({
   entryPoint,
   ...pieceProps
 }: ComponentProps<typeof Piece> & BuildingProps) {
-  const city = CityState.use();
   const [displayingEntry, setDisplayingEntry] = useState(false);
 
   const { height } = pieceProps;

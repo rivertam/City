@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
 import Graph, { Node } from "../generation/impl/graph";
-import Vector from "../generation/vector";
 import { NodeAssociatedPolygon } from "../generation/impl/polygon_finder";
+import { Lot } from "./Lot";
 
 export type MapLine = {
   name: string;
@@ -15,36 +15,6 @@ export class Road {
 
   public constructor() {
     makeAutoObservable(this);
-  }
-}
-
-export class Lot {
-  public address: string;
-  public entryPoint: Node;
-  private polygon: NodeAssociatedPolygon;
-
-  public constructor({
-    address,
-    entryPoint,
-    polygon,
-  }: {
-    address: string;
-    entryPoint: Node;
-    polygon: NodeAssociatedPolygon;
-  }) {
-    this.address = address;
-    this.entryPoint = entryPoint;
-    this.polygon = polygon;
-
-    makeAutoObservable(this);
-  }
-
-  public get shape(): Array<Vector> {
-    return this.polygon.polygon;
-  }
-
-  public get hasExcessNodes(): boolean {
-    return this.polygon.hasExcessNodes();
   }
 }
 
