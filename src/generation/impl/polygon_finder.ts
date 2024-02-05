@@ -14,36 +14,14 @@ export interface PolygonParams {
 }
 
 export class Polygon {
-  private _polygon: Map<Vector, Node | null>;
+  private _polygon: Vector[];
 
-  // excess nodes are when there are more street nodes than sides of the geometry.
-  // this happens after shrinking (jsts.buffer can reduce the number of points in
-  // a polygon when shrinking)
-  private _excessNodes = new Set<Node>();
-
-  constructor(polygon: Vector[], nodes: Node[]) {
-    this._polygon = new Map<Vector, Node | null>();
-
-    for (let index = 0; index < polygon.length; index++) {
-      const point = polygon[index];
-      this._polygon.set(point, nodes[index] ?? null);
-    }
-
-    for (let index = polygon.length; index < nodes.length; index++) {
-      this._excessNodes.add(nodes[index]);
-    }
-  }
-
-  public get nodes(): Node[] {
-    return Array.from(this._polygon.values()).filter((n) => n !== null);
+  constructor(polygon: Vector[]) {
+    this._polygon = polygon;
   }
 
   public get polygon(): Vector[] {
-    return Array.from(this._polygon.keys());
-  }
-
-  public hasExcessNodes(): boolean {
-    return this._excessNodes.size > 0;
+    return this._polygon;
   }
 }
 
@@ -128,7 +106,7 @@ export default class PolygonFinder {
       -this.params.shrinkSpacing
     );
     if (shrunk.length > 0) {
-      this._shrunkPolygons.push(new Polygon(shrunk, polygon.nodes));
+      this._shrunkPolygons.push(new Polygon(shrunk));
       return true;
     }
     return false;
@@ -167,17 +145,7 @@ export default class PolygonFinder {
     );
 
     for (const subPolygon of divided) {
-      const relevantNodes = polygon.nodes;
-      // for (const point of subPolygon) {
-      //   const nodeIndex = polygon.polygon.findIndex((n) => n.equals(point));
-      //   const node = polygon.nodes[nodeIndex];
-
-      //   if (node !== undefined) {
-      //     relevantNodes.push(node);
-      //   }
-      // }
-
-      this._dividedPolygons.push(new Polygon(subPolygon, relevantNodes));
+      this._dividedPolygons.push(new Polygon(subPolygon));
     }
 
     return divided.length > 0;
@@ -202,12 +170,7 @@ export default class PolygonFinder {
         const polygon = this.recursiveWalk([node, nextNode]);
         if (polygon !== null && polygon.length < this.params.maxLength) {
           this.removePolygonAdjacencies(polygon);
-          polygons.push(
-            new Polygon(
-              polygon.map((n) => n.value.clone()),
-              polygon
-            )
-          );
+          polygons.push(new Polygon(polygon.map((n) => n.value.clone())));
         }
       }
     }

@@ -32,12 +32,4 @@ export class Lot {
   public get shape(): Array<Vector> {
     return this.polygon.polygon;
   }
-
-  public get hasExcessNodes(): boolean {
-    return this.polygon.hasExcessNodes();
-  }
-
-  public get streetNodes(): Array<Node> {
-    return this.polygon.nodes;
-  }
 }
