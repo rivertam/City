@@ -4,22 +4,24 @@ import { Unit } from "./Unit";
 import * as React from "react";
 import { Color } from "three";
 import { Cylinder } from "@react-three/drei";
-import { toJS } from "mobx";
-import { observer } from "mobx-react-lite";
 import { Lot } from "../state/Lot";
+import { DisplayState } from "../state/DisplayState";
 
 type BuildingProps = {
   lot: Lot;
+  focused: boolean;
 };
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-export const Building = observer(
+export const Building = React.memo(
   ({
     lot,
+    focused,
     ...pieceProps
   }: PartialBy<ComponentProps<typeof Piece>, "color"> & BuildingProps) => {
-    const [displayingEntry, setDisplayingEntry] = useState(false);
+    const displayState = DisplayState.use();
+    console.log("rerendering building");
     const { height } = pieceProps;
     const [color] = useState(() => {
       const color = new Color();
@@ -38,7 +40,7 @@ export const Building = observer(
     return (
       <>
         {units}
-        {displayingEntry && (
+        {focused && (
           <>
             <Cylinder
               args={[3, 3, height, 8]}
@@ -54,13 +56,15 @@ export const Building = observer(
         )}
         <Piece
           onClick={() => {
-            console.log("it's on street", lot.streetName);
-            console.log("at", lot.streetPoint);
-            console.log("door", lot.door);
-            setDisplayingEntry((d) => !d);
+            displayState.focusItem({
+              kind: "building",
+              lot,
+            });
           }}
           {...pieceProps}
-          color={pieceProps.color ?? `#${color.getHexString()}`}
+          color={
+            focused ? "red" : pieceProps.color ?? `#${color.getHexString()}`
+          }
         />
       </>
     );

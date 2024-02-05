@@ -1,16 +1,22 @@
 import * as React from "react";
+import { observer } from "mobx-react-lite";
 import styled from "styled-components";
 
 import { StreetNode } from "../generation/impl/graph";
 import { DisplayState } from "../state/DisplayState";
-import { observer } from "mobx-react-lite";
+import { Lot } from "../state/Lot";
 
 export type FocusedStreetNode = {
   kind: "streetNode";
   node: StreetNode;
 };
 
-export type FocusedItem = FocusedStreetNode;
+export type FocusedBuilding = {
+  kind: "building";
+  lot: Lot;
+};
+
+export type FocusedItem = FocusedStreetNode | FocusedBuilding;
 
 const FocusedItemWindow = styled.div`
   position: fixed;
@@ -36,6 +42,19 @@ export const FocusedItem = observer(() => {
     return (
       <FocusedItemWindow>
         <FocusedStreetNode focusedItem={focusedItem} />
+      </FocusedItemWindow>
+    );
+  }
+
+  if (focusedItem.kind === "building") {
+    return (
+      <FocusedItemWindow>
+        <h1>Building</h1>
+
+        <hr />
+
+        <div>{focusedItem.lot.address}</div>
+        <div>on {focusedItem.lot.streetName}</div>
       </FocusedItemWindow>
     );
   }
