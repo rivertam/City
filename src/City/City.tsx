@@ -126,17 +126,12 @@ export const City = observer(
 
         <group position={[0, 0, GroundHeights.Foundation]}>
           {cityState.lots.map((lot) => {
-            const focused =
-              displayState.focusedItem?.kind === "building" &&
-              displayState.focusedItem.lot === lot;
-
             return (
               <Building
                 key={lot.address}
                 polygon={lot.shape}
                 height={(lot.address.length - 6) * 2}
                 lot={lot}
-                focused={focused}
               />
             );
           })}

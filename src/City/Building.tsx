@@ -9,7 +9,6 @@ import { DisplayState } from "../state/DisplayState";
 
 type BuildingProps = {
   lot: Lot;
-  focused: boolean;
 };
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -17,11 +16,12 @@ type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export const Building = React.memo(
   ({
     lot,
-    focused,
     ...pieceProps
   }: PartialBy<ComponentProps<typeof Piece>, "color"> & BuildingProps) => {
     const displayState = DisplayState.use();
-    console.log("rerendering building");
+    const focused = displayState.useIsFocused(
+      (item) => item?.kind === "building" && item.lot === lot
+    );
     const { height } = pieceProps;
     const [color] = useState(() => {
       const color = new Color();
