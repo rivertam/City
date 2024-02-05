@@ -3,7 +3,7 @@ import * as d3 from "d3-quadtree";
 import * as isect from "isect";
 
 import Vector from "../vector";
-import { NodeAssociatedPolygon } from "./polygon_finder";
+import { Polygon } from "./polygon_finder";
 
 interface Segment {
   from: Vector;
@@ -326,7 +326,7 @@ export default class Graph {
    * @param lot the polygon describing the lot
    * @returns the entry point segment nodes on the street graph
    */
-  public getEntryPoint(lot: NodeAssociatedPolygon): {
+  public getEntryPoint(lot: Polygon): {
     segment: Segment;
     street: string;
   } {

@@ -13,7 +13,7 @@ export interface PolygonParams {
   chanceNoDivide: number;
 }
 
-export class NodeAssociatedPolygon {
+export class Polygon {
   private _polygon: Map<Vector, Node | null>;
 
   // excess nodes are when there are more street nodes than sides of the geometry.
@@ -22,10 +22,6 @@ export class NodeAssociatedPolygon {
   private _excessNodes = new Set<Node>();
 
   constructor(polygon: Vector[], nodes: Node[]) {
-    // if (polygon.length < nodes.length) {
-    //   throw new Error("Polygon must have at least as many points as nodes");
-    // }
-
     this._polygon = new Map<Vector, Node | null>();
 
     for (let index = 0; index < polygon.length; index++) {
@@ -55,12 +51,12 @@ export class NodeAssociatedPolygon {
  * Finds polygons in a graph, used for finding lots and parks
  */
 export default class PolygonFinder {
-  private _polygons: Array<NodeAssociatedPolygon> = [];
-  private _shrunkPolygons: Array<NodeAssociatedPolygon> = [];
-  private _dividedPolygons: Array<NodeAssociatedPolygon> = [];
-  private toShrink: Array<NodeAssociatedPolygon> = [];
+  private _polygons: Array<Polygon> = [];
+  private _shrunkPolygons: Array<Polygon> = [];
+  private _dividedPolygons: Array<Polygon> = [];
+  private toShrink: Array<Polygon> = [];
   private resolveShrink: () => void;
-  private toDivide: Array<NodeAssociatedPolygon> = [];
+  private toDivide: Array<Polygon> = [];
   private resolveDivide: () => void;
 
   constructor(
@@ -70,7 +66,7 @@ export default class PolygonFinder {
     private tensorField: TensorField
   ) {}
 
-  get polygons(): Array<NodeAssociatedPolygon> {
+  get polygons(): Array<Polygon> {
     if (this._dividedPolygons.length > 0) {
       return this._dividedPolygons;
     }
@@ -126,15 +122,13 @@ export default class PolygonFinder {
     }
   }
 
-  private stepShrink(polygon: NodeAssociatedPolygon): boolean {
+  private stepShrink(polygon: Polygon): boolean {
     const shrunk = PolygonUtil.resizeGeometry(
       polygon.polygon,
       -this.params.shrinkSpacing
     );
     if (shrunk.length > 0) {
-      this._shrunkPolygons.push(
-        new NodeAssociatedPolygon(shrunk, polygon.nodes)
-      );
+      this._shrunkPolygons.push(new Polygon(shrunk, polygon.nodes));
       return true;
     }
     return false;
@@ -156,7 +150,7 @@ export default class PolygonFinder {
     }
   }
 
-  private stepDivide(polygon: NodeAssociatedPolygon): boolean {
+  private stepDivide(polygon: Polygon): boolean {
     // TODO need to filter shrunk polygons using aspect ratio, area
     // this skips the filter in PolygonUtil.subdividePolygon
     if (
@@ -173,19 +167,17 @@ export default class PolygonFinder {
     );
 
     for (const subPolygon of divided) {
-      const relevantNodes = [];
-      for (const point of subPolygon) {
-        const nodeIndex = polygon.polygon.findIndex((n) => n.equals(point));
-        const node = polygon.nodes[nodeIndex];
+      const relevantNodes = polygon.nodes;
+      // for (const point of subPolygon) {
+      //   const nodeIndex = polygon.polygon.findIndex((n) => n.equals(point));
+      //   const node = polygon.nodes[nodeIndex];
 
-        if (node !== undefined) {
-          relevantNodes.push(node);
-        }
-      }
+      //   if (node !== undefined) {
+      //     relevantNodes.push(node);
+      //   }
+      // }
 
-      this._dividedPolygons.push(
-        new NodeAssociatedPolygon(subPolygon, relevantNodes)
-      );
+      this._dividedPolygons.push(new Polygon(subPolygon, relevantNodes));
     }
 
     return divided.length > 0;
@@ -211,7 +203,7 @@ export default class PolygonFinder {
         if (polygon !== null && polygon.length < this.params.maxLength) {
           this.removePolygonAdjacencies(polygon);
           polygons.push(
-            new NodeAssociatedPolygon(
+            new Polygon(
               polygon.map((n) => n.value.clone()),
               polygon
             )

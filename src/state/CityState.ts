@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
 import Graph, { Node } from "../generation/impl/graph";
-import { NodeAssociatedPolygon } from "../generation/impl/polygon_finder";
+import { Polygon } from "../generation/impl/polygon_finder";
 import { Lot } from "./Lot";
 import Vector from "../generation/vector";
 
@@ -117,7 +117,7 @@ export type GeneratedCity = {
     address: string;
     door: Vector;
     streetName: string;
-    polygon: NodeAssociatedPolygon;
+    polygon: Polygon;
   }>;
 
   streetGraph: Graph;

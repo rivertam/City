@@ -3,12 +3,12 @@ import { RNG } from "../../utils/random";
 import TensorField from "../impl/tensor_field";
 import Graph, { Node } from "../impl/graph";
 import Vector from "../vector";
-import PolygonFinder, { NodeAssociatedPolygon } from "../impl/polygon_finder";
+import PolygonFinder, { Polygon } from "../impl/polygon_finder";
 import { PolygonParams } from "../impl/polygon_finder";
 
 export interface BuildingModel {
   height: number;
-  lotWorld: NodeAssociatedPolygon; // In world space
+  lotWorld: Polygon; // In world space
   lotScreen: Vector[]; // In screen space
   roof: Vector[]; // In screen space
   sides: Vector[][]; // In screen space
@@ -22,7 +22,7 @@ export interface BuildingModel {
 class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
-  constructor(rng: RNG, lots: NodeAssociatedPolygon[], streetGraph: Graph) {
+  constructor(rng: RNG, lots: Polygon[], streetGraph: Graph) {
     // Lots in world space
     for (const lot of lots) {
       const entryPoint = streetGraph.getEntryPoint(lot);

@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { NodeAssociatedPolygon } from "../generation/impl/polygon_finder";
+import { Polygon } from "../generation/impl/polygon_finder";
 import { Node } from "../generation/impl/graph";
 import Vector from "../generation/vector";
 
@@ -8,7 +8,7 @@ export class Lot {
   public door: Vector;
   public streetName: string;
 
-  private polygon: NodeAssociatedPolygon;
+  private polygon: Polygon;
 
   public constructor({
     address,
@@ -19,7 +19,7 @@ export class Lot {
     address: string;
     door: Vector;
     streetName: string;
-    polygon: NodeAssociatedPolygon;
+    polygon: Polygon;
   }) {
     this.address = address;
     this.door = door;
