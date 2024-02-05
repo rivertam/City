@@ -5,9 +5,18 @@ import * as isect from "isect";
 import Vector from "../vector";
 import { Polygon } from "./polygon_finder";
 
-interface Segment {
-  from: Vector;
-  to: Vector;
+class StreetSegment {
+  public from: Vector;
+  public to: Vector;
+
+  constructor(from: Vector, to: Vector) {
+    this.from = from;
+    this.to = to;
+  }
+
+  static create({ from, to }: { from: Vector; to: Vector }): StreetSegment {
+    return new StreetSegment(from, to);
+  }
 }
 
 type NamedStreamline = {
@@ -19,11 +28,11 @@ type NamedStreamline = {
  * Node located along any intersection or point along the simplified road polylines
  */
 export class StreetNode {
-  public segments = new Map<string, Segment>();
+  public segments = new Map<string, StreetSegment>();
 
   constructor(public value: Vector, public neighbors = new Set<StreetNode>()) {}
 
-  addSegment(streamlineName: string, segment: Segment): void {
+  addSegment(streamlineName: string, segment: StreetSegment): void {
     this.segments.set(streamlineName, segment);
   }
 
@@ -63,17 +72,11 @@ export default class StreetGraph {
       for (let i = 0; i < points.length; i++) {
         const node = new StreetNode(points[i]);
         if (i > 0) {
-          node.addSegment(
-            name,
-            this.vectorsToSegment(points[i - 1], points[i])
-          );
+          node.addSegment(name, new StreetSegment(points[i - 1], points[i]));
         }
 
         if (i < points.length - 1) {
-          node.addSegment(
-            name,
-            this.vectorsToSegment(points[i], points[i + 1])
-          );
+          node.addSegment(name, new StreetSegment(points[i], points[i + 1]));
         }
 
         this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
@@ -104,7 +107,7 @@ export default class StreetGraph {
       const { name, points } = streamline;
       for (let i = 0; i < points.length - 1; i++) {
         const nodesAlongSegment = this.visitNodesAlongSegment(
-          this.vectorsToSegment(points[i], points[i + 1]),
+          new StreetSegment(points[i], points[i + 1]),
           name,
           quadtree,
           nodeAddRadius,
@@ -171,7 +174,7 @@ export default class StreetGraph {
    * Also modifies the node's copy of the segment to match the segment.
    */
   private visitNodesAlongSegment(
-    segment: Segment,
+    segment: StreetSegment,
     segmentName: string,
     quadtree: d3.Quadtree<StreetNode>,
     radius: number,
@@ -247,8 +250,8 @@ export default class StreetGraph {
   }
 
   private fuzzySegmentsEqual(
-    s1: Segment,
-    s2: Segment,
+    s1: StreetSegment,
+    s2: StreetSegment,
     tolerance = 0.0001
   ): boolean {
     // From
@@ -304,22 +307,15 @@ export default class StreetGraph {
     return false;
   }
 
-  private streamlinesToSegment(streamlines: Vector[][]): Segment[] {
-    const out: Segment[] = [];
+  private streamlinesToSegment(streamlines: Vector[][]): StreetSegment[] {
+    const out: StreetSegment[] = [];
     for (const s of streamlines) {
       for (let i = 0; i < s.length - 1; i++) {
-        out.push(this.vectorsToSegment(s[i], s[i + 1]));
+        out.push(new StreetSegment(s[i], s[i + 1]));
       }
     }
 
     return out;
-  }
-
-  private vectorsToSegment(v1: Vector, v2: Vector): Segment {
-    return {
-      from: v1,
-      to: v2,
-    };
   }
 
   /**
@@ -330,7 +326,7 @@ export default class StreetGraph {
    * @returns the entry point segment nodes on the street graph
    */
   public getEntryPoint(lot: Polygon): {
-    segment: Segment;
+    segment: StreetSegment;
     street: string;
   } {
     // console.count(`nodes ${lot.nodes.length}`);
