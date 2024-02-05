@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
-import Graph, { Node } from "../generation/impl/graph";
+import StreetGraph, { StreetNode } from "../generation/impl/graph";
 import { Polygon } from "../generation/impl/polygon_finder";
 import { Lot } from "./Lot";
 import Vector from "../generation/vector";
@@ -45,7 +45,7 @@ export class CityState {
 
   public parks: Array<MapLine>;
 
-  public streetGraph: Graph;
+  public streetGraph: StreetGraph;
 
   public constructor(generatedCity: GeneratedCity) {
     this.sea = generatedCity.sea;
@@ -120,5 +120,5 @@ export type GeneratedCity = {
     polygon: Polygon;
   }>;
 
-  streetGraph: Graph;
+  streetGraph: StreetGraph;
 };

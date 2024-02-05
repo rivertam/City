@@ -1,7 +1,7 @@
 import { RNG } from "../../utils/random";
 
 import TensorField from "../impl/tensor_field";
-import Graph, { Node } from "../impl/graph";
+import StreetGraph, { StreetNode } from "../impl/graph";
 import Vector from "../vector";
 import PolygonFinder, { Polygon } from "../impl/polygon_finder";
 import { PolygonParams } from "../impl/polygon_finder";
@@ -22,7 +22,7 @@ export interface BuildingModel {
 class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
-  constructor(rng: RNG, lots: Polygon[], streetGraph: Graph) {
+  constructor(rng: RNG, lots: Polygon[], streetGraph: StreetGraph) {
     // Lots in world space
     for (const lot of lots) {
       const entryPoint = streetGraph.getEntryPoint(lot);
@@ -90,8 +90,8 @@ class BuildingModels {
  * Finds building lots and optionally pseudo3D buildings
  */
 export default class Buildings {
-  public lotBoundaryGraph: Graph;
-  public streetGraph: Graph;
+  public lotBoundaryGraph: StreetGraph;
+  public streetGraph: StreetGraph;
 
   private polygonFinder: PolygonFinder;
   private preGenerateCallback: () => any = () => {};
@@ -147,11 +147,11 @@ export default class Buildings {
     return this._models.buildingModels;
   }
 
-  setStreetGraph(graph: Graph): void {
+  setStreetGraph(graph: StreetGraph): void {
     this.streetGraph = graph;
   }
 
-  setLotBoundaryGraph(graph: Graph): void {
+  setLotBoundaryGraph(graph: StreetGraph): void {
     this.lotBoundaryGraph = graph;
   }
 

@@ -18,16 +18,16 @@ type NamedStreamline = {
 /**
  * Node located along any intersection or point along the simplified road polylines
  */
-export class Node {
+export class StreetNode {
   public segments = new Map<string, Segment>();
 
-  constructor(public value: Vector, public neighbors = new Set<Node>()) {}
+  constructor(public value: Vector, public neighbors = new Set<StreetNode>()) {}
 
   addSegment(streamlineName: string, segment: Segment): void {
     this.segments.set(streamlineName, segment);
   }
 
-  addNeighbor(node: Node): void {
+  addNeighbor(node: StreetNode): void {
     if (node !== this) {
       this.neighbors.add(node);
       node.neighbors.add(this);
@@ -39,8 +39,8 @@ export class Node {
   }
 }
 
-export default class Graph {
-  public nodes: Node[];
+export default class StreetGraph {
+  public nodes: StreetNode[];
   public intersections: Vector[];
 
   /**
@@ -52,7 +52,7 @@ export default class Graph {
     dstep: number,
     deleteDangling = false
   ) {
-    const quadtree = (d3.quadtree() as d3.Quadtree<Node>)
+    const quadtree = (d3.quadtree() as d3.Quadtree<StreetNode>)
       .x((n) => n.value.x)
       .y((n) => n.value.y);
     const nodeAddRadius = 1;
@@ -61,7 +61,7 @@ export default class Graph {
     for (const streamline of streamlines) {
       const { points, name } = streamline;
       for (let i = 0; i < points.length; i++) {
-        const node = new Node(points[i]);
+        const node = new StreetNode(points[i]);
         if (i > 0) {
           node.addSegment(
             name,
@@ -86,7 +86,7 @@ export default class Graph {
 
     // Add all intersections
     for (const intersection of intersections) {
-      const node = new Node(
+      const node = new StreetNode(
         new Vector(intersection.point.x, intersection.point.y)
       );
 
@@ -152,7 +152,10 @@ export default class Graph {
   /**
    * Remove dangling edges from graph to facilitate polygon finding
    */
-  private deleteDanglingNodes(n: Node, quadtree: d3.Quadtree<Node>) {
+  private deleteDanglingNodes(
+    n: StreetNode,
+    quadtree: d3.Quadtree<StreetNode>
+  ) {
     if (n.neighbors.size === 1) {
       quadtree.remove(n);
       for (const neighbor of n.neighbors.values()) {
@@ -170,16 +173,16 @@ export default class Graph {
   private visitNodesAlongSegment(
     segment: Segment,
     segmentName: string,
-    quadtree: d3.Quadtree<Node>,
+    quadtree: d3.Quadtree<StreetNode>,
     radius: number,
     step: number
-  ): Node[] {
+  ): StreetNode[] {
     // Walk dstep along each streamline, adding nodes within dstep/2
     // and connected to this streamline (fuzzy - nodeAddRadius) to list, removing from
     // quadtree and adding them all back at the end
 
     const foundNodes = [];
-    const nodesAlongSegment: Node[] = [];
+    const nodesAlongSegment: StreetNode[] = [];
 
     const start = new Vector(segment.from.x, segment.from.y);
     const end = new Vector(segment.to.x, segment.to.y);
@@ -232,7 +235,7 @@ export default class Graph {
 
       // Order nodes, not by 'closeness', but by dot product
       nodesToAdd.sort(
-        (first: Node, second: Node) =>
+        (first: StreetNode, second: StreetNode) =>
           this.dotProductToSegment(first, start, differenceVector) -
           this.dotProductToSegment(second, start, differenceVector)
       );
@@ -271,7 +274,7 @@ export default class Graph {
   }
 
   private dotProductToSegment(
-    node: Node,
+    node: StreetNode,
     start: Vector,
     differenceVector: Vector
   ): number {
@@ -280,8 +283,8 @@ export default class Graph {
   }
 
   private fuzzyAddToQuadtree(
-    quadtree: d3.Quadtree<Node>,
-    node: Node,
+    quadtree: d3.Quadtree<StreetNode>,
+    node: StreetNode,
     radius: number
   ): boolean {
     // Only add if there isn't a node within radius

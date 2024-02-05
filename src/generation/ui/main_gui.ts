@@ -4,7 +4,7 @@ import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import { WaterParams } from "../impl/water_generator";
-import Graph from "../impl/graph";
+import StreetGraph from "../impl/graph";
 import RoadGUI from "./road_gui";
 import WaterGUI from "./water_gui";
 import Vector from "../vector";
@@ -302,9 +302,9 @@ export default class MainGUI {
   /**
    * Shared street graph used to place buildings at the end of generation
    */
-  private streetGraph: Graph | null = null;
+  private streetGraph: StreetGraph | null = null;
 
-  public getStreetGraph(): Graph {
+  public getStreetGraph(): StreetGraph {
     if (!this.streetGraph) {
       this.streetGraph = this.createStreetGraph();
     }
@@ -312,8 +312,8 @@ export default class MainGUI {
     return this.streetGraph;
   }
 
-  public createStreetGraph(): Graph {
-    return new Graph(
+  public createStreetGraph(): StreetGraph {
+    return new StreetGraph(
       this.majorRoads.roads
         .concat(this.mainRoads.roads)
         .concat(this.minorRoads.roads)
@@ -322,9 +322,9 @@ export default class MainGUI {
     );
   }
 
-  private lotBoundaryGraph: Graph | null = null;
+  private lotBoundaryGraph: StreetGraph | null = null;
 
-  public getLotBoundaryGraph(): Graph {
+  public getLotBoundaryGraph(): StreetGraph {
     if (!this.lotBoundaryGraph) {
       const allStreamlines = [];
       allStreamlines.push(...this.mainRoads.roads);
@@ -332,7 +332,10 @@ export default class MainGUI {
       allStreamlines.push(...this.minorRoads.roads);
       allStreamlines.push(...this.coastline.namedStreamlines);
 
-      this.lotBoundaryGraph = new Graph(allStreamlines, this.minorParams.dstep);
+      this.lotBoundaryGraph = new StreetGraph(
+        allStreamlines,
+        this.minorParams.dstep
+      );
     }
 
     return this.lotBoundaryGraph;

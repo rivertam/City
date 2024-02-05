@@ -1,13 +1,13 @@
 import * as React from "react";
 import styled from "styled-components";
 
-import { Node } from "../generation/impl/graph";
+import { StreetNode } from "../generation/impl/graph";
 import { DisplayState } from "../City/DisplayState";
 import { observer } from "mobx-react-lite";
 
 export type FocusedStreetNode = {
   kind: "streetNode";
-  node: Node;
+  node: StreetNode;
 };
 
 export type FocusedItem = FocusedStreetNode;

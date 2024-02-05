@@ -2,7 +2,7 @@ import * as log from "loglevel";
 
 import { RNG } from "../../utils/random";
 import Vector from "../vector";
-import { Node } from "./graph";
+import { StreetNode } from "./graph";
 import PolygonUtil from "./polygon_util";
 import TensorField from "./tensor_field";
 
@@ -39,7 +39,7 @@ export default class PolygonFinder {
 
   constructor(
     private rng: RNG,
-    private nodes: Node[],
+    private nodes: StreetNode[],
     private params: PolygonParams,
     private tensorField: TensorField
   ) {}
@@ -192,7 +192,7 @@ export default class PolygonFinder {
     });
   }
 
-  private removePolygonAdjacencies(polygon: Node[]): void {
+  private removePolygonAdjacencies(polygon: StreetNode[]): void {
     for (let i = 0; i < polygon.length; i++) {
       const current = polygon[i];
       const next = polygon[(i + 1) % polygon.length];
@@ -201,7 +201,7 @@ export default class PolygonFinder {
     }
   }
 
-  private recursiveWalk(visited: Node[], count = 0): Node[] {
+  private recursiveWalk(visited: StreetNode[], count = 0): StreetNode[] {
     if (count >= this.params.maxLength) return null;
     // TODO backtracking to find polygons with dead end roads inside them
     const nextNode = this.getRightmostNode(
@@ -221,7 +221,10 @@ export default class PolygonFinder {
     }
   }
 
-  private getRightmostNode(nodeFrom: Node, nodeTo: Node): Node {
+  private getRightmostNode(
+    nodeFrom: StreetNode,
+    nodeTo: StreetNode
+  ): StreetNode {
     // We want to turn right at every junction
     if (nodeTo.neighbors.size === 0) return null;
 
