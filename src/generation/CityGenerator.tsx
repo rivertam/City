@@ -139,7 +139,8 @@ export class CityGenerator {
         return {
           address: createLotName(),
           polygon: building.lotWorld,
-          entryPoint: building.entryPoint,
+          door: building.door,
+          streetName: building.entryStreet,
         };
       }),
       streetGraph: this.mainGui.getStreetGraph(),
@@ -167,9 +168,10 @@ export class CityGenerator {
     city.blocks.forEach((block) =>
       block.shape.polygon.forEach((vertex) => vertices.push(vertex))
     );
-    city.lots.forEach((lot) =>
-      lot.polygon.polygon.forEach((vertex) => vertices.push(vertex))
-    );
+    city.lots.forEach((lot) => {
+      lot.polygon.polygon.forEach((vertex) => vertices.push(vertex));
+      vertices.push(lot.door);
+    });
     city.parks.forEach((park) =>
       park.polygon.forEach((vertex) => vertices.push(vertex))
     );

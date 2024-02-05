@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 import Graph, { Node } from "../generation/impl/graph";
 import { NodeAssociatedPolygon } from "../generation/impl/polygon_finder";
 import { Lot } from "./Lot";
+import Vector from "../generation/vector";
 
 export type MapLine = {
   name: string;
@@ -54,9 +55,11 @@ export class CityState {
     this.roads = generatedCity.roads;
 
     this.blocks = generatedCity.blocks;
-    this.lots = generatedCity.lots.map(({ address, polygon, entryPoint }) => {
-      return new Lot({ address, polygon, entryPoint });
-    });
+    this.lots = generatedCity.lots.map(
+      ({ address, polygon, door, streetName }) => {
+        return new Lot({ address, polygon, door, streetName });
+      }
+    );
     this.parks = generatedCity.parks;
 
     this.streetGraph = generatedCity.streetGraph;
@@ -112,7 +115,8 @@ export type GeneratedCity = {
   }>;
   lots: Array<{
     address: string;
-    entryPoint: Node;
+    door: Vector;
+    streetName: string;
     polygon: NodeAssociatedPolygon;
   }>;
 

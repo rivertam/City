@@ -320,31 +320,47 @@ export default class Graph {
   }
 
   /**
-   * Computes the entrypoint for a lot (i.e. where people enter and exit a building onto the street)
+   * Computes the entrypoint for a lot (i.e. the street segment where people enter and exit
+   * a building onto the street)
    *
    * @param lot the polygon describing the lot
-   * @returns the entry point node on the street graph
+   * @returns the entry point segment nodes on the street graph
    */
-  public getEntryPoint(lot: NodeAssociatedPolygon): Node {
+  public getEntryPoint(lot: NodeAssociatedPolygon): {
+    segment: Segment;
+    street: string;
+  } {
     // console.count(`nodes ${lot.nodes.length}`);
-
-    if (lot.nodes.length > 0) {
-      return lot.nodes[0];
-    }
-
-    let closestNode = this.nodes[0];
+    let closestSegment = this.nodes[0].segments.values().next().value;
+    let closestSegmentStreet = this.nodes[0].segments.keys().next().value;
     let closestDistance = Infinity;
 
     for (const node of this.nodes) {
-      for (const point of lot.polygon) {
-        const distance = point.distanceTo(node.value);
-        if (distance < closestDistance) {
-          closestNode = node;
-          closestDistance = distance;
+      for (const [streetName, segment] of node.segments.entries()) {
+        for (const point of lot.polygon) {
+          const distance = pointToSegment(point, segment.from, segment.to);
+
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestSegment = segment;
+            closestSegmentStreet = streetName;
+          }
         }
       }
     }
 
-    return closestNode;
+    return { segment: closestSegment, street: closestSegmentStreet };
   }
+}
+
+function pointToSegment(point: Vector, from: Vector, to: Vector): number {
+  const l2 = from.distanceToSquared(to);
+  if (l2 === 0) return point.distanceTo(from);
+
+  const t = Math.max(
+    0,
+    Math.min(1, point.clone().sub(from).dot(to.clone().sub(from)) / l2)
+  );
+  const projection = from.clone().add(to.clone().sub(from).multiplyScalar(t));
+  return point.distanceTo(projection);
 }

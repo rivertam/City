@@ -133,10 +133,7 @@ export const City = ({
               polygon={lot.shape}
               color={lot.hasExcessNodes ? "red" : "green"}
               height={(lot.address.length - 6) * 2}
-              entryPoint={{
-                x: lot.entryPoint.value.x,
-                y: lot.entryPoint.value.y,
-              }}
+              lot={lot}
             />
           );
         })}

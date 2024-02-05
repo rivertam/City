@@ -1,24 +1,29 @@
 import { makeAutoObservable } from "mobx";
 import { NodeAssociatedPolygon } from "../generation/impl/polygon_finder";
-import { Node } from '../generation/impl/graph'
+import { Node } from "../generation/impl/graph";
 import Vector from "../generation/vector";
 
 export class Lot {
   public address: string;
-  public entryPoint: Node;
+  public door: Vector;
+  public streetName: string;
+
   private polygon: NodeAssociatedPolygon;
 
   public constructor({
     address,
-    entryPoint,
+    door,
+    streetName,
     polygon,
   }: {
     address: string;
-    entryPoint: Node;
+    door: Vector;
+    streetName: string;
     polygon: NodeAssociatedPolygon;
   }) {
     this.address = address;
-    this.entryPoint = entryPoint;
+    this.door = door;
+    this.streetName = streetName;
     this.polygon = polygon;
 
     makeAutoObservable(this);

@@ -5,55 +5,83 @@ import * as React from "react";
 import { Color } from "three";
 import { Cylinder } from "@react-three/drei";
 import { toJS } from "mobx";
-import { CityState } from "../state/CityState";
+import { observer } from "mobx-react-lite";
+import { Lot } from "../state/Lot";
+import { Node } from "../generation/impl/graph";
 
 type BuildingProps = {
-  entryPoint: { x: number; y: number };
+  lot: Lot;
 };
 
-export function Building({
-  entryPoint,
-  ...pieceProps
-}: ComponentProps<typeof Piece> & BuildingProps) {
-  const [displayingEntry, setDisplayingEntry] = useState(false);
+export const Building = observer(
+  ({ lot, ...pieceProps }: ComponentProps<typeof Piece> & BuildingProps) => {
+    const [displayingEntry, setDisplayingEntry] = useState(false);
+    const [displayingStreetNodes, setDisplayingStreetNodes] =
+      useState<Array<Node> | null>(null);
 
-  const { height } = pieceProps;
-  const [color] = useState(() => {
-    const color = new Color();
+    const { height } = pieceProps;
+    const [color] = useState(() => {
+      const color = new Color();
 
-    color.setHSL(Math.random(), Math.random() * 0.2 + 0.2, 0.7);
+      color.setHSL(Math.random(), Math.random() * 0.2 + 0.2, 0.7);
 
-    return color;
-  });
+      return color;
+    });
 
-  const units = new Array<JSX.Element>();
+    const units = new Array<JSX.Element>();
 
-  for (let floor = 0; floor < height / 3; floor++) {
-    units.push(<Unit key={floor} />);
-  }
+    for (let floor = 0; floor < height / 3; floor++) {
+      units.push(<Unit key={floor} />);
+    }
 
-  return (
-    <>
-      {units}
-      {displayingEntry && (
-        <Cylinder
-          args={[3, 3, height, 8]}
-          position={[entryPoint.x, entryPoint.y, height / 2]}
-          rotation={[Math.PI / 2, 0, 0]}
+    const entryPoint = {
+      x: lot.door.x,
+      y: lot.door.y,
+    };
+
+    return (
+      <>
+        {units}
+        {displayingEntry && (
+          <Cylinder
+            args={[3, 3, height, 8]}
+            position={[entryPoint.x, entryPoint.y, height / 2]}
+            rotation={[Math.PI / 2, 0, 0]}
+          />
+        )}
+        {displayingStreetNodes && (
+          <>
+            {displayingStreetNodes.map((node, index) => (
+              <Cylinder
+                key={index}
+                args={[3, 3, height, 8]}
+                position={[node.value.x, node.value.y, 5 / 2]}
+                rotation={[Math.PI / 2, 0, 0]}
+              >
+                <meshBasicMaterial color="blue" />
+              </Cylinder>
+            ))}
+          </>
+        )}
+        <Piece
+          onClick={() => {
+            console.log(
+              "clicked an anonymous building",
+              toJS(pieceProps.polygon)
+            );
+            console.log("entryPoint", entryPoint);
+            console.log(
+              "street nodes",
+              lot.streetNodes.map((n) => n.value)
+            );
+            console.log("it's on street", lot.streetName);
+            setDisplayingStreetNodes(lot.streetNodes);
+            setDisplayingEntry((d) => !d);
+          }}
+          {...pieceProps}
+          color={pieceProps.color ?? `#${color.getHexString()}`}
         />
-      )}
-      <Piece
-        onClick={() => {
-          console.log(
-            "clicked an anonymous building",
-            toJS(pieceProps.polygon)
-          );
-          console.log("entryPoint", entryPoint);
-          setDisplayingEntry((d) => !d);
-        }}
-        {...pieceProps}
-        color={pieceProps.color ?? `#${color.getHexString()}`}
-      />
-    </>
-  );
-}
+      </>
+    );
+  }
+);

@@ -12,7 +12,8 @@ export interface BuildingModel {
   lotScreen: Vector[]; // In screen space
   roof: Vector[]; // In screen space
   sides: Vector[][]; // In screen space
-  entryPoint: Node; // node in the street graph
+  door: Vector;
+  entryStreet: string;
 }
 
 /**
@@ -24,13 +25,21 @@ class BuildingModels {
   constructor(rng: RNG, lots: NodeAssociatedPolygon[], streetGraph: Graph) {
     // Lots in world space
     for (const lot of lots) {
+      const entryPoint = streetGraph.getEntryPoint(lot);
+
+      const door = entryPoint.segment.from
+        .clone()
+        .add(entryPoint.segment.to)
+        .multiplyScalar(0.5);
+
       this._buildingModels.push({
         height: rng.random() * 20 + 20,
         lotWorld: lot,
         lotScreen: [],
         roof: [],
         sides: [],
-        entryPoint: streetGraph.getEntryPoint(lot),
+        door: door,
+        entryStreet: entryPoint.street,
       });
     }
     this._buildingModels.sort((a, b) => a.height - b.height);

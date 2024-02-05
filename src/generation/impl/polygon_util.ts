@@ -96,29 +96,31 @@ export default class PolygonUtil {
    */
   public static subdividePolygon(
     rng: RNG,
-    p: Vector[],
+    polygonPoints: Vector[],
     minArea: number
   ): Vector[][] {
-    const area = PolygonUtil.calcPolygonArea(p);
+    const area = PolygonUtil.calcPolygonArea(polygonPoints);
     if (area < 0.5 * minArea) {
       return [];
     }
-    const divided: Vector[][] = []; // Array of polygons
+    let divided: Vector[][] = []; // Array of polygons
 
     let longestSideLength = 0;
-    let longestSide = [p[0], p[1]];
+    let longestSide = [polygonPoints[0], polygonPoints[1]];
 
     let perimeter = 0;
 
-    for (let i = 0; i < p.length; i++) {
-      const sideLength = p[i]
-        .clone()
-        .sub(p[(i + 1) % p.length])
-        .length();
+    // iterate through each side, accumulating the perimeter length
+    // and finding the longest side.
+    for (let index = 0; index < polygonPoints.length; index++) {
+      const polygonPoint = polygonPoints[index];
+      const nextPoint = polygonPoints[(index + 1) % polygonPoints.length];
+
+      const sideLength = polygonPoint.clone().sub(nextPoint).length();
       perimeter += sideLength;
       if (sideLength > longestSideLength) {
         longestSideLength = sideLength;
-        longestSide = [p[i], p[(i + 1) % p.length]];
+        longestSide = [polygonPoint, nextPoint];
       }
     }
 
@@ -130,7 +132,7 @@ export default class PolygonUtil {
     }
 
     if (area < 2 * minArea) {
-      return [p];
+      return [polygonPoints];
     }
 
     // Between 0.4 and 0.6
@@ -153,7 +155,7 @@ export default class PolygonUtil {
     // Array of polygons
     try {
       const sliced = PolyK.Slice(
-        PolygonUtil.polygonToPolygonArray(p),
+        PolygonUtil.polygonToPolygonArray(polygonPoints),
         bisect[0].x,
         bisect[0].y,
         bisect[1].x,
@@ -161,13 +163,13 @@ export default class PolygonUtil {
       );
       // Recursive call
       for (const s of sliced) {
-        divided.push(
-          ...PolygonUtil.subdividePolygon(
-            rng,
-            PolygonUtil.polygonArrayToPolygon(s),
-            minArea
-          )
+        const subdivided = PolygonUtil.subdividePolygon(
+          rng,
+          PolygonUtil.polygonArrayToPolygon(s),
+          minArea
         );
+
+        divided = divided.concat(subdivided);
       }
 
       return divided;
