@@ -3,7 +3,7 @@ import { Sphere } from "@react-three/drei";
 import { observer } from "mobx-react-lite";
 
 import { CityState } from "../state/CityState";
-import { DisplayState } from "./DisplayState";
+import { DisplayState } from "../state/DisplayState";
 
 export const StreetGraphVisualization = observer(() => {
   const { streetGraph } = CityState.use();
