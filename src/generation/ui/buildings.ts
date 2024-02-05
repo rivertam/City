@@ -1,7 +1,7 @@
 import { RNG } from "../../utils/random";
 
 import TensorField from "../impl/tensor_field";
-import StreetGraph, { StreetNode } from "../impl/graph";
+import StreetGraph, { LotEntryPoint, StreetNode } from "../impl/graph";
 import Vector from "../vector";
 import PolygonFinder, { Polygon } from "../impl/polygon_finder";
 import { PolygonParams } from "../impl/polygon_finder";
@@ -12,8 +12,7 @@ export interface BuildingModel {
   lotScreen: Vector[]; // In screen space
   roof: Vector[]; // In screen space
   sides: Vector[][]; // In screen space
-  door: Vector;
-  entryStreet: string;
+  entryPoint: LotEntryPoint;
 }
 
 /**
@@ -23,14 +22,8 @@ class BuildingModels {
   private _buildingModels: BuildingModel[] = [];
 
   constructor(rng: RNG, lots: Polygon[], streetGraph: StreetGraph) {
-    // Lots in world space
     for (const lot of lots) {
       const entryPoint = streetGraph.getEntryPoint(lot);
-
-      const door = entryPoint.segment.from
-        .clone()
-        .add(entryPoint.segment.to)
-        .multiplyScalar(0.5);
 
       this._buildingModels.push({
         height: rng.random() * 20 + 20,
@@ -38,8 +31,7 @@ class BuildingModels {
         lotScreen: [],
         roof: [],
         sides: [],
-        door: door,
-        entryStreet: entryPoint.street,
+        entryPoint,
       });
     }
     this._buildingModels.sort((a, b) => a.height - b.height);

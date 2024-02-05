@@ -1,6 +1,9 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
-import StreetGraph, { StreetNode } from "../generation/impl/graph";
+import StreetGraph, {
+  LotEntryPoint,
+  StreetNode,
+} from "../generation/impl/graph";
 import { Polygon } from "../generation/impl/polygon_finder";
 import { Lot } from "./Lot";
 import Vector from "../generation/vector";
@@ -55,11 +58,9 @@ export class CityState {
     this.roads = generatedCity.roads;
 
     this.blocks = generatedCity.blocks;
-    this.lots = generatedCity.lots.map(
-      ({ address, polygon, door, streetName }) => {
-        return new Lot({ address, polygon, door, streetName });
-      }
-    );
+    this.lots = generatedCity.lots.map((lot) => {
+      return new Lot(lot);
+    });
     this.parks = generatedCity.parks;
 
     this.streetGraph = generatedCity.streetGraph;
@@ -113,12 +114,12 @@ export type GeneratedCity = {
   blocks: Array<{
     shape: MapLine;
   }>;
-  lots: Array<{
-    address: string;
-    door: Vector;
-    streetName: string;
-    polygon: Polygon;
-  }>;
+  lots: Array<
+    {
+      address: string;
+      polygon: Polygon;
+    } & LotEntryPoint
+  >;
 
   streetGraph: StreetGraph;
 };

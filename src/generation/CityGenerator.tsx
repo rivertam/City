@@ -136,12 +136,13 @@ export class CityGenerator {
         shape: convertLine(block, createLotName()),
       })),
       lots: this.mainGui.buildingModels.map((building) => {
-        return {
+        const lot: GeneratedCity["lots"][0] = {
           address: createLotName(),
           polygon: building.lotWorld,
-          door: building.door,
-          streetName: building.entryStreet,
+          ...building.entryPoint,
         };
+
+        return lot;
       }),
       streetGraph: this.mainGui.getStreetGraph(),
     };
@@ -171,6 +172,7 @@ export class CityGenerator {
     city.lots.forEach((lot) => {
       lot.polygon.polygon.forEach((vertex) => vertices.push(vertex));
       vertices.push(lot.door);
+      vertices.push(lot.streetPoint);
     });
     city.parks.forEach((park) =>
       park.polygon.forEach((vertex) => vertices.push(vertex))

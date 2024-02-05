@@ -131,7 +131,6 @@ export const City = ({
             <Building
               key={lot.address}
               polygon={lot.shape}
-              color={lot.hasExcessNodes ? "red" : "green"}
               height={(lot.address.length - 6) * 2}
               lot={lot}
             />

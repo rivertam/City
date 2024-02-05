@@ -17,7 +17,73 @@ class StreetSegment {
   static create({ from, to }: { from: Vector; to: Vector }): StreetSegment {
     return new StreetSegment(from, to);
   }
+
+  public distanceFromPoint(point: Vector): number {
+    const l2 = this.from.distanceToSquared(this.to);
+    if (l2 === 0) return point.distanceTo(this.from);
+
+    const t = Math.max(
+      0,
+      Math.min(
+        1,
+        point.clone().sub(this.from).dot(this.to.clone().sub(this.from)) / l2
+      )
+    );
+    const projection = this.from
+      .clone()
+      .add(this.to.clone().sub(this.from).multiplyScalar(t));
+    return point.distanceTo(projection);
+  }
+
+  public findEntryPoint(lot: Polygon): { door: Vector; streetPoint: Vector } {
+    // the index of the left point of the wall on the polygon that is closest to the segment
+    let entryLeftIndex = -1;
+    let closestScore = Infinity;
+
+    for (let leftIndex = 0; leftIndex < lot.polygon.length; leftIndex++) {
+      const rightIndex = (leftIndex + 1) % lot.polygon.length;
+      const left = lot.polygon[leftIndex];
+      const right = lot.polygon[rightIndex];
+      const score =
+        this.distanceFromPoint(left) + this.distanceFromPoint(right);
+      if (score < closestScore) {
+        closestScore = score;
+        entryLeftIndex = leftIndex;
+      }
+    }
+
+    const entryRightIndex = (entryLeftIndex + 1) % lot.polygon.length;
+
+    const left = lot.polygon[entryLeftIndex];
+    const right = lot.polygon[entryRightIndex];
+
+    const door = left.clone().add(right).multiplyScalar(0.5);
+    const streetPoint = this.orthogonalProjectionFromPoint(door);
+
+    return { door, streetPoint };
+  }
+
+  public orthogonalProjectionFromPoint(point: Vector): Vector {
+    const dotProduct = point
+      .clone()
+      .sub(this.from)
+      .dot(this.to.clone().sub(this.from));
+
+    const lengthSquared = this.to.clone().sub(this.from).lengthSq();
+
+    const t = Math.max(0, Math.min(1, dotProduct / lengthSquared));
+
+    return this.from
+      .clone()
+      .add(this.to.clone().sub(this.from).multiplyScalar(t));
+  }
 }
+
+export type LotEntryPoint = {
+  door: Vector;
+  streetPoint: Vector;
+  streetName: string;
+};
 
 type NamedStreamline = {
   name: string;
@@ -325,41 +391,33 @@ export default class StreetGraph {
    * @param lot the polygon describing the lot
    * @returns the entry point segment nodes on the street graph
    */
-  public getEntryPoint(lot: Polygon): {
-    segment: StreetSegment;
-    street: string;
-  } {
-    // console.count(`nodes ${lot.nodes.length}`);
+  public getEntryPoint(lot: Polygon): LotEntryPoint {
     let closestSegment = this.nodes[0].segments.values().next().value;
     let closestSegmentStreet = this.nodes[0].segments.keys().next().value;
     let closestDistance = Infinity;
 
     for (const node of this.nodes) {
-      for (const [streetName, segment] of node.segments.entries()) {
+      for (const neighbor of node.neighbors) {
+        const segment = new StreetSegment(node.value, neighbor.value);
+
         for (const point of lot.polygon) {
-          const distance = pointToSegment(point, segment.from, segment.to);
+          const distance = segment.distanceFromPoint(point);
 
           if (distance < closestDistance) {
             closestDistance = distance;
             closestSegment = segment;
-            closestSegmentStreet = streetName;
+            closestSegmentStreet = node.streamlineNames()[0];
           }
         }
       }
     }
 
-    return { segment: closestSegment, street: closestSegmentStreet };
+    const entryPoint = closestSegment.findEntryPoint(lot);
+
+    return {
+      ...entryPoint,
+      segment: closestSegment,
+      streetName: closestSegmentStreet,
+    };
   }
-}
-
-function pointToSegment(point: Vector, from: Vector, to: Vector): number {
-  const l2 = from.distanceToSquared(to);
-  if (l2 === 0) return point.distanceTo(from);
-
-  const t = Math.max(
-    0,
-    Math.min(1, point.clone().sub(from).dot(to.clone().sub(from)) / l2)
-  );
-  const projection = from.clone().add(to.clone().sub(from).multiplyScalar(t));
-  return point.distanceTo(projection);
 }

@@ -12,8 +12,13 @@ type BuildingProps = {
   lot: Lot;
 };
 
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 export const Building = observer(
-  ({ lot, ...pieceProps }: ComponentProps<typeof Piece> & BuildingProps) => {
+  ({
+    lot,
+    ...pieceProps
+  }: PartialBy<ComponentProps<typeof Piece>, "color"> & BuildingProps) => {
     const [displayingEntry, setDisplayingEntry] = useState(false);
     const { height } = pieceProps;
     const [color] = useState(() => {
@@ -30,29 +35,28 @@ export const Building = observer(
       units.push(<Unit key={floor} />);
     }
 
-    const entryPoint = {
-      x: lot.door.x,
-      y: lot.door.y,
-    };
-
     return (
       <>
         {units}
         {displayingEntry && (
-          <Cylinder
-            args={[3, 3, height, 8]}
-            position={[entryPoint.x, entryPoint.y, height / 2]}
-            rotation={[Math.PI / 2, 0, 0]}
-          />
+          <>
+            <Cylinder
+              args={[3, 3, height, 8]}
+              position={[lot.door.x, lot.door.y, height / 2]}
+              rotation={[Math.PI / 2, 0, 0]}
+            />
+            <Cylinder
+              args={[3, 3, height, 8]}
+              position={[lot.streetPoint.x, lot.streetPoint.y, height / 2]}
+              rotation={[Math.PI / 2, 0, 0]}
+            />
+          </>
         )}
         <Piece
           onClick={() => {
-            console.log(
-              "clicked an anonymous building",
-              toJS(pieceProps.polygon)
-            );
-            console.log("entryPoint", entryPoint);
             console.log("it's on street", lot.streetName);
+            console.log("at", lot.streetPoint);
+            console.log("door", lot.door);
             setDisplayingEntry((d) => !d);
           }}
           {...pieceProps}
