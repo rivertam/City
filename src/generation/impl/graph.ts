@@ -4,6 +4,8 @@ import * as isect from "isect";
 
 import Vector from "../vector";
 import { Polygon } from "./polygon_finder";
+import { debug } from "console";
+import { de } from "@faker-js/faker";
 
 class StreetSegment {
   public from: Vector;
@@ -123,14 +125,37 @@ export default class StreetGraph {
    * Finds all intersections, and creates a list of Nodes
    */
   constructor(
+    public name: string,
     streamlines: NamedStreamline[],
     dstep: number,
-    deleteDangling = false
+    deleteDangling = false,
+    debugCanvasSelector?: string
   ) {
     const quadtree = (d3.quadtree() as d3.Quadtree<StreetNode>)
       .x((n) => n.value.x)
       .y((n) => n.value.y);
     const nodeAddRadius = 1;
+
+    const debugCanvasContext = (() => {
+      if (debugCanvasSelector) {
+        const canvas =
+          document.querySelector<HTMLCanvasElement>(debugCanvasSelector);
+
+        if (canvas === null) return null;
+
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+
+        return canvas.getContext("2d");
+      }
+
+      return null;
+    })();
+
+    const debugScaleX = (x: number) =>
+      (x / 750) * debugCanvasContext!.canvas.width + 50;
+    const debugScaleY = (y: number) =>
+      (y / 750) * debugCanvasContext!.canvas.height + 50;
 
     // Add all segment start and endpoints
     for (const streamline of streamlines) {
@@ -145,6 +170,27 @@ export default class StreetGraph {
           node.addSegment(name, new StreetSegment(points[i], points[i + 1]));
         }
 
+        if (debugCanvasContext) {
+          // draw green x at streamline endpoints
+          const location = {
+            x: debugScaleX(node.value.x),
+            y: debugScaleY(node.value.y),
+          };
+
+          debugCanvasContext.strokeStyle = "green";
+          debugCanvasContext.lineWidth = 1;
+          debugCanvasContext.beginPath();
+          debugCanvasContext.moveTo(location.x - 2, location.y - 2);
+          debugCanvasContext.lineTo(location.x + 2, location.y + 2);
+          debugCanvasContext.stroke();
+
+          debugCanvasContext.beginPath();
+          debugCanvasContext.moveTo(location.x + 2, location.y - 2);
+          debugCanvasContext.lineTo(location.x - 2, location.y + 2);
+          debugCanvasContext.stroke();
+
+          console.log("did it!", location);
+        }
         this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
       }
     }
@@ -160,8 +206,8 @@ export default class StreetGraph {
       );
 
       let index = 0;
-      for (const s of intersection.segments) {
-        node.addSegment(`intersection segment ${index++}`, s);
+      for (const segment of intersection.segments) {
+        node.addSegment(`intersection segment ${index++}`, segment);
       }
 
       this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
@@ -198,6 +244,15 @@ export default class StreetGraph {
     this.intersections = [];
     for (const i of intersections)
       this.intersections.push(new Vector(i.point.x, i.point.y));
+  }
+
+  private debugCanvasContext: CanvasRenderingContext2D | null = null;
+
+  private setDebugCanvas(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext("2d");
+    if (ctx === null) return;
+
+    this.debugCanvasContext = ctx;
   }
 
   /**
@@ -272,6 +327,8 @@ export default class StreetGraph {
         radius + step / 2
       );
 
+      let lastNode: StreetNode | undefined;
+
       while (closestNode !== undefined) {
         quadtree.remove(closestNode);
         foundNodes.push(closestNode);
@@ -292,9 +349,15 @@ export default class StreetGraph {
           for (const name of duplicateSegmentNames) {
             closestNode.segments.delete(name);
           }
-          closestNode.segments.set(segmentName, segment);
+          closestNode.addSegment(segmentName, segment);
+
+          if (lastNode !== undefined) {
+            lastNode.addNeighbor(closestNode);
+            closestNode.addNeighbor(lastNode);
+          }
         }
 
+        lastNode = closestNode;
         closestNode = quadtree.find(
           currentPoint.x,
           currentPoint.y,

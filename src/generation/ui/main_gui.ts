@@ -313,12 +313,24 @@ export default class MainGUI {
   }
 
   public createStreetGraph(): StreetGraph {
-    return new StreetGraph(
-      this.majorRoads.roads
-        .concat(this.mainRoads.roads)
-        .concat(this.minorRoads.roads)
-        .concat(this.coastline.roads),
+    const streamlines = this.majorRoads.roads
+      .concat(this.mainRoads.roads)
+      .concat(this.minorRoads.roads)
+      .concat(this.coastline.roads);
+
+    console.log(
+      "using",
+      streamlines.length,
+      "streamlines to create street graph with dstep",
       this.minorParams.dstep
+    );
+
+    return new StreetGraph(
+      "Street",
+      streamlines,
+      this.minorParams.dstep,
+      false,
+      "#street-graph"
     );
   }
 
@@ -326,15 +338,28 @@ export default class MainGUI {
 
   public getLotBoundaryGraph(): StreetGraph {
     if (!this.lotBoundaryGraph) {
-      const allStreamlines = [];
-      allStreamlines.push(...this.mainRoads.roads);
-      allStreamlines.push(...this.majorRoads.roads);
-      allStreamlines.push(...this.minorRoads.roads);
-      allStreamlines.push(...this.coastline.namedStreamlines);
+      // const allStreamlines = [];
+      // allStreamlines.push(...this.mainRoads.roads);
+      // allStreamlines.push(...this.majorRoads.roads);
+      // allStreamlines.push(...this.minorRoads.roads);
+      // allStreamlines.push(...this.coastline.namedStreamlines);
 
-      this.lotBoundaryGraph = new StreetGraph(
-        allStreamlines,
+      const streamlines = this.majorRoads.roads
+        .concat(this.mainRoads.roads)
+        .concat(this.minorRoads.roads)
+        .concat(this.coastline.namedStreamlines);
+      console.log(
+        "using",
+        streamlines.length,
+        "streamlines to create lot boundary graph with dstep",
         this.minorParams.dstep
+      );
+      this.lotBoundaryGraph = new StreetGraph(
+        "Lot boundary",
+        streamlines,
+        this.minorParams.dstep,
+        false,
+        "#lot-boundary-graph"
       );
     }
 

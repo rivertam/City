@@ -92,7 +92,7 @@ export default class Buildings {
   private _blocks: Vector[][] = [];
 
   private buildingParams: PolygonParams = {
-    maxLength: 20,
+    maxLength: 500,
     minArea: 50,
     shrinkSpacing: 4,
     chanceNoDivide: 0.05,

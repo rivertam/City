@@ -201,14 +201,22 @@ export default class PolygonFinder {
     }
   }
 
-  private recursiveWalk(visited: StreetNode[], count = 0): StreetNode[] {
-    if (count >= this.params.maxLength) return null;
+  private recursiveWalk(visited: StreetNode[]): StreetNode[] {
+    if (visited.length >= this.params.maxLength) return null;
     // TODO backtracking to find polygons with dead end roads inside them
     const nextNode = this.getRightmostNode(
       visited[visited.length - 2],
       visited[visited.length - 1]
     );
     if (nextNode === null) {
+      if (visited.length > 4) {
+        const stack = new Error().stack;
+        if (stack.includes("getBlocks")) {
+          globalThis.failedPolygons = globalThis.failedPolygons || [];
+
+          globalThis.failedPolygons.push(visited.map((n) => n.value.clone()));
+        }
+      }
       return null; // Currently ignores polygons with dead end inside
     }
 
@@ -217,7 +225,7 @@ export default class PolygonFinder {
       return visited.slice(visitedIndex);
     } else {
       visited.push(nextNode);
-      return this.recursiveWalk(visited, count++);
+      return this.recursiveWalk(visited);
     }
   }
 

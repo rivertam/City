@@ -144,7 +144,7 @@ export class CityGenerator {
 
         return lot;
       }),
-      streetGraph: this.mainGui.getStreetGraph(),
+      streetGraph: this.mainGui.getLotBoundaryGraph(),
     };
 
     // average all vertices and normalize so the average is 0, 0
@@ -200,6 +200,8 @@ export class CityGenerator {
     });
 
     city.streetGraph.translate(new Vector(-averageX, -averageY));
+
+    globalThis.globalCityTranslation = new Vector(-averageX, -averageY);
 
     console.timeEnd("Centralizing city");
     console.log(`${vertices.length} points`);
