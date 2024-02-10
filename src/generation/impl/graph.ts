@@ -1,11 +1,8 @@
-import * as log from "loglevel";
 import * as d3 from "d3-quadtree";
 import * as isect from "isect";
 
 import Vector from "../vector";
 import { Polygon } from "./polygon_finder";
-import { debug } from "console";
-import { de } from "@faker-js/faker";
 
 class StreetSegment {
   public from: Vector;
@@ -98,6 +95,8 @@ type NamedStreamline = {
 export class StreetNode {
   public segments = new Map<string, StreetSegment>();
 
+  public graph: StreetGraph | null = null;
+
   constructor(public value: Vector, public neighbors = new Set<StreetNode>()) {}
 
   addSegment(streamlineName: string, segment: StreetSegment): void {
@@ -162,6 +161,7 @@ export default class StreetGraph {
       const { points, name } = streamline;
       for (let i = 0; i < points.length; i++) {
         const node = new StreetNode(points[i]);
+        node.graph = this;
         if (i > 0) {
           node.addSegment(name, new StreetSegment(points[i - 1], points[i]));
         }
@@ -188,8 +188,6 @@ export default class StreetGraph {
           debugCanvasContext.moveTo(location.x + 2, location.y - 2);
           debugCanvasContext.lineTo(location.x - 2, location.y + 2);
           debugCanvasContext.stroke();
-
-          console.log("did it!", location);
         }
         this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
       }
@@ -204,10 +202,47 @@ export default class StreetGraph {
       const node = new StreetNode(
         new Vector(intersection.point.x, intersection.point.y)
       );
+      node.graph = this;
+
+      if (debugCanvasContext) {
+        // draw red x at intersections
+        const location = {
+          x: debugScaleX(node.value.x),
+          y: debugScaleY(node.value.y),
+        };
+
+        debugCanvasContext.strokeStyle = "red";
+        debugCanvasContext.lineWidth = 1;
+        debugCanvasContext.beginPath();
+        debugCanvasContext.moveTo(location.x - 2, location.y - 2);
+        debugCanvasContext.lineTo(location.x + 2, location.y + 2);
+        debugCanvasContext.stroke();
+
+        debugCanvasContext.beginPath();
+        debugCanvasContext.moveTo(location.x + 2, location.y - 2);
+        debugCanvasContext.lineTo(location.x - 2, location.y + 2);
+        debugCanvasContext.stroke();
+      }
 
       let index = 0;
       for (const segment of intersection.segments) {
         node.addSegment(`intersection segment ${index++}`, segment);
+
+        if (debugCanvasContext) {
+          // draw blue line at intersection segments
+          debugCanvasContext.strokeStyle = "blue";
+          debugCanvasContext.lineWidth = 2;
+          debugCanvasContext.beginPath();
+          debugCanvasContext.moveTo(
+            debugScaleX(segment.from.x),
+            debugScaleY(segment.from.y)
+          );
+          debugCanvasContext.lineTo(
+            debugScaleX(segment.to.x),
+            debugScaleY(segment.to.y)
+          );
+          debugCanvasContext.stroke();
+        }
       }
 
       this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
@@ -229,6 +264,22 @@ export default class StreetGraph {
         if (nodesAlongSegment.length > 1) {
           for (let j = 0; j < nodesAlongSegment.length - 1; j++) {
             nodesAlongSegment[j].addNeighbor(nodesAlongSegment[j + 1]);
+
+            if (debugCanvasContext) {
+              // draw yellow line between nodes along segment
+              debugCanvasContext.strokeStyle = "yellow";
+              debugCanvasContext.lineWidth = 1;
+              debugCanvasContext.beginPath();
+              debugCanvasContext.moveTo(
+                debugScaleX(nodesAlongSegment[j].value.x),
+                debugScaleY(nodesAlongSegment[j].value.y)
+              );
+              debugCanvasContext.lineTo(
+                debugScaleX(nodesAlongSegment[j + 1].value.x),
+                debugScaleY(nodesAlongSegment[j + 1].value.y)
+              );
+              debugCanvasContext.stroke();
+            }
           }
         }
       }
@@ -244,15 +295,6 @@ export default class StreetGraph {
     this.intersections = [];
     for (const i of intersections)
       this.intersections.push(new Vector(i.point.x, i.point.y));
-  }
-
-  private debugCanvasContext: CanvasRenderingContext2D | null = null;
-
-  private setDebugCanvas(canvas: HTMLCanvasElement) {
-    const ctx = canvas.getContext("2d");
-    if (ctx === null) return;
-
-    this.debugCanvasContext = ctx;
   }
 
   /**

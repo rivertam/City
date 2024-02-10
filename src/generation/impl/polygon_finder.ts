@@ -164,15 +164,24 @@ export default class PolygonFinder {
     this._dividedPolygons = [];
     const polygons = [];
 
+    let stashedNeighbors = new Array<[StreetNode, StreetNode]>();
+
     for (const node of this.nodes) {
       if (node.neighbors.size < 2) continue;
       for (const nextNode of node.neighbors.values()) {
         const polygon = this.recursiveWalk([node, nextNode]);
         if (polygon !== null && polygon.length < this.params.maxLength) {
-          this.removePolygonAdjacencies(polygon);
+          // remove the neighbors of the polygon so we don't just find it again
+          const newlyStashed = this.stashPolygonNeighbors(polygon);
+          stashedNeighbors = stashedNeighbors.concat(newlyStashed);
           polygons.push(new Polygon(polygon.map((n) => n.value.clone())));
         }
       }
+    }
+
+    // Add back the neighbors that were removed
+    for (const [current, next] of stashedNeighbors) {
+      current.neighbors.add(next);
     }
 
     this._polygons = polygons;
@@ -192,13 +201,23 @@ export default class PolygonFinder {
     });
   }
 
-  private removePolygonAdjacencies(polygon: StreetNode[]): void {
-    for (let i = 0; i < polygon.length; i++) {
-      const current = polygon[i];
-      const next = polygon[(i + 1) % polygon.length];
+  // temporarily remove the neighbors of each polygon in order to continue searching for more.
+  // returns a list of the neighbors that were removed so they can be added back later
+  private stashPolygonNeighbors(
+    polygon: StreetNode[]
+  ): Array<[StreetNode, StreetNode]> {
+    const stashed = [];
+
+    for (let pointIndex = 0; pointIndex < polygon.length; pointIndex++) {
+      const current = polygon[pointIndex];
+      const next = polygon[(pointIndex + 1) % polygon.length];
 
       current.neighbors.delete(next);
+
+      stashed.push([current, next] as [StreetNode, StreetNode]);
     }
+
+    return stashed;
   }
 
   private recursiveWalk(visited: StreetNode[]): StreetNode[] {
@@ -209,14 +228,6 @@ export default class PolygonFinder {
       visited[visited.length - 1]
     );
     if (nextNode === null) {
-      if (visited.length > 4) {
-        const stack = new Error().stack;
-        if (stack.includes("getBlocks")) {
-          globalThis.failedPolygons = globalThis.failedPolygons || [];
-
-          globalThis.failedPolygons.push(visited.map((n) => n.value.clone()));
-        }
-      }
       return null; // Currently ignores polygons with dead end inside
     }
 

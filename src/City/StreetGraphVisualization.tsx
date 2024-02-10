@@ -41,56 +41,9 @@ const BlockVis = ({ from, to }: { from: StreetNode; to: StreetNode }) => {
 export const StreetGraphVisualization = observer(() => {
   const { streetGraph } = CityState.use();
   const displayState = DisplayState.use();
-  const [highlightNodes, setHighlightNodes] = React.useState<Vector[]>([]);
 
-  globalThis.toggleHighlightNode = (vector: Vector) => {
-    setHighlightNodes((prev) => {
-      for (let i = 0; i < prev.length; i++) {
-        if (prev[i].x === vector.x && prev[i].y === vector.y) {
-          prev.splice(i, 1);
-          return [...prev];
-        }
-      }
-
-      return [...prev, vector];
-    });
-  };
-
-  globalThis.iterateThroughFailedPolygons = async () => {
-    if (globalThis.failedPolygons) {
-      for (const polygon of globalThis.failedPolygons) {
-        for (const node of polygon) {
-          globalThis.toggleHighlightNode(node);
-        }
-
-        await wait(1000);
-
-        for (const node of polygon) {
-          globalThis.toggleHighlightNode(node);
-        }
-      }
-    }
-  };
-
-  console.log(highlightNodes);
   return (
     <>
-      {highlightNodes.map((vector) => {
-        return (
-          <Sphere
-            args={[2, 32, 32]}
-            position={[
-              vector.x + globalThis.globalCityTranslation.x,
-              vector.y + globalThis.globalCityTranslation.y,
-              0.5,
-            ]}
-            rotation={[Math.PI / 2, 0, 0]}
-            key={`${vector.x},${vector.y}`}
-          >
-            <meshPhongMaterial attach="material" color="purple" />
-          </Sphere>
-        );
-      })}
       {streetGraph.nodes.map((node) => {
         const isFocused =
           displayState.focusedItem?.kind === "streetNode" &&
@@ -125,6 +78,10 @@ export const StreetGraphVisualization = observer(() => {
 
           return "blue";
         })();
+
+        if (isFocused) {
+          console.log(node);
+        }
 
         return (
           <>

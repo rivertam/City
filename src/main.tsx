@@ -9,6 +9,7 @@ window.addEventListener("load", async () => {
   root.render(
     <React.StrictMode>
       <Game />
+      {/*
       <canvas
         id="lot-boundary-graph"
         style={{
@@ -34,6 +35,7 @@ window.addEventListener("load", async () => {
           backgroundColor: "white",
         }}
       ></canvas>
+      */}
     </React.StrictMode>
   );
 });
