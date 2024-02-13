@@ -160,8 +160,8 @@ export class CityGenerator {
         major: majorRoads,
         minor: minorRoads,
       },
-      blocks: blocks.map((block) => ({
-        shape: convertLine(block, "do blocks need names?"),
+      blocks: blocks.map((block, i) => ({
+        shape: convertLine(block, `Block ${i + 1}`),
       })),
       lots,
       streetGraph: this.mainGui.getLotBoundaryGraph(),

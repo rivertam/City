@@ -84,11 +84,10 @@ export const StreetGraphVisualization = observer(() => {
         }
 
         return (
-          <>
+          <React.Fragment key={`${node.value.x},${node.value.y}`}>
             <Sphere
               position={[node.value.x, node.value.y, 2]}
               rotation={[Math.PI / 2, 0, 0]}
-              key={`${node.value.x},${node.value.y}`}
               onClick={() => {
                 displayState.focusItem({
                   kind: "streetNode",
@@ -111,7 +110,7 @@ export const StreetGraphVisualization = observer(() => {
                 })}
               </>
             )}
-          </>
+          </React.Fragment>
         );
       })}
     </>
