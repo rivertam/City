@@ -7,6 +7,7 @@ import StreetGraph, {
 import { Polygon } from "../generation/impl/polygon_finder";
 import { Lot } from "./Lot";
 import Vector from "../generation/vector";
+import { Street } from "./Street";
 
 export type MapLine = {
   name: string;
@@ -34,10 +35,10 @@ export class CityState {
   public secondaryRiver: MapLine;
 
   public roads: {
-    main: Array<Road>;
-    minor: Array<Road>;
-    major: Array<Road>;
-    coastline: Array<Road>;
+    main: Array<Street>;
+    minor: Array<Street>;
+    major: Array<Street>;
+    coastline: Array<Street>;
   };
 
   public blocks: Array<{
@@ -58,9 +59,7 @@ export class CityState {
     this.roads = generatedCity.roads;
 
     this.blocks = generatedCity.blocks;
-    this.lots = generatedCity.lots.map((lot) => {
-      return new Lot(lot);
-    });
+    this.lots = generatedCity.lots;
     this.parks = generatedCity.parks;
 
     this.streetGraph = generatedCity.streetGraph;
@@ -105,21 +104,16 @@ export type GeneratedCity = {
   river: MapLine;
   secondaryRiver: MapLine;
   roads: {
-    main: Array<MapLine>;
-    major: Array<MapLine>;
-    minor: Array<MapLine>;
-    coastline: Array<MapLine>;
+    main: Array<Street>;
+    major: Array<Street>;
+    minor: Array<Street>;
+    coastline: Array<Street>;
   };
   parks: Array<MapLine>;
   blocks: Array<{
     shape: MapLine;
   }>;
-  lots: Array<
-    {
-      address: string;
-      polygon: Polygon;
-    } & LotEntryPoint
-  >;
+  lots: Array<Lot>;
 
   streetGraph: StreetGraph;
 };

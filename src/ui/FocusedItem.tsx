@@ -49,11 +49,10 @@ export const FocusedItem = observer(() => {
   if (focusedItem.kind === "building") {
     return (
       <FocusedItemWindow>
-        <h1>Building</h1>
+        <h1>{focusedItem.lot.address}</h1>
 
         <hr />
 
-        <div>{focusedItem.lot.address}</div>
         <div>on {focusedItem.lot.streetName}</div>
       </FocusedItemWindow>
     );

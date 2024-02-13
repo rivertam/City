@@ -3,6 +3,8 @@ import MainGUI from "./ui/main_gui";
 import Vector from "./vector";
 import { RNG, faker } from "../utils/random";
 import { GeneratedCity, MapLine } from "../state/CityState";
+import { Street } from "../state/Street";
+import { Lot } from "../state/Lot";
 
 export type CityGenerationParameters = {
   size?: number;
@@ -67,16 +69,6 @@ export class CityGenerator {
       return name;
     };
 
-    const createRoadName = (): string => {
-      let name: string;
-      do {
-        name = faker.location.street();
-      } while (usedNames.has(name));
-
-      usedNames.add(name);
-      return name;
-    };
-
     const createParkName = (): string => {
       let name: string;
       do {
@@ -94,15 +86,60 @@ export class CityGenerator {
       };
     };
 
-    const createLotName = (): string => {
-      let name: string;
-      let num = 0;
-      do {
-        name = `${num++} ${faker.location.streetAddress()}`;
-      } while (usedNames.has(name));
+    const coastlineRoads = this.mainGui.coastline.roads.map((street) => {
+      return new Street(street.name, street.points);
+    });
 
-      return name;
-    };
+    const mainRoads = this.mainGui.mainRoads.roads.map((street) => {
+      return new Street(street.name, street.points);
+    });
+
+    const majorRoads = this.mainGui.majorRoads.roads.map((street) => {
+      return new Street(street.name, street.points);
+    });
+
+    const minorRoads = this.mainGui.minorRoads.roads.map((street) => {
+      return new Street(street.name, street.points);
+    });
+
+    const nameToStreet = new Map<string, Street>();
+
+    for (const street of coastlineRoads.concat(
+      mainRoads,
+      majorRoads,
+      minorRoads
+    )) {
+      nameToStreet.set(street.name, street);
+    }
+
+    // attach addresses to lots
+    const lots = this.mainGui.buildingModels.map((building) => {
+      const lot = new Lot({
+        address: "temporary",
+        polygon: building.lotWorld,
+        ...building.entryPoint,
+      });
+
+      const street = nameToStreet.get(building.entryPoint.streetName);
+
+      if (!street) {
+        console.error(`No street found for ${building.entryPoint.streetName}`);
+
+        return lot;
+      }
+
+      street.associateLot(lot);
+
+      return lot;
+    });
+
+    for (const street of coastlineRoads.concat(
+      mainRoads,
+      majorRoads,
+      minorRoads
+    )) {
+      street.nameLots();
+    }
 
     const blocks = this.mainGui.getBlocks();
 
@@ -117,33 +154,16 @@ export class CityGenerator {
       parks: this.mainGui.parks.map((park) =>
         convertLine(park, createParkName())
       ),
-
       roads: {
-        coastline: this.mainGui.coastline.roadPolygons.map((poly) =>
-          convertLine(poly, createRoadName())
-        ),
-        main: this.mainGui.mainRoads.roadPolygons.map((poly) =>
-          convertLine(poly, createRoadName())
-        ),
-        major: this.mainGui.majorRoads.roadPolygons.map((poly) =>
-          convertLine(poly, createRoadName())
-        ),
-        minor: this.mainGui.minorRoads.roadPolygons.map((poly) =>
-          convertLine(poly, createRoadName())
-        ),
+        coastline: coastlineRoads,
+        main: mainRoads,
+        major: majorRoads,
+        minor: minorRoads,
       },
       blocks: blocks.map((block) => ({
-        shape: convertLine(block, createLotName()),
+        shape: convertLine(block, "do blocks need names?"),
       })),
-      lots: this.mainGui.buildingModels.map((building) => {
-        const lot: GeneratedCity["lots"][0] = {
-          address: createLotName(),
-          polygon: building.lotWorld,
-          ...building.entryPoint,
-        };
-
-        return lot;
-      }),
+      lots,
       streetGraph: this.mainGui.getLotBoundaryGraph(),
     };
 
@@ -154,23 +174,23 @@ export class CityGenerator {
     city.river.polygon.forEach((vertex) => vertices.push(vertex));
     city.secondaryRiver.polygon.forEach((vertex) => vertices.push(vertex));
     city.roads.main.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
+      road.line.forEach((vertex) => vertices.push(vertex))
     );
     city.roads.major.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
+      road.line.forEach((vertex) => vertices.push(vertex))
     );
     city.roads.minor.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
+      road.line.forEach((vertex) => vertices.push(vertex))
     );
 
     city.roads.coastline.forEach((road) =>
-      road.polygon.forEach((vertex) => vertices.push(vertex))
+      road.line.forEach((vertex) => vertices.push(vertex))
     );
     city.blocks.forEach((block) =>
       block.shape.polygon.forEach((vertex) => vertices.push(vertex))
     );
     city.lots.forEach((lot) => {
-      lot.polygon.polygon.forEach((vertex) => vertices.push(vertex));
+      lot.shape.forEach((vertex) => vertices.push(vertex));
       vertices.push(lot.door);
       vertices.push(lot.streetPoint);
     });

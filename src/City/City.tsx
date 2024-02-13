@@ -59,9 +59,9 @@ export const City = observer(
         {cityState.roads.coastline.map((road) => (
           <Road
             key={road.name}
-            line={road.polygon.map(([xx, yy]) => [
-              xx,
-              yy,
+            line={road.line.map((vector) => [
+              vector.x,
+              vector.y,
               GroundHeights.CoastlineRoad,
             ])}
             color="orange"
@@ -72,9 +72,9 @@ export const City = observer(
         {cityState.roads.main.map((road) => (
           <Road
             key={road.name}
-            line={road.polygon.map(([xx, yy]) => [
-              xx,
-              yy,
+            line={road.line.map((vector) => [
+              vector.x,
+              vector.y,
               GroundHeights.MainRoad,
             ])}
             color="yellow"
@@ -85,9 +85,9 @@ export const City = observer(
         {cityState.roads.major.map((road) => (
           <Road
             key={road.name}
-            line={road.polygon.map(([xx, yy]) => [
-              xx,
-              yy,
+            line={road.line.map((vector) => [
+              vector.x,
+              vector.y,
               GroundHeights.MajorRoad,
             ])}
             color="white"
@@ -98,9 +98,9 @@ export const City = observer(
         {cityState.roads.minor.map((road) => (
           <Road
             key={road.name}
-            line={road.polygon.map(([xx, yy]) => [
-              xx,
-              yy,
+            line={road.line.map((vector) => [
+              vector.x,
+              vector.y,
               GroundHeights.MinorRoad,
             ])}
             color="grey"
