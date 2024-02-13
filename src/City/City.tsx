@@ -14,11 +14,11 @@ const GroundHeights = {
   Park: 0.01,
   Water: 0.02,
   Beach: 0.03,
-  MinorRoad: 0.04,
-  MajorRoad: 0.05,
-  CoastlineRoad: 0.06,
-  MainRoad: 0.07,
-  Block: 0.08,
+  Block: 0.04,
+  MinorRoad: 0.05,
+  MajorRoad: 0.06,
+  CoastlineRoad: 0.07,
+  MainRoad: 0.08,
   Foundation: 0.09,
 };
 
@@ -65,7 +65,7 @@ export const City = observer(
               GroundHeights.CoastlineRoad,
             ])}
             color="orange"
-            size={12}
+            size={5}
           />
         ))}
 
@@ -78,7 +78,7 @@ export const City = observer(
               GroundHeights.MainRoad,
             ])}
             color="yellow"
-            size={12}
+            size={4}
           />
         ))}
 
@@ -91,7 +91,7 @@ export const City = observer(
               GroundHeights.MajorRoad,
             ])}
             color="white"
-            size={8}
+            size={3}
           />
         ))}
 
@@ -104,7 +104,7 @@ export const City = observer(
               GroundHeights.MinorRoad,
             ])}
             color="grey"
-            size={5}
+            size={2}
           />
         ))}
 
