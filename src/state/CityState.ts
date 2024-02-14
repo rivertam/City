@@ -39,6 +39,8 @@ export class CityState {
     minor: Array<Street>;
     major: Array<Street>;
     coastline: Array<Street>;
+
+    getStreet(name: string): Street;
   };
 
   public blocks: Array<{
@@ -56,7 +58,17 @@ export class CityState {
     this.coastline = generatedCity.coastline;
     this.river = generatedCity.river;
     this.secondaryRiver = generatedCity.secondaryRiver;
-    this.roads = generatedCity.roads;
+    this.roads = {
+      ...generatedCity.roads,
+      getStreet(name: string): Street {
+        return (
+          this.main.find((street: Street) => street.name === name) ??
+          this.major.find((street: Street) => street.name === name) ??
+          this.minor.find((street: Street) => street.name === name) ??
+          this.coastline.find((street: Street) => street.name === name)
+        );
+      },
+    };
 
     this.blocks = generatedCity.blocks;
     this.lots = generatedCity.lots;

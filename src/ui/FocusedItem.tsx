@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { StreetNode } from "../generation/impl/graph";
 import { DisplayState } from "../state/DisplayState";
 import { Lot } from "../state/Lot";
+import { Street } from "../state/Street";
+import { CityState } from "../state/CityState";
 
 export type FocusedStreetNode = {
   kind: "streetNode";
@@ -16,7 +18,12 @@ export type FocusedBuilding = {
   lot: Lot;
 };
 
-export type FocusedItem = FocusedStreetNode | FocusedBuilding;
+export type FocusedStreet = {
+  kind: "street";
+  street: Street;
+};
+
+export type FocusedItem = FocusedStreetNode | FocusedBuilding | FocusedStreet;
 
 const FocusedItemWindow = styled.div`
   position: fixed;
@@ -46,14 +53,18 @@ export const FocusedItem = observer(() => {
     );
   }
 
+  if (focusedItem.kind === "street") {
+    return (
+      <FocusedItemWindow>
+        <FocusedStreet focusedItem={focusedItem} />
+      </FocusedItemWindow>
+    );
+  }
+
   if (focusedItem.kind === "building") {
     return (
       <FocusedItemWindow>
-        <h1>{focusedItem.lot.address}</h1>
-
-        <hr />
-
-        <div>on {focusedItem.lot.streetName}</div>
+        <FocusedBuilding focusedItem={focusedItem} />
       </FocusedItemWindow>
     );
   }
@@ -108,6 +119,50 @@ function FocusedStreetNode({
         {focusedItem.node.value.x.toFixed(3)},{" "}
         {focusedItem.node.value.y.toFixed(3)}
       </Coordinates>
+    </div>
+  );
+}
+
+export function FocusedStreet({ focusedItem }: { focusedItem: FocusedStreet }) {
+  return (
+    <div>
+      <h1>{focusedItem.street.name}</h1>
+    </div>
+  );
+}
+
+export const StreetNameLink = styled.a`
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+`;
+
+export function FocusedBuilding({
+  focusedItem,
+}: {
+  focusedItem: FocusedBuilding;
+}) {
+  const cityState = CityState.use();
+  const displayState = DisplayState.use();
+
+  const focusStreet = (e: React.MouseEvent) => {
+    const street = cityState.roads.getStreet(focusedItem.lot.streetName);
+    displayState.focusItem({ kind: "street", street });
+    e.preventDefault();
+  };
+
+  return (
+    <div>
+      <h1>{focusedItem.lot.address}</h1>
+
+      <hr />
+
+      <div>
+        on{" "}
+        <StreetNameLink onClick={focusStreet}>
+          {focusedItem.lot.streetName}
+        </StreetNameLink>
+      </div>
     </div>
   );
 }
