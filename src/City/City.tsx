@@ -27,6 +27,10 @@ export const City = observer(
     const cityState = CityState.use();
     const displayState = DisplayState.use();
 
+    const focusedStreet =
+      displayState.focusedItem?.kind === "street" &&
+      displayState.focusedItem.street;
+
     return (
       <>
         {children}
@@ -64,7 +68,7 @@ export const City = observer(
               vector.y,
               GroundHeights.CoastlineRoad,
             ])}
-            color="orange"
+            color={focusedStreet === road ? "green" : "orange"}
             size={5}
           />
         ))}
@@ -77,7 +81,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MainRoad,
             ])}
-            color="yellow"
+            color={focusedStreet === road ? "green" : "yellow"}
             size={4}
           />
         ))}
@@ -90,7 +94,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MajorRoad,
             ])}
-            color="white"
+            color={focusedStreet === road ? "green" : "white"}
             size={3}
           />
         ))}
@@ -103,7 +107,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MinorRoad,
             ])}
-            color="grey"
+            color={focusedStreet === road ? "green" : "grey"}
             size={2}
           />
         ))}
