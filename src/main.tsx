@@ -1,6 +1,7 @@
 import "./style.css";
-import React from "react";
-import ReactDOM from "react-dom/client";
+import * as React from "react";
+import * as ReactDOM from "react-dom/client";
+
 import { Game } from "./Game";
 
 window.addEventListener("contextmenu", (e) => e.preventDefault());
