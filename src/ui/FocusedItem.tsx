@@ -86,26 +86,35 @@ function FocusedStreetNode({
 }: {
   focusedItem: FocusedStreetNode;
 }) {
-  let nodeName: string;
+  const title: Array<React.ReactNode> = [];
 
   const streetNames = Array.from(focusedItem.node.segments.keys());
 
   if (streetNames.length === 1) {
-    nodeName = streetNames[0];
+    title.push(<StreetNameLink streetName={streetNames[0]} />);
   } else if (streetNames.length === 2) {
-    nodeName = streetNames.join(" and ");
+    title.push(<StreetNameLink streetName={streetNames[0]} />);
+    title.push(" and ");
+    title.push(<StreetNameLink streetName={streetNames[1]} />);
   } else {
-    nodeName = streetNames[0];
+    title.push(<StreetNameLink streetName={streetNames[0]} />);
     for (let ii = 1; ii < streetNames.length - 1; ii++) {
-      nodeName += `, ${streetNames[ii]}`;
+      title.push(
+        <>
+          , <StreetNameLink streetName={streetNames[ii]} />
+        </>
+      );
     }
 
-    nodeName += `, and ${streetNames[streetNames.length - 1]}`;
+    title.push(" and ");
+    title.push(
+      <StreetNameLink streetName={streetNames[streetNames.length - 1]} />
+    );
   }
 
   return (
     <div>
-      <h1>{nodeName}</h1>
+      <h1>{title}</h1>
 
       <hr />
 
@@ -131,11 +140,29 @@ export function FocusedStreet({ focusedItem }: { focusedItem: FocusedStreet }) {
   );
 }
 
-export const StreetNameLink = styled.a`
+export const StreetNameLinkComponent = styled.a`
   color: blue;
   text-decoration: underline;
   cursor: pointer;
 `;
+
+export const StreetNameLink = ({ streetName }: { streetName: string }) => {
+  const cityState = CityState.use();
+  const displayState = DisplayState.use();
+
+  const street = cityState.roads.getStreet(streetName);
+
+  const focusStreet = (e: React.MouseEvent) => {
+    displayState.focusItem({ kind: "street", street });
+    e.preventDefault();
+  };
+
+  return (
+    <StreetNameLinkComponent onClick={focusStreet}>
+      {streetName}
+    </StreetNameLinkComponent>
+  );
+};
 
 export function FocusedBuilding({
   focusedItem,
@@ -145,12 +172,6 @@ export function FocusedBuilding({
   const cityState = CityState.use();
   const displayState = DisplayState.use();
 
-  const focusStreet = (e: React.MouseEvent) => {
-    const street = cityState.roads.getStreet(focusedItem.lot.streetName);
-    displayState.focusItem({ kind: "street", street });
-    e.preventDefault();
-  };
-
   return (
     <div>
       <h1>{focusedItem.lot.address}</h1>
@@ -158,10 +179,7 @@ export function FocusedBuilding({
       <hr />
 
       <div>
-        on{" "}
-        <StreetNameLink onClick={focusStreet}>
-          {focusedItem.lot.streetName}
-        </StreetNameLink>
+        on <StreetNameLink streetName={focusedItem.lot.streetName} />
       </div>
     </div>
   );

@@ -31,6 +31,8 @@ export const City = observer(
       displayState.focusedItem?.kind === "street" &&
       displayState.focusedItem.street;
 
+    const HIGHLIGHTED_STREET_COLOR = "hsl(120, 100%, 50%)";
+
     return (
       <>
         {children}
@@ -68,7 +70,7 @@ export const City = observer(
               vector.y,
               GroundHeights.CoastlineRoad,
             ])}
-            color={focusedStreet === road ? "green" : "orange"}
+            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "orange"}
             size={5}
           />
         ))}
@@ -81,7 +83,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MainRoad,
             ])}
-            color={focusedStreet === road ? "green" : "yellow"}
+            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "yellow"}
             size={4}
           />
         ))}
@@ -94,7 +96,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MajorRoad,
             ])}
-            color={focusedStreet === road ? "green" : "white"}
+            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "white"}
             size={3}
           />
         ))}
@@ -107,7 +109,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MinorRoad,
             ])}
-            color={focusedStreet === road ? "green" : "grey"}
+            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "grey"}
             size={2}
           />
         ))}
