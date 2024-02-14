@@ -50,11 +50,10 @@ export const StreetGraphVisualization = observer(() => {
           displayState.focusedItem.node === node;
 
         const color = (() => {
-          const includesIntersection = Array.from(node.segments.keys()).some(
-            (streetName) => {
-              return streetName.includes("intersection");
-            }
-          );
+          const streamlineNames = node.streamlineNames();
+          const includesIntersection = streamlineNames.some((streetName) => {
+            return streetName.includes("intersection");
+          });
 
           if (isFocused) {
             return "rgba(100, 255, 100)";
@@ -64,15 +63,15 @@ export const StreetGraphVisualization = observer(() => {
             return "red";
           }
 
-          if (node.segments.size === 0) {
+          if (streamlineNames.length === 0) {
             return "rgb(255, 100, 100)";
           }
 
-          if (node.segments.size === 1) {
+          if (streamlineNames.length === 1) {
             return "yellow";
           }
 
-          if (node.segments.size === 2) {
+          if (streamlineNames.length === 2) {
             return "white";
           }
 
@@ -99,7 +98,7 @@ export const StreetGraphVisualization = observer(() => {
             </Sphere>
             {isFocused && (
               <>
-                {Array.from(node.neighbors).map((neighbor) => {
+                {node.edges().map(({ neighbor }) => {
                   return (
                     <BlockVis
                       from={node}

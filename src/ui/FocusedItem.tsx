@@ -88,27 +88,31 @@ function FocusedStreetNode({
 }) {
   const title: Array<React.ReactNode> = [];
 
-  const streetNames = Array.from(focusedItem.node.segments.keys());
+  const streetNames = focusedItem.node.edges();
 
-  if (streetNames.length === 1) {
-    title.push(<StreetNameLink streetName={streetNames[0]} />);
+  if (streetNames.length === 0) {
+    title.push("Lone node...");
+  } else if (streetNames.length === 1) {
+    title.push(<StreetNameLink streetName={streetNames[0].streetName} />);
   } else if (streetNames.length === 2) {
-    title.push(<StreetNameLink streetName={streetNames[0]} />);
+    title.push(<StreetNameLink streetName={streetNames[0].streetName} />);
     title.push(" and ");
-    title.push(<StreetNameLink streetName={streetNames[1]} />);
+    title.push(<StreetNameLink streetName={streetNames[1].streetName} />);
   } else {
-    title.push(<StreetNameLink streetName={streetNames[0]} />);
+    title.push(<StreetNameLink streetName={streetNames[0].streetName} />);
     for (let ii = 1; ii < streetNames.length - 1; ii++) {
       title.push(
         <>
-          , <StreetNameLink streetName={streetNames[ii]} />
+          , <StreetNameLink streetName={streetNames[ii].streetName} />
         </>
       );
     }
 
     title.push(" and ");
     title.push(
-      <StreetNameLink streetName={streetNames[streetNames.length - 1]} />
+      <StreetNameLink
+        streetName={streetNames[streetNames.length - 1].streetName}
+      />
     );
   }
 
@@ -120,7 +124,7 @@ function FocusedStreetNode({
 
       <h3>Streets</h3>
 
-      {streetNames.map((streetName) => {
+      {streetNames.map(({ streetName }) => {
         return <div key={streetName}>{streetName}</div>;
       })}
 

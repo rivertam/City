@@ -117,7 +117,7 @@ export class CityGenerator {
       const lot = new Lot({
         address: "temporary",
         polygon: building.lotWorld,
-        ...building.entryPoint,
+        entryPoint: building.entryPoint,
       });
 
       const street = nameToStreet.get(building.entryPoint.streetName);
@@ -192,7 +192,7 @@ export class CityGenerator {
     city.lots.forEach((lot) => {
       lot.shape.forEach((vertex) => vertices.push(vertex));
       vertices.push(lot.door);
-      vertices.push(lot.streetPoint);
+      vertices.push(lot.streetNode.value);
     });
     city.parks.forEach((park) =>
       park.polygon.forEach((vertex) => vertices.push(vertex))

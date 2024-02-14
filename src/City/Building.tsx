@@ -49,7 +49,11 @@ export const Building = React.memo(
             />
             <Cylinder
               args={[3, 3, height, 8]}
-              position={[lot.streetPoint.x, lot.streetPoint.y, height / 2]}
+              position={[
+                lot.streetNode.value.x,
+                lot.streetNode.value.y,
+                height / 2,
+              ]}
               rotation={[Math.PI / 2, 0, 0]}
             />
           </>

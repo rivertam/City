@@ -164,11 +164,12 @@ export default class PolygonFinder {
     this._dividedPolygons = [];
     const polygons = [];
 
-    let stashedNeighbors = new Array<[StreetNode, StreetNode]>();
+    let stashedNeighbors = new Array<[string, StreetNode, StreetNode]>();
 
     for (const node of this.nodes) {
-      if (node.neighbors.size < 2) continue;
-      for (const nextNode of node.neighbors.values()) {
+      const edges = node.edges();
+      if (edges.length < 2) continue;
+      for (const { neighbor: nextNode } of edges) {
         const polygon = this.recursiveWalk([node, nextNode]);
         if (polygon !== null && polygon.length < this.params.maxLength) {
           // remove the neighbors of the polygon so we don't just find it again
@@ -180,8 +181,8 @@ export default class PolygonFinder {
     }
 
     // Add back the neighbors that were removed
-    for (const [current, next] of stashedNeighbors) {
-      current.neighbors.add(next);
+    for (const [streetName, current, next] of stashedNeighbors) {
+      current.addNeighbor(streetName, next);
     }
 
     this._polygons = polygons;
@@ -205,16 +206,20 @@ export default class PolygonFinder {
   // returns a list of the neighbors that were removed so they can be added back later
   private stashPolygonNeighbors(
     polygon: StreetNode[]
-  ): Array<[StreetNode, StreetNode]> {
+  ): Array<[string, StreetNode, StreetNode]> {
     const stashed = [];
 
     for (let pointIndex = 0; pointIndex < polygon.length; pointIndex++) {
       const current = polygon[pointIndex];
       const next = polygon[(pointIndex + 1) % polygon.length];
 
-      current.neighbors.delete(next);
+      const streetName = current.removeNeighbor(next);
 
-      stashed.push([current, next] as [StreetNode, StreetNode]);
+      stashed.push([streetName, current, next] as [
+        string,
+        StreetNode,
+        StreetNode
+      ]);
     }
 
     return stashed;
@@ -245,7 +250,8 @@ export default class PolygonFinder {
     nodeTo: StreetNode
   ): StreetNode {
     // We want to turn right at every junction
-    if (nodeTo.neighbors.size === 0) return null;
+    const edges = nodeTo.edges();
+    if (edges.length === 0) return null;
 
     const backwardsDifferenceVector = nodeFrom.value.clone().sub(nodeTo.value);
     const transformAngle = Math.atan2(
@@ -256,9 +262,9 @@ export default class PolygonFinder {
     let rightmostNode = null;
     let smallestTheta = Math.PI * 2;
 
-    for (const nextNode of nodeTo.neighbors) {
-      if (nextNode !== nodeFrom) {
-        const nextVector = nextNode.value.clone().sub(nodeTo.value);
+    for (const { neighbor } of edges) {
+      if (neighbor !== nodeFrom) {
+        const nextVector = neighbor.value.clone().sub(nodeTo.value);
         let nextAngle = Math.atan2(nextVector.y, nextVector.x) - transformAngle;
         if (nextAngle < 0) {
           nextAngle += Math.PI * 2;
@@ -266,7 +272,7 @@ export default class PolygonFinder {
 
         if (nextAngle < smallestTheta) {
           smallestTheta = nextAngle;
-          rightmostNode = nextNode;
+          rightmostNode = neighbor;
         }
       }
     }

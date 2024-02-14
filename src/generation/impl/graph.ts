@@ -8,13 +8,9 @@ class StreetSegment {
   public from: Vector;
   public to: Vector;
 
-  constructor(from: Vector, to: Vector) {
+  constructor(public streetName: string, from: Vector, to: Vector) {
     this.from = from;
     this.to = to;
-  }
-
-  static create({ from, to }: { from: Vector; to: Vector }): StreetSegment {
-    return new StreetSegment(from, to);
   }
 
   public distanceFromPoint(point: Vector): number {
@@ -80,7 +76,7 @@ class StreetSegment {
 
 export type LotEntryPoint = {
   door: Vector;
-  streetPoint: Vector;
+  streetNode: StreetNode;
   streetName: string;
 };
 
@@ -93,25 +89,76 @@ type NamedStreamline = {
  * Node located along any intersection or point along the simplified road polylines
  */
 export class StreetNode {
-  public segments = new Map<string, StreetSegment>();
-
   public graph: StreetGraph | null = null;
 
-  constructor(public value: Vector, public neighbors = new Set<StreetNode>()) {}
+  public constructor(
+    public value: Vector,
+    private neighbors = new Map<StreetNode, string>()
+  ) {}
 
-  addSegment(streamlineName: string, segment: StreetSegment): void {
-    this.segments.set(streamlineName, segment);
-  }
-
-  addNeighbor(node: StreetNode): void {
+  public addNeighbor(streetName: string, node: StreetNode): void {
     if (node !== this) {
-      this.neighbors.add(node);
-      node.neighbors.add(this);
+      this.neighbors.set(node, streetName);
+      node.neighbors.set(this, streetName);
     }
   }
 
-  streamlineNames(): Array<string> {
-    return Array.from(this.segments.keys());
+  public removeNeighbor(node: StreetNode): string | null {
+    const streetName = this.neighbors.get(node);
+
+    if (streetName === undefined) {
+      return null;
+    }
+
+    this.neighbors.delete(node);
+    node.neighbors.delete(this);
+
+    return streetName;
+  }
+
+  public streamlineNames(): Array<string> {
+    return Array.from(new Set(this.neighbors.values()));
+  }
+
+  /**
+   * Remove dangling edges from graph to facilitate polygon finding
+   *
+   * Unused?
+   */
+  public deleteDanglingNodes(quadtree: d3.Quadtree<StreetNode>) {
+    if (this.neighbors.size === 1) {
+      quadtree.remove(this);
+      for (const neighbor of this.neighbors.keys()) {
+        neighbor.neighbors.delete(this);
+        neighbor.deleteDanglingNodes(quadtree);
+      }
+    }
+  }
+
+  public merge(other: StreetNode) {
+    for (const [node, streetName] of other.neighbors) {
+      this.addNeighbor(streetName, node);
+    }
+  }
+
+  public edges(): Array<{ neighbor: StreetNode; streetName: string }> {
+    const edges = [];
+    for (const [neighbor, streetName] of this.neighbors.entries()) {
+      edges.push({
+        neighbor,
+        streetName,
+      });
+    }
+
+    return edges;
+  }
+
+  public segmentTo(other: StreetNode): StreetSegment {
+    return new StreetSegment(
+      this.neighbors.get(other)!,
+      this.value,
+      other.value
+    );
   }
 }
 
@@ -159,16 +206,16 @@ export default class StreetGraph {
     // Add all segment start and endpoints
     for (const streamline of streamlines) {
       const { points, name } = streamline;
+      let lastNode: StreetNode | null = null;
       for (let i = 0; i < points.length; i++) {
         const node = new StreetNode(points[i]);
         node.graph = this;
-        if (i > 0) {
-          node.addSegment(name, new StreetSegment(points[i - 1], points[i]));
-        }
 
-        if (i < points.length - 1) {
-          node.addSegment(name, new StreetSegment(points[i], points[i + 1]));
+        if (lastNode !== null) {
+          node.addNeighbor(name, lastNode);
+          lastNode.addNeighbor(name, node);
         }
+        lastNode = node;
 
         if (debugCanvasContext) {
           // draw green x at streamline endpoints
@@ -224,9 +271,30 @@ export default class StreetGraph {
         debugCanvasContext.stroke();
       }
 
+      this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
+    }
+
+    for (const intersection of intersections) {
+      const fromNode = quadtree.find(
+        intersection.point.x,
+        intersection.point.y,
+        nodeAddRadius
+      );
+
+      const toNode = quadtree.find(
+        intersection.point.x,
+        intersection.point.y,
+        nodeAddRadius
+      );
+
+      if (fromNode === undefined || toNode === undefined) {
+        throw new Error("hmm did not make nodes properly");
+      }
+
       let index = 0;
       for (const segment of intersection.segments) {
-        node.addSegment(`intersection segment ${index++}`, segment);
+        // fromNode.addNeighbor(`intersection segment ${index}`, toNode);
+        // toNode.addNeighbor(`intersection segment ${index++}`, fromNode);
 
         if (debugCanvasContext) {
           // draw blue line at intersection segments
@@ -244,8 +312,6 @@ export default class StreetGraph {
           debugCanvasContext.stroke();
         }
       }
-
-      this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
     }
 
     // For each simplified streamline, find nodes along it and connect them
@@ -254,7 +320,7 @@ export default class StreetGraph {
       const { name, points } = streamline;
       for (let i = 0; i < points.length - 1; i++) {
         const nodesAlongSegment = this.visitNodesAlongSegment(
-          new StreetSegment(points[i], points[i + 1]),
+          new StreetSegment(name, points[i], points[i + 1]),
           name,
           quadtree,
           nodeAddRadius,
@@ -263,7 +329,7 @@ export default class StreetGraph {
 
         if (nodesAlongSegment.length > 1) {
           for (let j = 0; j < nodesAlongSegment.length - 1; j++) {
-            nodesAlongSegment[j].addNeighbor(nodesAlongSegment[j + 1]);
+            nodesAlongSegment[j].addNeighbor(name, nodesAlongSegment[j + 1]);
 
             if (debugCanvasContext) {
               // draw yellow line between nodes along segment
@@ -287,7 +353,7 @@ export default class StreetGraph {
 
     for (const n of quadtree.data()) {
       if (deleteDangling) {
-        this.deleteDanglingNodes(n, quadtree);
+        n.deleteDanglingNodes(quadtree);
       }
     }
 
@@ -313,22 +379,6 @@ export default class StreetGraph {
   public flipY() {
     for (const n of this.nodes) n.value.y *= -1;
     for (const i of this.intersections) i.y *= -1;
-  }
-
-  /**
-   * Remove dangling edges from graph to facilitate polygon finding
-   */
-  private deleteDanglingNodes(
-    n: StreetNode,
-    quadtree: d3.Quadtree<StreetNode>
-  ) {
-    if (n.neighbors.size === 1) {
-      quadtree.remove(n);
-      for (const neighbor of n.neighbors.values()) {
-        neighbor.neighbors.delete(n);
-        this.deleteDanglingNodes(neighbor, quadtree);
-      }
-    }
   }
 
   /**
@@ -375,28 +425,11 @@ export default class StreetGraph {
         quadtree.remove(closestNode);
         foundNodes.push(closestNode);
 
-        const duplicateSegmentNames = new Array<string>();
-        for (const [
-          segmentName,
-          nodeSegment,
-        ] of closestNode.segments.entries()) {
-          if (this.fuzzySegmentsEqual(nodeSegment, segment)) {
-            duplicateSegmentNames.push(segmentName);
-          }
-        }
+        if (lastNode !== undefined) {
+          closestNode.addNeighbor(segmentName, lastNode);
+          lastNode.addNeighbor(segmentName, closestNode);
 
-        if (duplicateSegmentNames.length > 0) {
           nodesToAdd.push(closestNode);
-
-          for (const name of duplicateSegmentNames) {
-            closestNode.segments.delete(name);
-          }
-          closestNode.addSegment(segmentName, segment);
-
-          if (lastNode !== undefined) {
-            lastNode.addNeighbor(closestNode);
-            closestNode.addNeighbor(lastNode);
-          }
         }
 
         lastNode = closestNode;
@@ -470,19 +503,18 @@ export default class StreetGraph {
       return true;
     }
 
-    for (const neighbor of node.neighbors) existingNode.addNeighbor(neighbor);
-    for (const [name, segment] of node.segments.entries()) {
-      existingNode.addSegment(name, segment);
-    }
+    existingNode.merge(node);
 
     return false;
   }
 
-  private streamlinesToSegment(streamlines: Vector[][]): StreetSegment[] {
-    const out: StreetSegment[] = [];
+  private streamlinesToSegment(
+    streamlines: Vector[][]
+  ): Array<{ from: Vector; to: Vector }> {
+    const out = [];
     for (const s of streamlines) {
       for (let i = 0; i < s.length - 1; i++) {
-        out.push(new StreetSegment(s[i], s[i + 1]));
+        out.push({ from: s[i], to: s[i + 1] });
       }
     }
 
@@ -497,32 +529,47 @@ export default class StreetGraph {
    * @returns the entry point segment nodes on the street graph
    */
   public getEntryPoint(lot: Polygon): LotEntryPoint {
-    let closestSegment = this.nodes[0].segments.values().next().value;
-    let closestSegmentStreet = this.nodes[0].segments.keys().next().value;
-    let closestDistance = Infinity;
+    const best = {
+      distance: Infinity,
+      fromNode: this.nodes[0],
+      toNode: this.nodes[1],
+      streetPoint: new Vector(0, 0),
+      door: new Vector(0, 0),
+      streetName: "",
+    };
 
     for (const node of this.nodes) {
-      for (const neighbor of node.neighbors) {
-        const segment = new StreetSegment(node.value, neighbor.value);
-
+      for (const { neighbor, streetName } of node.edges()) {
+        const segment = node.segmentTo(neighbor);
         for (const point of lot.polygon) {
           const distance = segment.distanceFromPoint(point);
 
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestSegment = segment;
-            closestSegmentStreet = node.streamlineNames()[0];
+          if (distance < best.distance) {
+            best.distance = distance;
+
+            const entryPoint = segment.findEntryPoint(lot);
+
+            best.door = entryPoint.door;
+            best.fromNode = node;
+            best.toNode = neighbor;
+            best.streetName = streetName;
+            best.streetPoint = entryPoint.streetPoint;
           }
         }
       }
     }
 
-    const entryPoint = closestSegment.findEntryPoint(lot);
+    delete best.distance;
+
+    const streetNode = new StreetNode(best.streetPoint);
+
+    streetNode.addNeighbor(best.streetName, best.fromNode);
+    streetNode.addNeighbor(best.streetName, best.toNode);
 
     return {
-      ...entryPoint,
-      segment: closestSegment,
-      streetName: closestSegmentStreet,
+      door: best.door,
+      streetNode,
+      streetName: best.streetName,
     };
   }
 }

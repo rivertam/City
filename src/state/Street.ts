@@ -22,10 +22,10 @@ export class Street {
 
     const sorted = Array.from(this.lots).sort((a, b) => {
       if (vertical) {
-        return a.streetPoint.y - b.streetPoint.y;
+        return a.streetNode.value.y - b.streetNode.value.y;
       }
 
-      return a.streetPoint.x - b.streetPoint.x;
+      return a.streetNode.value.x - b.streetNode.value.x;
     });
 
     sorted.forEach((lot, i) => {
