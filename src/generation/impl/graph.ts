@@ -91,7 +91,12 @@ type NamedStreamline = {
 export class StreetNode {
   public graph: StreetGraph | null = null;
 
-  private neighbors = new Map<StreetNode, string>();
+  private neighbors = new Map<
+    StreetNode,
+    // temporary neighbors are just used by the graph algorithm and polygon finder
+    // and are deleted after generation
+    { streetName: string; temporary: boolean }
+  >();
 
   public constructor(public value: Vector) {}
 
@@ -102,26 +107,36 @@ export class StreetNode {
    * @param streetName the street to travel on to get to the neighbor
    * @param node the neighbor node
    */
-  public addNeighbor(
-    streetName: string,
-    node: StreetNode,
-    temporary = false
-  ): boolean {
+  public addNeighbor(streetName: string, node: StreetNode): boolean {
     if (node === this) {
       return false;
     }
 
-    if (this.neighbors.has(node)) {
+    const existing = this.neighbors.get(node);
+
+    if (existing) {
+      existing.temporary = false;
+      existing.streetName = streetName;
+
       return false;
     }
 
-    this.neighbors.set(node, streetName);
+    this.neighbors.set(node, { streetName, temporary: false });
 
     return true;
   }
 
+  public addTemporaryNeighbor(node: StreetNode) {
+    const existing = this.neighbors.get(node);
+    if (existing) {
+      return;
+    }
+
+    this.neighbors.set(node, { streetName: "temporary", temporary: true });
+  }
+
   public removeNeighbor(node: StreetNode): string | null {
-    const streetName = this.neighbors.get(node);
+    const { streetName } = this.neighbors.get(node);
 
     if (streetName === undefined) {
       return null;
@@ -133,7 +148,9 @@ export class StreetNode {
   }
 
   public streamlineNames(): Array<string> {
-    return Array.from(new Set(this.neighbors.values()));
+    return Array.from(
+      new Set(Array.from(this.neighbors.values()).map((n) => n.streetName))
+    );
   }
 
   /**
@@ -152,27 +169,41 @@ export class StreetNode {
   }
 
   public deleteTemporaryNeighbors() {
-    for (const [neighbor, streetName] of this.neighbors.entries()) {
-      if (streetName === "temporary") {
+    for (const [
+      neighbor,
+      { temporary, streetName },
+    ] of this.neighbors.entries()) {
+      if (temporary) {
         this.neighbors.delete(neighbor);
-        neighbor.neighbors.delete(this);
       }
     }
   }
 
   public merge(other: StreetNode) {
-    for (const [node, streetName] of other.neighbors) {
-      this.addNeighbor(streetName, node);
+    for (const [node, { streetName, temporary }] of other.neighbors) {
+      if (temporary) {
+        this.addTemporaryNeighbor(node);
+      } else {
+        this.addNeighbor(streetName, node);
+      }
+
       other.removeNeighbor(node);
       if (node.removeNeighbor(other)) {
-        node.addNeighbor(streetName, this);
+        if (temporary) {
+          node.addTemporaryNeighbor(this);
+        } else {
+          node.addNeighbor(streetName, this);
+        }
       }
     }
   }
 
-  public edges(): Array<{ neighbor: StreetNode; streetName: string }> {
+  public edges(): Array<{
+    neighbor: StreetNode;
+    streetName: string;
+  }> {
     const edges = [];
-    for (const [neighbor, streetName] of this.neighbors.entries()) {
+    for (const [neighbor, { streetName }] of this.neighbors.entries()) {
       edges.push({
         neighbor,
         streetName,
@@ -184,7 +215,7 @@ export class StreetNode {
 
   public segmentTo(other: StreetNode): StreetSegment {
     return new StreetSegment(
-      this.neighbors.get(other)!,
+      this.neighbors.get(other).streetName,
       this.value,
       other.value
     );
@@ -241,8 +272,8 @@ export default class StreetGraph {
         node.graph = this;
 
         if (lastNode !== null) {
-          node.addNeighbor("temporary", lastNode);
-          lastNode.addNeighbor("temporary", node);
+          node.addTemporaryNeighbor(lastNode);
+          lastNode.addTemporaryNeighbor(node);
         }
         lastNode = node;
 
@@ -329,8 +360,8 @@ export default class StreetGraph {
           throw new Error("could not find toNode from isect segments");
         }
 
-        fromNode.addNeighbor(`temporary`, toNode);
-        toNode.addNeighbor(`temporary`, fromNode);
+        fromNode.addTemporaryNeighbor(toNode);
+        toNode.addTemporaryNeighbor(fromNode);
 
         if (debugCanvasContext) {
           // draw blue line at intersection segments

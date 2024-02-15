@@ -115,7 +115,7 @@ export class CityGenerator {
     // attach addresses to lots
     const lots = this.mainGui.buildingModels.map((building) => {
       const lot = new Lot({
-        address: "temporary",
+        address: new Array(100).join("j"),
         polygon: building.lotWorld,
         entryPoint: building.entryPoint,
       });

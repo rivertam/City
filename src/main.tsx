@@ -4,7 +4,7 @@ import * as ReactDOM from "react-dom/client";
 
 import { Game } from "./Game";
 
-const debugGraphs = false;
+const debugGraphs = true;
 
 window.addEventListener("contextmenu", (e) => e.preventDefault());
 window.addEventListener("load", async () => {
