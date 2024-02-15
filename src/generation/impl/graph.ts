@@ -91,16 +91,33 @@ type NamedStreamline = {
 export class StreetNode {
   public graph: StreetGraph | null = null;
 
-  public constructor(
-    public value: Vector,
-    private neighbors = new Map<StreetNode, string>()
-  ) {}
+  private neighbors = new Map<StreetNode, string>();
 
-  public addNeighbor(streetName: string, node: StreetNode): void {
-    if (node !== this) {
-      this.neighbors.set(node, streetName);
-      node.neighbors.set(this, streetName);
+  public constructor(public value: Vector) {}
+
+  /**
+   * Adds a neighboring street node.
+   * Returns true if the neighbor was added, false if it already existed.
+   *
+   * @param streetName the street to travel on to get to the neighbor
+   * @param node the neighbor node
+   */
+  public addNeighbor(
+    streetName: string,
+    node: StreetNode,
+    temporary = false
+  ): boolean {
+    if (node === this) {
+      return false;
     }
+
+    if (this.neighbors.has(node)) {
+      return false;
+    }
+
+    this.neighbors.set(node, streetName);
+
+    return true;
   }
 
   public removeNeighbor(node: StreetNode): string | null {
@@ -111,7 +128,6 @@ export class StreetNode {
     }
 
     this.neighbors.delete(node);
-    node.neighbors.delete(this);
 
     return streetName;
   }
@@ -135,9 +151,22 @@ export class StreetNode {
     }
   }
 
+  public deleteTemporaryNeighbors() {
+    for (const [neighbor, streetName] of this.neighbors.entries()) {
+      if (streetName === "temporary") {
+        this.neighbors.delete(neighbor);
+        neighbor.neighbors.delete(this);
+      }
+    }
+  }
+
   public merge(other: StreetNode) {
     for (const [node, streetName] of other.neighbors) {
       this.addNeighbor(streetName, node);
+      other.removeNeighbor(node);
+      if (node.removeNeighbor(other)) {
+        node.addNeighbor(streetName, this);
+      }
     }
   }
 
@@ -212,8 +241,8 @@ export default class StreetGraph {
         node.graph = this;
 
         if (lastNode !== null) {
-          node.addNeighbor(name, lastNode);
-          lastNode.addNeighbor(name, node);
+          node.addNeighbor("temporary", lastNode);
+          lastNode.addNeighbor("temporary", node);
         }
         lastNode = node;
 
@@ -236,7 +265,7 @@ export default class StreetGraph {
           debugCanvasContext.lineTo(location.x - 2, location.y + 2);
           debugCanvasContext.stroke();
         }
-        this.fuzzyAddToQuadtree(quadtree, node, nodeAddRadius);
+        this.fuzzyAddToQuadtree(quadtree, node, 0.1);
       }
     }
 
@@ -281,20 +310,27 @@ export default class StreetGraph {
         nodeAddRadius
       );
 
-      const toNode = quadtree.find(
-        intersection.point.x,
-        intersection.point.y,
-        nodeAddRadius
-      );
-
-      if (fromNode === undefined || toNode === undefined) {
-        throw new Error("hmm did not make nodes properly");
+      if (fromNode === undefined) {
+        throw new Error(
+          "could not find fromNode from isect intersection point"
+        );
       }
 
       let index = 0;
       for (const segment of intersection.segments) {
-        // fromNode.addNeighbor(`intersection segment ${index}`, toNode);
-        // toNode.addNeighbor(`intersection segment ${index++}`, fromNode);
+        let toPoint = segment.to;
+        if (toPoint.equals(intersection.point)) {
+          toPoint = segment.from;
+        }
+
+        const toNode = quadtree.find(toPoint.x, toPoint.y, nodeAddRadius);
+
+        if (toNode === undefined) {
+          throw new Error("could not find toNode from isect segments");
+        }
+
+        fromNode.addNeighbor(`temporary`, toNode);
+        toNode.addNeighbor(`temporary`, fromNode);
 
         if (debugCanvasContext) {
           // draw blue line at intersection segments
@@ -355,6 +391,8 @@ export default class StreetGraph {
       if (deleteDangling) {
         n.deleteDanglingNodes(quadtree);
       }
+
+      n.deleteTemporaryNeighbors();
     }
 
     this.nodes = quadtree.data();
@@ -407,6 +445,8 @@ export default class StreetGraph {
     step = Math.min(step, differenceVector.length() / 2); // Min of 2 step along vector
     const steps = Math.ceil(differenceVector.length() / step);
 
+    let lastNode: StreetNode | undefined;
+
     for (let i = 0; i <= steps; i++) {
       const currentPoint = start
         .clone()
@@ -418,8 +458,6 @@ export default class StreetGraph {
         currentPoint.y,
         radius + step / 2
       );
-
-      let lastNode: StreetNode | undefined;
 
       while (closestNode !== undefined) {
         quadtree.remove(closestNode);
