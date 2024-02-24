@@ -6,7 +6,6 @@ import { Game } from "./Game";
 
 const debugGraphs = false;
 
-window.addEventListener("contextmenu", (e) => e.preventDefault());
 window.addEventListener("load", async () => {
   const root = ReactDOM.createRoot(document.getElementById("root"));
   root.render(

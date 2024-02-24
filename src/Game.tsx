@@ -131,7 +131,7 @@ export const Game = observer((): React.ReactElement => {
   return (
     <CityState.Context.Provider value={cityState}>
       <Leva />
-      <GameWindow ref={divWrapper}>
+      <GameWindow onContextMenu={(e) => e.preventDefault()} ref={divWrapper}>
         <Canvas
           gl={(canvas) => {
             renderer.current = new THREE.WebGLRenderer({
