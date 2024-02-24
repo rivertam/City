@@ -1,5 +1,5 @@
+import { FaDirections } from "react-icons/fa";
 import * as React from "react";
-import { observer } from "mobx-react-lite";
 import styled from "styled-components";
 
 import { StreetNode } from "../generation/impl/graph";
@@ -159,11 +159,27 @@ export const StreetNameLink = ({ streetName }: { streetName: string }) => {
 };
 
 export const OpenDirectionsButton = styled.button`
-  position: aboslute;
+  all: unset;
+  position: absolute;
   top: 15px;
   right: 15px;
 
   border-radius: 999px;
+  background-color: white;
+
+  &:focus {
+    outline: orange auto 1px;
+  }
+
+  > svg {
+    font-size: 1.2rem;
+    line-height: 2.4rem;
+    vertical-align: middle;
+  }
+
+  width: 2rem;
+  height: 2rem;
+  text-align: center;
 `;
 
 export function FocusedBuilding({ building }: { building: Lot }) {
@@ -173,7 +189,9 @@ export function FocusedBuilding({ building }: { building: Lot }) {
 
       <hr />
 
-      <OpenDirectionsButton />
+      <OpenDirectionsButton>
+        <FaDirections />
+      </OpenDirectionsButton>
 
       <div>
         on <StreetNameLink streetName={building.streetName} />
