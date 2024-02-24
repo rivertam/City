@@ -19,9 +19,7 @@ export const Building = React.memo(
     ...pieceProps
   }: PartialBy<ComponentProps<typeof Piece>, "color"> & BuildingProps) => {
     const displayState = DisplayState.use();
-    const focused = displayState.useIsFocused(
-      (item) => item?.kind === "building" && item.lot === lot
-    );
+    const focused = displayState.useIsFocused(lot);
     const { height } = pieceProps;
     const [color] = useState(() => {
       const color = new Color();
@@ -60,10 +58,10 @@ export const Building = React.memo(
         )}
         <Piece
           onClick={() => {
-            displayState.focusItem({
-              kind: "building",
-              lot,
-            });
+            displayState.focusItem(lot);
+          }}
+          onHover={(hovered: boolean) => {
+            displayState.hoverItem(lot, hovered);
           }}
           {...pieceProps}
           color={

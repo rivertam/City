@@ -7,6 +7,8 @@ type Props = {
   color: string;
   height: number;
   onClick?: () => void;
+  // triggered on hover start and hover end
+  onHover?: (isHovered: boolean) => void;
 };
 
 export function Piece({
@@ -14,6 +16,7 @@ export function Piece({
   height,
   polygon: nonNormalizedPolygon,
   onClick,
+  onHover,
 }: Props) {
   const geometryRef = (newGeometry?: any): void => {
     if (!newGeometry) {
@@ -106,7 +109,11 @@ export function Piece({
   };
 
   return (
-    <mesh onClick={onClick}>
+    <mesh
+      onClick={onClick}
+      onPointerOver={() => onHover?.(true)}
+      onPointerLeave={() => onHover?.(false)}
+    >
       <bufferGeometry ref={geometryRef} attach={"geometry"}></bufferGeometry>
 
       <meshLambertMaterial attach={"material"} color={color} />

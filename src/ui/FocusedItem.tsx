@@ -8,22 +8,7 @@ import { Lot } from "../state/Lot";
 import { Street } from "../state/Street";
 import { CityState } from "../state/CityState";
 
-export type FocusedStreetNode = {
-  kind: "streetNode";
-  node: StreetNode;
-};
-
-export type FocusedBuilding = {
-  kind: "building";
-  lot: Lot;
-};
-
-export type FocusedStreet = {
-  kind: "street";
-  street: Street;
-};
-
-export type FocusedItem = FocusedStreetNode | FocusedBuilding | FocusedStreet;
+export type FocusedItem = StreetNode | Lot | Street;
 
 const FocusedItemWindow = styled.div`
   position: fixed;
@@ -38,39 +23,40 @@ const FocusedItemWindow = styled.div`
   z-index: 1;
 `;
 
-export const FocusedItem = observer(() => {
-  const { focusedItem } = DisplayState.use();
+export const FocusedItem = () => {
+  const displayState = DisplayState.use();
+  const focusedItem = displayState.useFocusedItem();
 
   if (!focusedItem) {
     return <FocusedItemWindow>nothing</FocusedItemWindow>;
   }
 
-  if (focusedItem.kind === "streetNode") {
+  if (focusedItem instanceof Lot) {
     return (
       <FocusedItemWindow>
-        <FocusedStreetNode focusedItem={focusedItem} />
+        <FocusedBuilding building={focusedItem} />
       </FocusedItemWindow>
     );
   }
 
-  if (focusedItem.kind === "street") {
+  if (focusedItem instanceof StreetNode) {
     return (
       <FocusedItemWindow>
-        <FocusedStreet focusedItem={focusedItem} />
+        <FocusedStreetNode streetNode={focusedItem} />
       </FocusedItemWindow>
     );
   }
 
-  if (focusedItem.kind === "building") {
+  if (focusedItem instanceof Street) {
     return (
       <FocusedItemWindow>
-        <FocusedBuilding focusedItem={focusedItem} />
+        <FocusedStreet street={focusedItem} />
       </FocusedItemWindow>
     );
   }
 
   return null;
-});
+};
 
 const Coordinates = styled.div`
   position: absolute;
@@ -81,31 +67,36 @@ const Coordinates = styled.div`
   z-index: 2;
 `;
 
-function FocusedStreetNode({
-  focusedItem,
-}: {
-  focusedItem: FocusedStreetNode;
-}) {
+function FocusedStreetNode({ streetNode }: { streetNode: StreetNode }) {
   const title: Array<React.ReactNode> = [];
 
   const streetNames = Array.from(
-    new Set(focusedItem.node.edges().map((edge) => edge.streetName))
+    new Set(streetNode.edges().map((edge) => edge.streetName))
   );
 
   if (streetNames.length === 0) {
     title.push("Lone node...");
   } else if (streetNames.length === 1) {
-    title.push(<StreetNameLink streetName={streetNames[0]} />);
+    title.push(
+      <StreetNameLink key={streetNames[0]} streetName={streetNames[0]} />
+    );
   } else if (streetNames.length === 2) {
-    title.push(<StreetNameLink streetName={streetNames[0]} />);
+    title.push(
+      <StreetNameLink key={streetNames[0]} streetName={streetNames[0]} />
+    );
     title.push(" and ");
-    title.push(<StreetNameLink streetName={streetNames[1]} />);
+    title.push(
+      <StreetNameLink key={streetNames[1]} streetName={streetNames[1]} />
+    );
   } else {
-    title.push(<StreetNameLink streetName={streetNames[0]} />);
+    title.push(
+      <StreetNameLink key={streetNames[0]} streetName={streetNames[0]} />
+    );
     for (let ii = 1; ii < streetNames.length - 1; ii++) {
       title.push(
         <>
-          , <StreetNameLink streetName={streetNames[ii]} />
+          ,{" "}
+          <StreetNameLink key={streetNames[ii]} streetName={streetNames[ii]} />
         </>
       );
     }
@@ -129,17 +120,16 @@ function FocusedStreetNode({
       })}
 
       <Coordinates>
-        {focusedItem.node.value.x.toFixed(3)},{" "}
-        {focusedItem.node.value.y.toFixed(3)}
+        {streetNode.value.x.toFixed(3)}, {streetNode.value.y.toFixed(3)}
       </Coordinates>
     </div>
   );
 }
 
-export function FocusedStreet({ focusedItem }: { focusedItem: FocusedStreet }) {
+export function FocusedStreet({ street }: { street: Street }) {
   return (
     <div>
-      <h1>{focusedItem.street.name}</h1>
+      <h1>{street.name}</h1>
     </div>
   );
 }
@@ -157,7 +147,7 @@ export const StreetNameLink = ({ streetName }: { streetName: string }) => {
   const street = cityState.roads.getStreet(streetName);
 
   const focusStreet = (e: React.MouseEvent) => {
-    displayState.focusItem({ kind: "street", street });
+    displayState.focusItem(street);
     e.preventDefault();
   };
 
@@ -168,23 +158,26 @@ export const StreetNameLink = ({ streetName }: { streetName: string }) => {
   );
 };
 
-export function FocusedBuilding({
-  focusedItem,
-}: {
-  focusedItem: FocusedBuilding;
-}) {
-  const cityState = CityState.use();
-  const displayState = DisplayState.use();
+export const OpenDirectionsButton = styled.button`
+  position: aboslute;
+  top: 15px;
+  right: 15px;
 
+  border-radius: 999px;
+`;
+
+export function FocusedBuilding({ building }: { building: Lot }) {
   return (
-    <div>
-      <h1>{focusedItem.lot.address}</h1>
+    <>
+      <h1>{building.address}</h1>
 
       <hr />
 
+      <OpenDirectionsButton />
+
       <div>
-        on <StreetNameLink streetName={focusedItem.lot.streetName} />
+        on <StreetNameLink streetName={building.streetName} />
       </div>
-    </div>
+    </>
   );
 }

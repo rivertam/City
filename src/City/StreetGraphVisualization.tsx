@@ -42,12 +42,12 @@ export const StreetGraphVisualization = observer(() => {
   const { streetGraph } = CityState.use();
   const displayState = DisplayState.use();
 
+  const focusedItem = displayState.useFocusedItem();
+
   return (
     <>
       {streetGraph.nodes.map((node) => {
-        const isFocused =
-          displayState.focusedItem?.kind === "streetNode" &&
-          displayState.focusedItem.node === node;
+        const isFocused = focusedItem === node;
 
         const color = (() => {
           const streamlineNames = node.streamlineNames();
@@ -88,10 +88,7 @@ export const StreetGraphVisualization = observer(() => {
               position={[node.value.x, node.value.y, 2]}
               rotation={[Math.PI / 2, 0, 0]}
               onClick={() => {
-                displayState.focusItem({
-                  kind: "streetNode",
-                  node,
-                });
+                displayState.focusItem(node);
               }}
             >
               <meshPhongMaterial attach="material" color={color} />

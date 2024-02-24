@@ -8,6 +8,7 @@ import { CityState } from "../state/CityState";
 import { StreetGraphVisualization } from "./StreetGraphVisualization";
 import { DisplayState } from "../state/DisplayState";
 import { observer } from "mobx-react-lite";
+import { Street } from "../state/Street";
 
 const GroundHeights = {
   BaseGround: 0,
@@ -26,10 +27,7 @@ export const City = observer(
   ({ children }: { children?: React.ReactNode; size?: number }) => {
     const cityState = CityState.use();
     const displayState = DisplayState.use();
-
-    const focusedStreet =
-      displayState.focusedItem?.kind === "street" &&
-      displayState.focusedItem.street;
+    const focusedItem = displayState.useFocusedItem();
 
     const HIGHLIGHTED_STREET_COLOR = "hsl(120, 100%, 50%)";
 
@@ -70,7 +68,7 @@ export const City = observer(
               vector.y,
               GroundHeights.CoastlineRoad,
             ])}
-            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "orange"}
+            color={focusedItem === road ? HIGHLIGHTED_STREET_COLOR : "orange"}
             size={5}
           />
         ))}
@@ -83,7 +81,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MainRoad,
             ])}
-            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "yellow"}
+            color={focusedItem === road ? HIGHLIGHTED_STREET_COLOR : "yellow"}
             size={4}
           />
         ))}
@@ -96,7 +94,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MajorRoad,
             ])}
-            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "white"}
+            color={focusedItem === road ? HIGHLIGHTED_STREET_COLOR : "white"}
             size={3}
           />
         ))}
@@ -109,7 +107,7 @@ export const City = observer(
               vector.y,
               GroundHeights.MinorRoad,
             ])}
-            color={focusedStreet === road ? HIGHLIGHTED_STREET_COLOR : "grey"}
+            color={focusedItem === road ? HIGHLIGHTED_STREET_COLOR : "grey"}
             size={2}
           />
         ))}
