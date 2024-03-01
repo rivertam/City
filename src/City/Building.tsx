@@ -13,62 +13,58 @@ type BuildingProps = {
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-export const Building = React.memo(
-  ({
-    lot,
-    ...pieceProps
-  }: PartialBy<ComponentProps<typeof Piece>, "color"> & BuildingProps) => {
-    const displayState = DisplayState.use();
-    const focused = displayState.useIsFocused(lot);
-    const { height } = pieceProps;
-    const [color] = useState(() => {
-      const color = new Color();
+export const Building = React.memo(function Building({
+  lot,
+  ...pieceProps
+}: PartialBy<ComponentProps<typeof Piece>, "color"> & BuildingProps) {
+  const displayState = DisplayState.use();
+  const focused = displayState.useIsFocused(lot);
+  const { height } = pieceProps;
+  const [color] = useState(() => {
+    const color = new Color();
 
-      color.setHSL(Math.random(), Math.random() * 0.2 + 0.2, 0.7);
+    color.setHSL(Math.random(), Math.random() * 0.2 + 0.2, 0.7);
 
-      return color;
-    });
+    return color;
+  });
 
-    const units = new Array<JSX.Element>();
+  const units = new Array<JSX.Element>();
 
-    for (let floor = 0; floor < height / 3; floor++) {
-      units.push(<Unit key={floor} />);
-    }
-
-    return (
-      <>
-        {units}
-        {focused && (
-          <>
-            <Cylinder
-              args={[3, 3, height, 8]}
-              position={[lot.door.x, lot.door.y, height / 2]}
-              rotation={[Math.PI / 2, 0, 0]}
-            />
-            <Cylinder
-              args={[3, 3, height, 8]}
-              position={[
-                lot.streetNode.value.x,
-                lot.streetNode.value.y,
-                height / 2,
-              ]}
-              rotation={[Math.PI / 2, 0, 0]}
-            />
-          </>
-        )}
-        <Piece
-          onClick={() => {
-            displayState.focusItem(lot);
-          }}
-          onHover={(hovered: boolean) => {
-            displayState.hoverItem(lot, hovered);
-          }}
-          {...pieceProps}
-          color={
-            focused ? "red" : pieceProps.color ?? `#${color.getHexString()}`
-          }
-        />
-      </>
-    );
+  for (let floor = 0; floor < height / 3; floor++) {
+    units.push(<Unit key={floor} />);
   }
-);
+
+  return (
+    <>
+      {units}
+      {focused && (
+        <>
+          <Cylinder
+            args={[3, 3, height, 8]}
+            position={[lot.door.x, lot.door.y, height / 2]}
+            rotation={[Math.PI / 2, 0, 0]}
+          />
+          <Cylinder
+            args={[3, 3, height, 8]}
+            position={[
+              lot.streetNode.value.x,
+              lot.streetNode.value.y,
+              height / 2,
+            ]}
+            rotation={[Math.PI / 2, 0, 0]}
+          />
+        </>
+      )}
+      <Piece
+        onClick={() => {
+          displayState.focusItem(lot);
+        }}
+        onHover={(hovered: boolean) => {
+          displayState.hoverItem(lot, hovered);
+        }}
+        {...pieceProps}
+        color={focused ? "red" : pieceProps.color ?? `#${color.getHexString()}`}
+      />
+    </>
+  );
+});

@@ -3,21 +3,20 @@ import * as THREE from "three";
 import { Space } from "./Space";
 import { windows } from "../utils/windows";
 import { useMemo } from "react";
+import { Street } from "../state/Street";
+import Vector from "../generation/vector";
 
 type Props = {
-  line: Array<[number, number, number?]>;
+  road: Street;
   color: string;
   size: number;
-  // height off the ground
-  height?: number;
   debugLines?: boolean;
 };
 
-export function Road({
+export const Road = React.memo(function Road({
   color,
-  line,
+  road,
   size,
-  height = 0,
   debugLines = false,
 }: Props): JSX.Element {
   const debugColor = useMemo(() => {
@@ -29,79 +28,79 @@ export function Road({
     // straight down and we're just trying to create a line segment by creating
     // a rectangle with 4 corners. The math reflects the reality, which is that
     // the line could be going in any direction.
-    const leftSide: Array<[number, number, number]> = [];
-    const rightSide: Array<[number, number, number]> = [];
-    const segments = windows(2, line).map(
-      (segment, index) =>
-        [segment, index] as [
-          [[number, number, number], [number, number, number]],
-          number
-        ]
+    const leftSide: Array<THREE.Vector3> = [];
+    const rightSide: Array<THREE.Vector3> = [];
+    const segments = windows(2, road.line).map(
+      (segment, index) => [segment, index] as [[Vector, Vector], number]
     );
 
-    for (const [[top, bottom], index] of segments) {
-      const topLeft: [number, number, number] = [0, 0, top[2]];
-      const topRight: [number, number, number] = [0, 0, top[2]];
-      const bottomLeft: [number, number, number] = [0, 0, bottom[2]];
-      const bottomRight: [number, number, number] = [0, 0, bottom[2]];
+    for (const [[top, bottom]] of segments) {
+      // I wrote this to be agnostic to height so we could use it for hilly roads,
+      // but none exist yet, so I'm just going to set these to 0.
+      const topHeight = 0;
+      const bottomHeight = 0;
+      const topLeft = new THREE.Vector3(0, 0, topHeight);
+      const topRight = new THREE.Vector3(0, 0, topHeight);
+      const bottomLeft = new THREE.Vector3(0, 0, bottomHeight);
+      const bottomRight = new THREE.Vector3(0, 0, bottomHeight);
 
       // vertical rectangle
-      if (top[0] == bottom[0]) {
+      if (top.x == bottom.x) {
         const diff = size / 2.0;
-        const leftDiff = top[1] < bottom[1] ? -diff : diff;
-        topLeft[0] = top[0] + leftDiff;
-        topLeft[1] = top[1];
+        const leftDiff = top.y < bottom.y ? -diff : diff;
+        topLeft.x = top.x + leftDiff;
+        topLeft.y = top.y;
 
-        topRight[0] = top[0] - leftDiff;
-        topRight[1] = top[1];
+        topRight.x = top.x - leftDiff;
+        topRight.y = top.y;
 
-        bottomLeft[0] = bottom[0] + leftDiff;
-        bottomLeft[1] = bottom[1];
+        bottomLeft.x = bottom.x + leftDiff;
+        bottomLeft.y = bottom.y;
 
-        bottomRight[0] = bottom[0] - leftDiff;
-        bottomRight[1] = bottom[1];
+        bottomRight.x = bottom.x - leftDiff;
+        bottomRight.y = bottom.y;
       }
       // horizontal rectangle
-      else if (top[1] == bottom[1]) {
-        const topDiff = top[0] < bottom[0] ? size / 2 : -size / 2;
+      else if (top.y == bottom.y) {
+        const topDiff = top.x < bottom.x ? size / 2 : -size / 2;
 
-        topLeft[1] = top[1] + topDiff;
-        topLeft[0] = top[0];
+        topLeft.y = top.y + topDiff;
+        topLeft.x = top.x;
 
-        topRight[1] = top[1] - topDiff;
-        topRight[0] = top[0];
+        topRight.y = top.y - topDiff;
+        topRight.x = top.x;
 
-        bottomLeft[1] = bottom[1] + topDiff;
-        bottomLeft[0] = bottom[0];
+        bottomLeft.y = bottom.y + topDiff;
+        bottomLeft.x = bottom.x;
 
-        bottomRight[1] = bottom[1] - topDiff;
-        bottomRight[0] = bottom[0];
+        bottomRight.y = bottom.y - topDiff;
+        bottomRight.x = bottom.x;
       }
       // slanted rectangle
       else {
         // calculate slope of the side
-        const slope = (top[0] - bottom[0]) / (bottom[1] - top[1]);
+        const slope = (top.x - bottom.x) / (bottom.y - top.y);
 
         // calculate displacements along axes
         let dx = (size / Math.sqrt(1 + slope * slope)) * 0.5;
         let dy = slope * dx;
 
-        if (top[1] > bottom[1]) {
+        if (top.y > bottom.y) {
           dx = -dx;
           dy = -dy;
         }
 
-        topLeft[0] = top[0] - dx;
-        topLeft[1] = top[1] - dy;
+        topLeft.x = top.x - dx;
+        topLeft.y = top.y - dy;
 
-        topRight[0] = top[0] + dx;
-        topRight[1] = top[1] + dy;
+        topRight.x = top.x + dx;
+        topRight.y = top.y + dy;
 
-        bottomLeft[0] = bottom[0] - dx;
-        bottomLeft[1] = bottom[1] - dy;
+        bottomLeft.x = bottom.x - dx;
+        bottomLeft.y = bottom.y - dy;
 
-        bottomRight[0] = bottom[0] + dx;
-        bottomRight[1] = bottom[1] + dy;
+        bottomRight.x = bottom.x + dx;
+        bottomRight.y = bottom.y + dy;
       }
 
       leftSide.push(topLeft);
@@ -118,7 +117,7 @@ export function Road({
     );
 
     return [leftCurve, rightCurve];
-  }, [line]);
+  }, [road, road.line]);
 
   const leftBufferRef = (buffer?: THREE.BufferGeometry) => {
     buffer?.setFromPoints(leftCurve);
@@ -130,7 +129,7 @@ export function Road({
 
   const middleBufferRef = (buffer?: THREE.BufferGeometry) => {
     buffer?.setFromPoints(
-      line.map((point) => new THREE.Vector3(point[0], point[1], point[2] ?? 0))
+      road.line.map((point) => new THREE.Vector3(point.x, point.y, 0))
     );
   };
 
@@ -180,7 +179,7 @@ export function Road({
     );
   };
 
-  const joinPolygons = line.map((point, index) => {
+  const joinPolygons = road.line.map((point, index) => {
     const polygon = new Array<[number, number]>();
     const radius = size / 2;
 
@@ -193,14 +192,14 @@ export function Road({
     }
 
     return (
-      <group key={`${index}`} position={[point[0], point[1], point[2]]}>
+      <group key={`${index}`} position={[point.x, point.y, 0]}>
         <Space color={color} polygon={polygon} />
       </group>
     );
   });
 
   return (
-    <group position={[0, 0, height]}>
+    <group position={[0, 0, 0]}>
       {debugLines && (
         <>
           <line>
@@ -244,4 +243,4 @@ export function Road({
       {joinPolygons}
     </group>
   );
-}
+});
