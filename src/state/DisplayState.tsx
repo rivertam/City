@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { FocusedItem } from "../ui/FocusedItem";
+import { toJS } from "mobx";
 
 export class DisplayState {
   private focusedItem: FocusedItem | null = null;
@@ -90,14 +91,15 @@ export class DisplayState {
    *
    * If `unhover` is true, the item is being unhovered, otherwise it's being hovered.
    */
-  public hoverItem(item: FocusedItem, unhover: boolean) {
-    if (unhover) {
-      this.hoveredItems.delete(item);
-    } else {
+  public hoverItem(item: FocusedItem, hovered: boolean) {
+    if (hovered) {
       this.hoveredItems.add(item);
+    } else {
+      this.hoveredItems.delete(item);
     }
 
     this.getItemListeners(item).forEach((listener) => listener());
+    this.getItemListeners(null).forEach((listener) => listener());
   }
 
   /**
