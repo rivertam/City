@@ -1,7 +1,7 @@
 import { RNG } from "../../utils/random";
 
 import TensorField from "../impl/tensor_field";
-import StreetGraph, { LotEntryPoint, StreetNode } from "../impl/graph";
+import { StreetGraph, LotEntryPoint } from "../../streets";
 import Vector from "../vector";
 import PolygonFinder, { Polygon } from "../impl/polygon_finder";
 import { PolygonParams } from "../impl/polygon_finder";

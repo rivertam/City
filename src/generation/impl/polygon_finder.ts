@@ -1,8 +1,6 @@
-import * as log from "loglevel";
-
 import { RNG } from "../../utils/random";
 import Vector from "../vector";
-import { StreetNode } from "./graph";
+import { StreetNode } from "../../streets";
 import PolygonUtil from "./polygon_util";
 import TensorField from "./tensor_field";
 

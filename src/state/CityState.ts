@@ -1,12 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
-import StreetGraph, {
-  LotEntryPoint,
-  StreetNode,
-} from "../generation/impl/graph";
-import { Polygon } from "../generation/impl/polygon_finder";
+import { StreetGraph } from "../streets";
 import { Lot } from "./Lot";
-import Vector from "../generation/vector";
 import { Street } from "./Street";
 
 export type MapLine = {

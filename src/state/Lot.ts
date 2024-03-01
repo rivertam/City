@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { Polygon } from "../generation/impl/polygon_finder";
-import { LotEntryPoint, StreetNode } from "../generation/impl/graph";
+import { LotEntryPoint, StreetNode } from "../streets";
 import Vector from "../generation/vector";
 
 export class Lot implements LotEntryPoint {

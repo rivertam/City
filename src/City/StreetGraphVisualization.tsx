@@ -4,10 +4,7 @@ import { observer } from "mobx-react-lite";
 
 import { CityState } from "../state/CityState";
 import { DisplayState } from "../state/DisplayState";
-import Vector from "../generation/vector";
-import { StreetNode } from "../generation/impl/graph";
-
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+import { StreetNode } from "../streets";
 
 const BlockVis = ({ from, to }: { from: StreetNode; to: StreetNode }) => {
   const distance = to.value.distanceTo(from.value);

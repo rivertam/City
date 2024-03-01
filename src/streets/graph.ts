@@ -1,228 +1,18 @@
 import * as d3 from "d3-quadtree";
 import * as isect from "isect";
 
-import Vector from "../vector";
-import { Polygon } from "./polygon_finder";
-
-class StreetSegment {
-  public from: Vector;
-  public to: Vector;
-
-  constructor(public streetName: string, from: Vector, to: Vector) {
-    this.from = from;
-    this.to = to;
-  }
-
-  public distanceFromPoint(point: Vector): number {
-    const l2 = this.from.distanceToSquared(this.to);
-    if (l2 === 0) return point.distanceTo(this.from);
-
-    const t = Math.max(
-      0,
-      Math.min(
-        1,
-        point.clone().sub(this.from).dot(this.to.clone().sub(this.from)) / l2
-      )
-    );
-    const projection = this.from
-      .clone()
-      .add(this.to.clone().sub(this.from).multiplyScalar(t));
-    return point.distanceTo(projection);
-  }
-
-  public findEntryPoint(lot: Polygon): { door: Vector; streetPoint: Vector } {
-    // the index of the left point of the wall on the polygon that is closest to the segment
-    let entryLeftIndex = -1;
-    let closestScore = Infinity;
-
-    for (let leftIndex = 0; leftIndex < lot.polygon.length; leftIndex++) {
-      const rightIndex = (leftIndex + 1) % lot.polygon.length;
-      const left = lot.polygon[leftIndex];
-      const right = lot.polygon[rightIndex];
-      const score =
-        this.distanceFromPoint(left) + this.distanceFromPoint(right);
-      if (score < closestScore) {
-        closestScore = score;
-        entryLeftIndex = leftIndex;
-      }
-    }
-
-    const entryRightIndex = (entryLeftIndex + 1) % lot.polygon.length;
-
-    const left = lot.polygon[entryLeftIndex];
-    const right = lot.polygon[entryRightIndex];
-
-    const door = left.clone().add(right).multiplyScalar(0.5);
-    const streetPoint = this.orthogonalProjectionFromPoint(door);
-
-    return { door, streetPoint };
-  }
-
-  public orthogonalProjectionFromPoint(point: Vector): Vector {
-    const dotProduct = point
-      .clone()
-      .sub(this.from)
-      .dot(this.to.clone().sub(this.from));
-
-    const lengthSquared = this.to.clone().sub(this.from).lengthSq();
-
-    const t = Math.max(0, Math.min(1, dotProduct / lengthSquared));
-
-    return this.from
-      .clone()
-      .add(this.to.clone().sub(this.from).multiplyScalar(t));
-  }
-}
-
-export type LotEntryPoint = {
-  door: Vector;
-  streetNode: StreetNode;
-  streetName: string;
-};
+import Vector from "../generation/vector";
+import { StreetNode } from "./node";
+import { StreetSegment } from "./segment";
+import { LotEntryPoint } from ".";
+import { Polygon } from "../generation/impl/polygon_finder";
 
 type NamedStreamline = {
   name: string;
   points: Vector[];
 };
 
-/**
- * Node located along any intersection or point along the simplified road polylines
- */
-export class StreetNode {
-  public graph: StreetGraph | null = null;
-
-  private neighbors = new Map<
-    StreetNode,
-    // temporary neighbors are just used by the graph algorithm and polygon finder
-    // and are deleted after generation
-    { streetName: string; temporary: boolean }
-  >();
-
-  public constructor(public value: Vector) {}
-
-  /**
-   * Adds a neighboring street node.
-   * Returns true if the neighbor was added, false if it already existed.
-   *
-   * @param streetName the street to travel on to get to the neighbor
-   * @param node the neighbor node
-   */
-  public addNeighbor(streetName: string, node: StreetNode): boolean {
-    if (node === this) {
-      return false;
-    }
-
-    const existing = this.neighbors.get(node);
-
-    if (existing) {
-      existing.temporary = false;
-      existing.streetName = streetName;
-
-      return false;
-    }
-
-    this.neighbors.set(node, { streetName, temporary: false });
-
-    return true;
-  }
-
-  public addTemporaryNeighbor(node: StreetNode) {
-    const existing = this.neighbors.get(node);
-    if (existing) {
-      return;
-    }
-
-    this.neighbors.set(node, { streetName: "temporary", temporary: true });
-  }
-
-  public removeNeighbor(node: StreetNode): string | null {
-    const { streetName } = this.neighbors.get(node);
-
-    if (streetName === undefined) {
-      return null;
-    }
-
-    this.neighbors.delete(node);
-
-    return streetName;
-  }
-
-  public streamlineNames(): Array<string> {
-    return Array.from(
-      new Set(Array.from(this.neighbors.values()).map((n) => n.streetName))
-    );
-  }
-
-  /**
-   * Remove dangling edges from graph to facilitate polygon finding
-   *
-   * Unused?
-   */
-  public deleteDanglingNodes(quadtree: d3.Quadtree<StreetNode>) {
-    if (this.neighbors.size === 1) {
-      quadtree.remove(this);
-      for (const neighbor of this.neighbors.keys()) {
-        neighbor.neighbors.delete(this);
-        neighbor.deleteDanglingNodes(quadtree);
-      }
-    }
-  }
-
-  public deleteTemporaryNeighbors() {
-    for (const [
-      neighbor,
-      { temporary, streetName },
-    ] of this.neighbors.entries()) {
-      if (temporary) {
-        this.neighbors.delete(neighbor);
-      }
-    }
-  }
-
-  public merge(other: StreetNode) {
-    for (const [node, { streetName, temporary }] of other.neighbors) {
-      if (temporary) {
-        this.addTemporaryNeighbor(node);
-      } else {
-        this.addNeighbor(streetName, node);
-      }
-
-      other.removeNeighbor(node);
-      if (node.removeNeighbor(other)) {
-        if (temporary) {
-          node.addTemporaryNeighbor(this);
-        } else {
-          node.addNeighbor(streetName, this);
-        }
-      }
-    }
-  }
-
-  public edges(): Array<{
-    neighbor: StreetNode;
-    streetName: string;
-  }> {
-    const edges = [];
-    for (const [neighbor, { streetName }] of this.neighbors.entries()) {
-      edges.push({
-        neighbor,
-        streetName,
-      });
-    }
-
-    return edges;
-  }
-
-  public segmentTo(other: StreetNode): StreetSegment {
-    return new StreetSegment(
-      this.neighbors.get(other).streetName,
-      this.value,
-      other.value
-    );
-  }
-}
-
-export default class StreetGraph {
+export class StreetGraph {
   public nodes: StreetNode[];
   public intersections: Vector[];
 
@@ -230,7 +20,7 @@ export default class StreetGraph {
    * Create a graph from a set of streamlines
    * Finds all intersections, and creates a list of Nodes
    */
-  constructor(
+  public constructor(
     public name: string,
     streamlines: NamedStreamline[],
     dstep: number,

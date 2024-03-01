@@ -4,13 +4,13 @@ import TensorField from "../impl/tensor_field";
 import { RK4Integrator } from "../impl/integrator";
 import { StreamlineParams } from "../impl/streamlines";
 import { WaterParams } from "../impl/water_generator";
-import StreetGraph from "../impl/graph";
 import RoadGUI from "./road_gui";
 import WaterGUI from "./water_gui";
 import Vector from "../vector";
 import PolygonFinder from "../impl/polygon_finder";
 import Buildings, { BuildingModel } from "./buildings";
 import PolygonUtil from "../impl/polygon_util";
+import { StreetGraph } from "../../streets";
 
 /**
  * Handles Map folder, glues together impl

@@ -2,7 +2,7 @@ import * as React from "react";
 import styled from "styled-components";
 
 import { StreetNameLink } from "./StreetNameLink";
-import { StreetNode } from "../generation/impl/graph";
+import { StreetNode } from "../streets";
 
 const Coordinates = styled.div`
   position: absolute;

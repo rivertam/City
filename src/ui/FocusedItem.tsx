@@ -1,7 +1,7 @@
 import * as React from "react";
 import styled from "styled-components";
 
-import { StreetNode } from "../generation/impl/graph";
+import { StreetNode } from "../streets";
 import { DisplayState } from "../state/DisplayState";
 import { Lot } from "../state/Lot";
 import { Street } from "../state/Street";
