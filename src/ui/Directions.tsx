@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Lot } from "../state/Lot";
 import { DisplayState } from "../state/DisplayState";
 import { toJS } from "mobx";
+import { StreetNode } from "../streets";
 
 const DirectionsPanel = styled.div`
   transform: translateY(-500px);
@@ -19,13 +20,23 @@ export function Directions({ from }: { from: Lot }) {
   const displayState = DisplayState.use();
   const hoveredItem = displayState.useHoveredItem();
 
+  const path = React.useMemo(() => {
+    if (hoveredItem instanceof Lot) {
+      return from.streetNode.navigateTo(hoveredItem.streetNode);
+    } else if (hoveredItem instanceof StreetNode) {
+      return from.streetNode.navigateTo(hoveredItem);
+    }
+
+    return null;
+  }, [from, hoveredItem]);
+
   return (
     <DirectionsPanel>
       <h2>Directions</h2>
 
       <p>from {from.address}</p>
 
-      {hoveredItem && <p>to {JSON.stringify(toJS(hoveredItem))}</p>}
+      {hoveredItem && <p>to {JSON.stringify(path)}</p>}
     </DirectionsPanel>
   );
 }

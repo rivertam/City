@@ -2,6 +2,7 @@ import * as d3 from "d3-quadtree";
 import Vector from "../generation/vector";
 import { StreetGraph } from "./graph";
 import { StreetSegment } from "./segment";
+import { NavigationPath, navigateBetweenStreetNodes } from "./navigate";
 
 /**
  * Node located along any intersection or point along the simplified road polylines
@@ -137,5 +138,13 @@ export class StreetNode {
       this.value,
       other.value
     );
+  }
+
+  /**
+   * Use Dijkstra's algorithm to find the shortest path between two nodes
+   * on the already existing graph.
+   */
+  public navigateTo(other: StreetNode): NavigationPath {
+    return navigateBetweenStreetNodes(this, other);
   }
 }
