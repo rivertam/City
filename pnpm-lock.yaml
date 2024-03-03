@@ -53,6 +53,9 @@ dependencies:
   faker:
     specifier: ^5.5.3
     version: 5.5.3
+  fastpriorityqueue:
+    specifier: ^0.7.4
+    version: 0.7.4
   file-saver:
     specifier: ^2.0.2
     version: 2.0.5
@@ -4771,6 +4774,10 @@ packages:
   /fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
     dev: true
+
+  /fastpriorityqueue@0.7.4:
+    resolution: {integrity: sha512-u7o5oa9R7CMOHo2i8P2/T2nRg5bg/0dDegDSJVzkVkMf/A318LNnujNLfpxlJeXUdDAefrVPqsDV624vUyxNfA==}
+    dev: false
 
   /fastq@1.16.0:
     resolution: {integrity: sha512-ifCoaXsDrsdkWTtiNJX5uzHDsrck5TzfKKDcuFFTIrrc/BS076qgEIfoIy1VeZqViznfKiysPYTh/QeHtnIsYA==}

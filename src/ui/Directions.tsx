@@ -36,7 +36,15 @@ export function Directions({ from }: { from: Lot }) {
 
       <p>from {from.address}</p>
 
-      {hoveredItem && <p>to {JSON.stringify(path)}</p>}
+      {hoveredItem && (
+        <p>
+          to{" "}
+          {path
+            .getDirections()
+            .map((direction) => direction.message)
+            .join(", ")}
+        </p>
+      )}
     </DirectionsPanel>
   );
 }
