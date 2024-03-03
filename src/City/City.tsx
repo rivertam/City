@@ -1,14 +1,11 @@
 import * as React from "react";
 
 import { Park } from "./Park";
-import { Road } from "./Road";
 import { Space } from "./Space";
 import { Building } from "./Building";
 import { CityState } from "../state/CityState";
-import { StreetGraphVisualization } from "./StreetGraphVisualization";
-import { DisplayState } from "../state/DisplayState";
+import { StreetGraphVisualization } from "./StreetGraph";
 import { observer } from "mobx-react-lite";
-import { Street } from "../state/Street";
 import { GroundHeights } from "./constants";
 import { Roads } from "./Roads";
 
