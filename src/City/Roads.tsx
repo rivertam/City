@@ -3,12 +3,10 @@ import { observer } from "mobx-react-lite";
 
 import { GroundHeights } from "./constants";
 import { CityState } from "../state/CityState";
-import { DisplayState } from "../state/DisplayState";
 import { Road } from "./Road";
 
 export const Roads = observer(function Roads() {
   const cityState = CityState.use();
-  const displayState = DisplayState.use();
 
   return (
     <>

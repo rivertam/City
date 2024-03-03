@@ -2,9 +2,9 @@ import * as React from "react";
 import styled from "styled-components";
 import { Lot } from "../state/Lot";
 import { DisplayState } from "../state/DisplayState";
-import { toJS } from "mobx";
 import { StreetNode } from "../streets";
 import { observer } from "mobx-react-lite";
+import { useEffect } from "react";
 
 const DirectionsPanel = styled.div`
   transform: translateY(-500px);
@@ -34,6 +34,14 @@ export const Directions = observer(function Directions({
 
     return null;
   }, [from, hoveredItem]);
+
+  useEffect(() => {
+    displayState.focusPath(path);
+
+    return () => {
+      displayState.focusPath(path, false);
+    };
+  }, [path]);
 
   return (
     <DirectionsPanel>
