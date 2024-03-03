@@ -9,6 +9,7 @@ import { FocusedBuilding } from "./FocusedBuilding";
 import { StreetNameLink } from "./StreetNameLink";
 import { FocusedStreetNode } from "./FocusedStreetNode";
 import { FocusedStreet } from "./FocusedStreet";
+import { observer } from "mobx-react-lite";
 
 export type FocusedItem = StreetNode | Lot | Street;
 
@@ -25,9 +26,9 @@ const FocusedItemWindow = styled.div`
   z-index: 1;
 `;
 
-export const FocusedItem = () => {
+export const FocusedItem = observer(() => {
   const displayState = DisplayState.use();
-  const focusedItem = displayState.useFocusedItem();
+  const focusedItem = displayState.focusedItem;
 
   if (!focusedItem) {
     return <FocusedItemWindow>nothing</FocusedItemWindow>;
@@ -58,4 +59,4 @@ export const FocusedItem = () => {
   }
 
   return null;
-};
+});

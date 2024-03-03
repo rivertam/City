@@ -5,6 +5,7 @@ import { observer } from "mobx-react-lite";
 import { CityState } from "../state/CityState";
 import { DisplayState } from "../state/DisplayState";
 import { StreetNode } from "../streets";
+import { action } from "mobx";
 
 const BlockVis = ({ from, to }: { from: StreetNode; to: StreetNode }) => {
   const distance = to.value.distanceTo(from.value);
@@ -40,7 +41,7 @@ export const StreetGraphVisualization = observer(
     const { streetGraph } = CityState.use();
     const displayState = DisplayState.use();
 
-    const focusedItem = displayState.useFocusedItem();
+    const focusedItem = displayState.focusedItem;
 
     return (
       <>
@@ -85,9 +86,9 @@ export const StreetGraphVisualization = observer(
               <Sphere
                 position={[node.value.x, node.value.y, 2]}
                 rotation={[Math.PI / 2, 0, 0]}
-                onClick={() => {
-                  displayState.focusItem(node);
-                }}
+                onClick={action(() => {
+                  displayState.focusedItem = node;
+                })}
               >
                 <meshPhongMaterial attach="material" color={color} />
               </Sphere>

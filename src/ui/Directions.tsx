@@ -4,6 +4,7 @@ import { Lot } from "../state/Lot";
 import { DisplayState } from "../state/DisplayState";
 import { toJS } from "mobx";
 import { StreetNode } from "../streets";
+import { observer } from "mobx-react-lite";
 
 const DirectionsPanel = styled.div`
   transform: translateY(-500px);
@@ -16,9 +17,13 @@ const DirectionsPanel = styled.div`
   position: absolute;
 `;
 
-export function Directions({ from }: { from: Lot }) {
+export const Directions = observer(function Directions({
+  from,
+}: {
+  from: Lot;
+}) {
   const displayState = DisplayState.use();
-  const hoveredItem = displayState.useHoveredItem();
+  const hoveredItem = displayState.hoveredItem;
 
   const path = React.useMemo(() => {
     if (hoveredItem instanceof Lot) {
@@ -50,4 +55,4 @@ export function Directions({ from }: { from: Lot }) {
       )}
     </DirectionsPanel>
   );
-}
+});

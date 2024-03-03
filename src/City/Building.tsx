@@ -6,6 +6,8 @@ import { Color } from "three";
 import { Cylinder } from "@react-three/drei";
 import { Lot } from "../state/Lot";
 import { DisplayState } from "../state/DisplayState";
+import { observer } from "mobx-react-lite";
+import { action, computed } from "mobx";
 
 type BuildingProps = {
   lot: Lot;
@@ -13,12 +15,13 @@ type BuildingProps = {
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-export const Building = React.memo(function Building({
+export const Building = observer(function Building({
   lot,
   ...pieceProps
 }: PartialBy<ComponentProps<typeof Piece>, "color"> & BuildingProps) {
   const displayState = DisplayState.use();
-  const focused = displayState.useIsFocused(lot);
+  const focused = computed(() => displayState.focusedItem === lot).get();
+
   const { height } = pieceProps;
   const [color] = useState(() => {
     const color = new Color();
@@ -56,9 +59,9 @@ export const Building = React.memo(function Building({
         </>
       )}
       <Piece
-        onClick={() => {
-          displayState.focusItem(lot);
-        }}
+        onClick={action(() => {
+          displayState.focusedItem = lot;
+        })}
         onHover={(hovered: boolean) => {
           displayState.hoverItem(lot, hovered);
         }}

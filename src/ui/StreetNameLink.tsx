@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 import { CityState } from "../state/CityState";
 import { DisplayState } from "../state/DisplayState";
+import { action } from "mobx";
 
 const StreetNameLinkComponent = styled.a`
   color: blue;
@@ -16,10 +17,10 @@ export const StreetNameLink = ({ streetName }: { streetName: string }) => {
 
   const street = cityState.roads.getStreet(streetName);
 
-  const focusStreet = (e: React.MouseEvent) => {
-    displayState.focusItem(street);
+  const focusStreet = action((e: React.MouseEvent) => {
+    displayState.focusedItem = street;
     e.preventDefault();
-  };
+  });
 
   return (
     <StreetNameLinkComponent onClick={focusStreet}>

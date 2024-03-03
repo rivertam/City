@@ -1,14 +1,15 @@
 import * as React from "react";
+import { observer } from "mobx-react-lite";
 
 import { GroundHeights } from "./constants";
 import { CityState } from "../state/CityState";
 import { DisplayState } from "../state/DisplayState";
 import { Road } from "./Road";
 
-export function Roads() {
+export const Roads = observer(function Roads() {
   const cityState = CityState.use();
   const displayState = DisplayState.use();
-  const focusedItem = displayState.useFocusedItem();
+  const focusedItem = displayState.focusedItem;
 
   const HIGHLIGHTED_STREET_COLOR = "hsl(120, 100%, 50%)";
 
@@ -61,4 +62,4 @@ export function Roads() {
       </group>
     </>
   );
-}
+});
