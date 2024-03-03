@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { FocusedItem } from "../ui/FocusedItem";
 import { toJS } from "mobx";
+import { StreetNode } from "../streets";
 
 export class DisplayState {
   private focusedItem: FocusedItem | null = null;

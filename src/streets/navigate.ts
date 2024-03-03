@@ -1,6 +1,7 @@
 import * as PriorityQueue from "fastpriorityqueue";
 
 import { StreetNode } from "./node";
+import Vector from "../generation/vector";
 
 export type Direction = {
   node: StreetNode;
@@ -9,19 +10,50 @@ export type Direction = {
 };
 
 export class NavigationPath {
-  public nodes: Array<StreetNode> = [];
+  public nodes: Array<{ node: StreetNode; streetName: string | null }> = [];
 
-  public constructor() {}
+  public constructor(
+    public startDirection: Vector,
+    public endDirection?: Vector
+  ) {}
 
   public getDirections(): Array<Direction> {
     const directions: Array<Direction> = [];
 
-    // TODO: take out "straight" directions, figure out sides, etc.
-    for (const node of this.nodes) {
-      directions.push({
-        node,
-        message: "dunno",
-      });
+    let currentDirection = this.startDirection;
+
+    for (let index = 1; index < this.nodes.length - 1; index++) {
+      const firstSegmentVector = this.nodes[index].node.value.sub(
+        this.nodes[index - 1].node.value
+      );
+      const secondSegmentVector = this.nodes[index + 1].node.value.sub(
+        this.nodes[index].node.value
+      );
+
+      const firstStreetName = this.nodes[index].streetName;
+      const secondStreetName = this.nodes[index + 1].streetName;
+
+      const angle = Vector.angleBetween(
+        firstSegmentVector,
+        secondSegmentVector
+      );
+
+      if (angle > Math.PI / 4) {
+        directions.push({
+          node: this.nodes[index].node,
+          message: "turn right on " + secondStreetName,
+        });
+      } else if (angle < -Math.PI / 4) {
+        directions.push({
+          node: this.nodes[index].node,
+          message: "turn left on " + secondStreetName,
+        });
+      } else if (firstStreetName !== secondStreetName) {
+        directions.push({
+          node: this.nodes[index].node,
+          message: "continue on " + secondStreetName,
+        });
+      }
     }
 
     return directions;
@@ -30,7 +62,9 @@ export class NavigationPath {
 
 export function navigateBetweenStreetNodes(
   from: StreetNode,
-  to: StreetNode
+  startDirection: Vector,
+  to: StreetNode,
+  endDirection: Vector
 ): NavigationPath {
   // Implements A* algorithm
 
@@ -47,7 +81,10 @@ export function navigateBetweenStreetNodes(
     );
   };
 
-  const cameFrom = new Map<StreetNode, StreetNode>();
+  const cameFrom = new Map<
+    StreetNode,
+    { streetName: string | null; node: StreetNode }
+  >();
   const fromStartScore = new Map<StreetNode, number>([[from, 0]]);
   const bestGuessScore = new PriorityQueue<[StreetNode, number]>(
     (a, b) => a[1] > b[1]
@@ -61,17 +98,20 @@ export function navigateBetweenStreetNodes(
     const current = bestGuessScore.poll();
 
     if (targets.has(current[0])) {
-      const path = new NavigationPath();
+      const path = new NavigationPath(startDirection, endDirection);
 
       let node = current[0];
+      let streetName: string | null = null;
 
       while (node !== from) {
-        path.nodes.unshift(node);
-        node = cameFrom.get(node) ?? from;
+        path.nodes.unshift({
+          node,
+          streetName,
+        });
+        ({ node, streetName } = cameFrom.get(node)!);
       }
 
-      path.nodes.unshift(from);
-      path.nodes.reverse();
+      path.nodes.unshift({ node: from, streetName });
 
       return path;
     }
@@ -83,7 +123,10 @@ export function navigateBetweenStreetNodes(
       const oldScore = fromStartScore.get(neighbor) ?? Infinity;
       if (newScore < oldScore) {
         fromStartScore.set(neighbor, newScore);
-        cameFrom.set(neighbor, current[0]);
+        cameFrom.set(neighbor, {
+          node: current[0],
+          streetName,
+        });
         // re-set the priority of the node in the best guess priority queue.
         // there doesn't seem to be a way to do this atomically but I don't
         // think it matters.

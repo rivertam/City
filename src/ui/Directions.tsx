@@ -22,9 +22,9 @@ export function Directions({ from }: { from: Lot }) {
 
   const path = React.useMemo(() => {
     if (hoveredItem instanceof Lot) {
-      return from.streetNode.navigateTo(hoveredItem.streetNode);
+      return from.navigateTo(hoveredItem);
     } else if (hoveredItem instanceof StreetNode) {
-      return from.streetNode.navigateTo(hoveredItem);
+      return from.navigateTo(hoveredItem);
     }
 
     return null;
@@ -38,11 +38,14 @@ export function Directions({ from }: { from: Lot }) {
 
       {hoveredItem && (
         <p>
-          to{" "}
-          {path
-            .getDirections()
-            .map((direction) => direction.message)
-            .join(", ")}
+          to {hoveredItem instanceof Lot ? hoveredItem.address : "street node"}
+          <ol>
+            {path.getDirections().map((direction) => (
+              <li key={`${direction.node.value.x}-${direction.node.value.y}`}>
+                {direction.message}
+              </li>
+            ))}
+          </ol>
         </p>
       )}
     </DirectionsPanel>

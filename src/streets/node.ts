@@ -141,10 +141,19 @@ export class StreetNode {
   }
 
   /**
-   * Use Dijkstra's algorithm to find the shortest path between two nodes
-   * on the already existing graph.
+   * Use A* to find the shortest path between two nodes on the already
+   * existing graph.
    */
-  public navigateTo(other: StreetNode): NavigationPath {
-    return navigateBetweenStreetNodes(this, other);
+  public navigateTo(
+    startDirection: Vector,
+    other: StreetNode,
+    endDirection?: Vector
+  ): NavigationPath {
+    return navigateBetweenStreetNodes(
+      this,
+      startDirection,
+      other,
+      endDirection
+    );
   }
 }
