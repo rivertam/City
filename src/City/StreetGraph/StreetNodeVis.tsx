@@ -14,19 +14,15 @@ export const StreetNodeVis = observer(function StreetNode({
 }) {
   const displayState = DisplayState.use();
   const isFocused = computed(() => displayState.focusedItem === node).get();
+  const isInFocusedPath = computed(() =>
+    displayState.focusedPath?.nodes.find((pathPart) => pathPart.node === node)
+  ).get();
 
+  // color indicates how many streets intersect at this node or whether it's focused
   const color = (() => {
     const streamlineNames = node.streamlineNames();
-    const includesIntersection = streamlineNames.some((streetName) => {
-      return streetName.includes("intersection");
-    });
-
-    if (isFocused) {
+    if (isFocused || isInFocusedPath) {
       return "rgba(100, 255, 100)";
-    }
-
-    if (includesIntersection) {
-      return "red";
     }
 
     if (streamlineNames.length === 0) {

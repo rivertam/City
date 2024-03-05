@@ -36,6 +36,10 @@ export const Directions = observer(function Directions({
   }, [from, hoveredItem]);
 
   useEffect(() => {
+    if (!path) {
+      return;
+    }
+
     displayState.focusPath(path);
 
     return () => {

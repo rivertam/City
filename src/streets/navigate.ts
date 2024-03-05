@@ -23,12 +23,12 @@ export class NavigationPath {
     let currentDirection = this.startDirection;
 
     for (let index = 1; index < this.nodes.length - 1; index++) {
-      const firstSegmentVector = this.nodes[index].node.value.sub(
-        this.nodes[index - 1].node.value
-      );
-      const secondSegmentVector = this.nodes[index + 1].node.value.sub(
-        this.nodes[index].node.value
-      );
+      const firstSegmentVector = this.nodes[index].node.value
+        .clone()
+        .sub(this.nodes[index - 1].node.value);
+      const secondSegmentVector = this.nodes[index + 1].node.value
+        .clone()
+        .sub(this.nodes[index].node.value);
 
       const firstStreetName = this.nodes[index].streetName;
       const secondStreetName = this.nodes[index + 1].streetName;

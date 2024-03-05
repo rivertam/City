@@ -164,7 +164,7 @@ export class CityGenerator {
         shape: convertLine(block, `Block ${i + 1}`),
       })),
       lots,
-      streetGraph: this.mainGui.getLotBoundaryGraph(),
+      streetGraph: this.mainGui.getStreetGraph(),
     };
 
     // average all vertices and normalize so the average is 0, 0

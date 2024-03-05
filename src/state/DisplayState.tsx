@@ -47,8 +47,9 @@ export class DisplayState {
    * If focused === false and path is currently focused, this will unfocus the path.
    */
   public focusPath(path: NavigationPath, focused: boolean = true) {
-    if (focused) {
+    if (focused && path) {
       this.focusedPath = path;
+      return;
     }
 
     if (this.focusedPath === path) {
