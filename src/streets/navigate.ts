@@ -116,22 +116,7 @@ export function* navigateBetweenStreetNodes(
     const current = bestGuessScore.poll();
 
     if (targets.has(current[0])) {
-      const path = new NavigationPath(startDirection, endDirection);
-
-      let node = current[0];
-      let streetName: string | null = null;
-
-      while (node !== from) {
-        path.nodes.unshift({
-          node,
-          streetName,
-        });
-        ({ node, streetName } = cameFrom.get(node)!);
-      }
-
-      path.nodes.unshift({ node: from, streetName });
-
-      return path;
+      return reconstructPath(current[0]);
     }
 
     for (const { neighbor, streetName } of current[0].edges()) {
@@ -155,6 +140,8 @@ export function* navigateBetweenStreetNodes(
         bestGuessScore.add([neighbor, newScore + heuristic(neighbor)]);
       }
     }
+
+    yield reconstructPath(current[0]);
   }
 
   throw new Error(`Could not find path after ${iterations} iterations`);

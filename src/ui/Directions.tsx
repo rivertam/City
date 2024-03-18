@@ -37,17 +37,17 @@ export const Directions = observer(function Directions({
   }, [from, nextFocusItem]);
 
   const [path, setPath] = React.useState(null);
+  const [isDoneNavigating, setIsDoneNavigating] = React.useState(false);
 
-  useEffect(() => {
-    while (pathGenerator) {
-      const { value: nextPath, done } = pathGenerator.next();
+  const nextNavigationPath = () => {
+    const { value: nextPath, done } = pathGenerator.next();
 
-      if (done) {
-        setPath(nextPath);
-        break;
-      }
+    setPath(nextPath);
+
+    if (done) {
+      setIsDoneNavigating(true);
     }
-  }, [pathGenerator]);
+  };
 
   useEffect(() => {
     if (!path) {
@@ -67,10 +67,18 @@ export const Directions = observer(function Directions({
 
       <p>from {from.address}</p>
 
+      {!nextFocusItem && (
+        <p>click another building or street node to get directions</p>
+      )}
+
       {nextFocusItem && (
         <>
           to{" "}
           {nextFocusItem instanceof Lot ? nextFocusItem.address : "street node"}
+          <br />
+          {!isDoneNavigating && (
+            <button onClick={nextNavigationPath}>Next Step</button>
+          )}
           <ol>
             {path &&
               path
