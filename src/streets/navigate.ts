@@ -87,7 +87,7 @@ export function* navigateBetweenStreetNodes(
   >();
   const fromStartScore = new Map<StreetNode, number>([[from, 0]]);
   const bestGuessScore = new PriorityQueue<[StreetNode, number]>(
-    (a, b) => a[1] > b[1]
+    (a, b) => a[1] < b[1]
   );
 
   bestGuessScore.add([from, heuristic(from)]);
