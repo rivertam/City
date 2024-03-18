@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { makeAutoObservable } from "mobx";
 
 import { FocusedItem } from "../ui/FocusedItem";
@@ -17,6 +17,46 @@ export class DisplayState {
 
   public static use(): DisplayState {
     return useContext(DisplayState.Context);
+  }
+
+  // used to change what clicking focusable items does
+  private focusCaptures: Array<(item: FocusedItem | null) => void> = [];
+
+  /**
+   * This allows for the UI to have multiple focus items. For navigation,
+   * we use this to focus on one Lot, and then the navigation window itself can
+   * override focus clicks to allow for a "secondary" focus item, the destination.
+   */
+  public useNextFocusItem(): FocusedItem | null {
+    const [focusedItem, setFocusedItem] = useState<FocusedItem | null>(null);
+    useEffect(() => {
+      // on component mount, set this as the highest priority focus item.
+      // when other components mount, their priorities will become higher until
+      // they dismount.
+      // in the future, if we were to need more complex focus handling (such as
+      // being able to highlight a specific waypoint to change it), we can use
+      // more manual priorities and move the capture up to the front of the list
+      this.focusCaptures.unshift(setFocusedItem);
+
+      return () => {
+        this.focusCaptures = this.focusCaptures.filter(
+          (capture) => capture !== setFocusedItem
+        );
+      };
+    }, [this]);
+
+    return focusedItem;
+  }
+
+  public clickItem(item: FocusedItem) {
+    // if nothing is overriding the focus capture, then we just focus the item
+    if (this.focusCaptures.length === 0) {
+      this.focusedItem = item;
+      return;
+    }
+
+    // otherwise, we call the first focus capture and let it handle the focus
+    this.focusCaptures[0](item);
   }
 
   public get hoveredItem(): FocusedItem | null {

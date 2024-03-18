@@ -148,7 +148,7 @@ export class StreetNode {
     startDirection: Vector,
     other: StreetNode,
     endDirection?: Vector
-  ): NavigationPath {
+  ): Generator<NavigationPath, NavigationPath> {
     return navigateBetweenStreetNodes(
       this,
       startDirection,

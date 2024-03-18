@@ -23,17 +23,31 @@ export const Directions = observer(function Directions({
   from: Lot;
 }) {
   const displayState = DisplayState.use();
-  const hoveredItem = displayState.hoveredItem;
 
-  const path = React.useMemo(() => {
-    if (hoveredItem instanceof Lot) {
-      return from.navigateTo(hoveredItem);
-    } else if (hoveredItem instanceof StreetNode) {
-      return from.navigateTo(hoveredItem);
+  const nextFocusItem = displayState.useNextFocusItem();
+
+  const pathGenerator = React.useMemo(() => {
+    if (nextFocusItem instanceof Lot) {
+      return from.navigateTo(nextFocusItem);
+    } else if (nextFocusItem instanceof StreetNode) {
+      return from.navigateTo(nextFocusItem);
     }
 
     return null;
-  }, [from, hoveredItem]);
+  }, [from, nextFocusItem]);
+
+  const [path, setPath] = React.useState(null);
+
+  useEffect(() => {
+    while (pathGenerator) {
+      const { value: nextPath, done } = pathGenerator.next();
+
+      if (done) {
+        setPath(nextPath);
+        break;
+      }
+    }
+  }, [pathGenerator]);
 
   useEffect(() => {
     if (!path) {
@@ -53,17 +67,23 @@ export const Directions = observer(function Directions({
 
       <p>from {from.address}</p>
 
-      {hoveredItem && (
-        <p>
-          to {hoveredItem instanceof Lot ? hoveredItem.address : "street node"}
+      {nextFocusItem && (
+        <>
+          to{" "}
+          {nextFocusItem instanceof Lot ? nextFocusItem.address : "street node"}
           <ol>
-            {path.getDirections().map((direction) => (
-              <li key={`${direction.node.value.x}-${direction.node.value.y}`}>
-                {direction.message}
-              </li>
-            ))}
+            {path &&
+              path
+                .getDirections()
+                .map((direction) => (
+                  <li
+                    key={`${direction.node.value.x}-${direction.node.value.y}`}
+                  >
+                    {direction.message}
+                  </li>
+                ))}
           </ol>
-        </p>
+        </>
       )}
     </DirectionsPanel>
   );

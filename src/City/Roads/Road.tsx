@@ -1,13 +1,13 @@
 import * as React from "react";
 import * as THREE from "three";
-import { Space } from "./Space";
-import { windows } from "../utils/windows";
+import { Space } from "../Space";
+import { windows } from "../../utils/windows";
 import { useMemo } from "react";
-import { Street } from "../state/Street";
-import Vector from "../generation/vector";
+import { Street } from "../../state/Street";
+import Vector from "../../generation/vector";
 import { observer } from "mobx-react-lite";
 import { computed } from "mobx";
-import { DisplayState } from "../state/DisplayState";
+import { DisplayState } from "../../state/DisplayState";
 
 type Props = {
   road: Street;
@@ -18,24 +18,45 @@ type Props = {
 
 const HIGHLIGHTED_STREET_COLOR = "hsl(120, 100%, 50%)";
 
-export const Road = React.memo(
+export const Road = observer(function Road({
+  road,
+  defaultColor,
+  size,
+  debugLines = false,
+}: Props) {
+  const displayState = DisplayState.use();
+
+  const focused = computed(() => {
+    return road === displayState.focusedItem;
+  }).get();
+
+  const color = focused ? HIGHLIGHTED_STREET_COLOR : defaultColor;
+
+  return (
+    <RoadVis
+      size={size}
+      debugLines={debugLines}
+      color={color}
+      points={road.line}
+    />
+  );
+});
+
+export const RoadVis = React.memo(
   observer(function Road({
-    defaultColor,
-    road,
     size,
     debugLines = false,
-  }: Props): JSX.Element {
-    const displayState = DisplayState.use();
-
+    color,
+    points,
+  }: {
+    size: number;
+    debugLines?: boolean;
+    color: string;
+    points: Array<Vector>;
+  }): JSX.Element {
     const debugColor = useMemo(() => {
       return `hsl(${(Math.random() * 360).toFixed(0)}, 50%, 50%)`;
     }, []);
-
-    const focused = computed(() => {
-      return road === displayState.focusedItem;
-    }).get();
-
-    const color = focused ? HIGHLIGHTED_STREET_COLOR : defaultColor;
 
     // computes the mesh buffer for the road itself
     const [leftCurve, rightCurve] = useMemo(() => {
@@ -45,7 +66,7 @@ export const Road = React.memo(
       // the line could be going in any direction.
       const leftSide: Array<THREE.Vector3> = [];
       const rightSide: Array<THREE.Vector3> = [];
-      const segments = windows(2, road.line).map(
+      const segments = windows(2, points).map(
         (segment, index) => [segment, index] as [[Vector, Vector], number]
       );
 
@@ -132,7 +153,7 @@ export const Road = React.memo(
       );
 
       return [leftCurve, rightCurve];
-    }, [road, road.line]);
+    }, [points]);
 
     const leftBufferRef = (buffer?: THREE.BufferGeometry) => {
       buffer?.setFromPoints(leftCurve);
@@ -144,7 +165,7 @@ export const Road = React.memo(
 
     const middleBufferRef = (buffer?: THREE.BufferGeometry) => {
       buffer?.setFromPoints(
-        road.line.map((point) => new THREE.Vector3(point.x, point.y, 0))
+        points.map((point) => new THREE.Vector3(point.x, point.y, 0))
       );
     };
 
@@ -194,7 +215,7 @@ export const Road = React.memo(
       );
     };
 
-    const joinPolygons = road.line.map((point, index) => {
+    const joinPolygons = points.map((point, index) => {
       const polygon = new Array<[number, number]>();
       const radius = size / 2;
 

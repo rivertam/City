@@ -59,9 +59,9 @@ export const Building = observer(function Building({
         </>
       )}
       <Piece
-        onClick={action(() => {
-          displayState.focusedItem = lot;
-        })}
+        onClick={() => {
+          displayState.clickItem(lot);
+        }}
         onHover={(hovered: boolean) => {
           displayState.hoverItem(lot, hovered);
         }}

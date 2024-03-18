@@ -1,15 +1,17 @@
 import * as React from "react";
 import { observer } from "mobx-react-lite";
 
-import { GroundHeights } from "./constants";
-import { CityState } from "../state/CityState";
+import { GroundHeights } from "../constants";
+import { CityState } from "../../state/CityState";
 import { Road } from "./Road";
+import { FocusedPath } from "./FocusedPath";
 
 export const Roads = observer(function Roads() {
   const cityState = CityState.use();
 
   return (
     <>
+      <FocusedPath />
       <group position={[0, 0, GroundHeights.CoastlineRoad]}>
         {cityState.roads.coastline.map((road) => (
           <Road key={road.name} road={road} defaultColor={"orange"} size={5} />

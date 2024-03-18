@@ -60,12 +60,12 @@ export class NavigationPath {
   }
 }
 
-export function navigateBetweenStreetNodes(
+export function* navigateBetweenStreetNodes(
   from: StreetNode,
   startDirection: Vector,
   to: StreetNode,
   endDirection: Vector
-): NavigationPath {
+): Generator<NavigationPath, NavigationPath> {
   // Implements A* algorithm
 
   // because the target street node might not be in the graph itself, we accept its neighbors as well
@@ -91,6 +91,24 @@ export function navigateBetweenStreetNodes(
   );
 
   bestGuessScore.add([from, heuristic(from)]);
+
+  const reconstructPath = (node: StreetNode) => {
+    const path = new NavigationPath(startDirection, endDirection);
+
+    let streetName: string | null = null;
+
+    while (node !== from) {
+      path.nodes.unshift({
+        node,
+        streetName,
+      });
+      ({ node, streetName } = cameFrom.get(node)!);
+    }
+
+    path.nodes.unshift({ node: from, streetName });
+
+    return path;
+  };
 
   let iterations = 0;
   while (bestGuessScore.size > 0) {

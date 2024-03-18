@@ -49,7 +49,9 @@ export class Lot implements LotEntryPoint {
     );
   }
 
-  public navigateTo(other: Lot | StreetNode): NavigationPath {
+  public navigateTo(
+    other: Lot | StreetNode
+  ): Generator<NavigationPath, NavigationPath> {
     const startDirection = this.exitDirection;
     const endDirection =
       other instanceof Lot ? other.entryDirection : undefined;

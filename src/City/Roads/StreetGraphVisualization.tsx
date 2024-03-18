@@ -3,10 +3,14 @@ import { observer } from "mobx-react-lite";
 
 import { CityState } from "../../state/CityState";
 import { StreetNodeVis } from "./StreetNodeVis";
+import { DisplayState } from "../../state/DisplayState";
 
 export const StreetGraphVisualization = observer(
   function StreetGraphVisualization() {
     const { streetGraph } = CityState.use();
+    const displayState = DisplayState.use();
+
+    const path = displayState.focusedPath;
 
     return (
       <>
