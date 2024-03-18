@@ -47,6 +47,12 @@ export const Directions = observer(function Directions({
     if (done) {
       setIsDoneNavigating(true);
     }
+
+    return done;
+  };
+
+  const completeNavigation = () => {
+    while (!nextNavigationPath()) {}
   };
 
   useEffect(() => {
@@ -77,7 +83,10 @@ export const Directions = observer(function Directions({
           {nextFocusItem instanceof Lot ? nextFocusItem.address : "street node"}
           <br />
           {!isDoneNavigating && (
-            <button onClick={nextNavigationPath}>Next Step</button>
+            <>
+              <button onClick={nextNavigationPath}>Next Step</button>
+              <button onClick={completeNavigation}>Navigate</button>
+            </>
           )}
           <ol>
             {path &&
