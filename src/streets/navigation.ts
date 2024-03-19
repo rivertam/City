@@ -58,6 +58,22 @@ export class NavigationPath {
 
     return directions;
   }
+
+  public get from(): StreetNode {
+    return this.nodes[0].node;
+  }
+
+  public get to(): StreetNode {
+    return this.nodes[this.nodes.length - 1].node;
+  }
+
+  public get startStreet(): string {
+    return this.nodes[0].streetName;
+  }
+
+  public get endStreet(): string {
+    return this.nodes[this.nodes.length - 1].streetName;
+  }
 }
 
 export function* navigateBetweenStreetNodes(
@@ -102,6 +118,7 @@ export function* navigateBetweenStreetNodes(
         node,
         streetName,
       });
+
       ({ node, streetName } = cameFrom.get(node)!);
     }
 
@@ -116,7 +133,18 @@ export function* navigateBetweenStreetNodes(
     const current = bestGuessScore.poll();
 
     if (targets.has(current[0])) {
-      return reconstructPath(current[0]);
+      const path = reconstructPath(current[0]);
+
+      // because we accept neighbor nodes as targets, make sure `to` is in the path
+      if (path.to !== to) {
+        path.nodes.push({
+          streetName: path.endStreet,
+          node: to,
+        });
+      }
+
+      yield path;
+      return path;
     }
 
     for (const { neighbor, streetName } of current[0].edges()) {

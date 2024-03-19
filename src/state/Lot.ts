@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 import { Polygon } from "../generation/impl/polygon_finder";
 import { LotEntryPoint, StreetNode } from "../streets";
 import Vector from "../generation/vector";
-import { NavigationPath } from "../streets/navigate";
+import { NavigationPath } from "../streets/navigation";
 
 export class Lot implements LotEntryPoint {
   public address: string;

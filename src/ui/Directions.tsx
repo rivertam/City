@@ -5,6 +5,7 @@ import { DisplayState } from "../state/DisplayState";
 import { StreetNode } from "../streets";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
+import { NavigationPath } from "../streets/navigation";
 
 const DirectionsPanel = styled.div`
   transform: translateY(-500px);
@@ -36,7 +37,7 @@ export const Directions = observer(function Directions({
     return null;
   }, [from, nextFocusItem]);
 
-  const [path, setPath] = React.useState(null);
+  const [path, setPath] = React.useState<NavigationPath | null>(null);
   const [isDoneNavigating, setIsDoneNavigating] = React.useState(false);
 
   const nextNavigationPath = () => {

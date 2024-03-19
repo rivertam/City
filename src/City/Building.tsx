@@ -22,7 +22,6 @@ export const Building = observer(function Building({
   const displayState = DisplayState.use();
   const focused = computed(() => displayState.focusedItem === lot).get();
 
-  const { height } = pieceProps;
   const [color] = useState(() => {
     const color = new Color();
 
@@ -31,33 +30,8 @@ export const Building = observer(function Building({
     return color;
   });
 
-  const units = new Array<JSX.Element>();
-
-  for (let floor = 0; floor < height / 3; floor++) {
-    units.push(<Unit key={floor} />);
-  }
-
   return (
     <>
-      {units}
-      {focused && (
-        <>
-          <Cylinder
-            args={[3, 3, height, 8]}
-            position={[lot.door.x, lot.door.y, height / 2]}
-            rotation={[Math.PI / 2, 0, 0]}
-          />
-          <Cylinder
-            args={[3, 3, height, 8]}
-            position={[
-              lot.streetNode.value.x,
-              lot.streetNode.value.y,
-              height / 2,
-            ]}
-            rotation={[Math.PI / 2, 0, 0]}
-          />
-        </>
-      )}
       <Piece
         onClick={() => {
           displayState.clickItem(lot);

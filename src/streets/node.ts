@@ -2,7 +2,7 @@ import * as d3 from "d3-quadtree";
 import Vector from "../generation/vector";
 import { StreetGraph } from "./graph";
 import { StreetSegment } from "./segment";
-import { NavigationPath, navigateBetweenStreetNodes } from "./navigate";
+import { NavigationPath, navigateBetweenStreetNodes } from "./navigation";
 
 /**
  * Node located along any intersection or point along the simplified road polylines

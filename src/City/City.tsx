@@ -9,6 +9,8 @@ import { observer } from "mobx-react-lite";
 import { GroundHeights } from "./constants";
 import { Roads } from "./Roads";
 
+const displayVisualization = true;
+
 export const City = observer(function City({
   children,
 }: {
@@ -76,9 +78,11 @@ export const City = observer(function City({
           );
         })}
       </group>
-      <group position={[0, 0, GroundHeights.Foundation]}>
-        <StreetGraphVisualization />
-      </group>
+      {displayVisualization && (
+        <group position={[0, 0, GroundHeights.Foundation]}>
+          <StreetGraphVisualization />
+        </group>
+      )}
     </>
   );
 });

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { makeAutoObservable } from "mobx";
 
 import { FocusedItem } from "../ui/FocusedItem";
-import { NavigationPath } from "../streets/navigate";
+import { NavigationPath } from "../streets/navigation";
 
 export class DisplayState {
   public focusedItem: FocusedItem | null = null;
