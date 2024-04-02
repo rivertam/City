@@ -2,7 +2,7 @@ export default {
   build: {
     sourcemap: true,
   },
-  base: "/",
+  base: "/City/",
   rollupOptions: {
     output: {
       interop: "auto",
