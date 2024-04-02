@@ -1,5 +1,5 @@
 import * as log from "loglevel";
-import * as simplify from "simplify-js";
+import simplify from "simplify-js";
 import { RNG } from "../../utils/random";
 
 import Vector from "../vector";

@@ -1,4 +1,4 @@
-import * as PriorityQueue from "fastpriorityqueue";
+import PriorityQueue from "fastpriorityqueue";
 
 import { StreetNode } from "./node";
 import Vector from "../generation/vector";

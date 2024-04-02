@@ -1,5 +1,5 @@
 import { Faker, en } from "@faker-js/faker";
-import * as seedrandom from "seedrandom";
+import seedrandom from "seedrandom";
 
 function cyrb53(str: string) {
   let h1 = 0xdeadbeef;

@@ -5,6 +5,8 @@
     "skipLibCheck": true,
     "lib": ["es6", "DOM", "ScriptHost"],
     "downlevelIteration": true,
-    "jsx": "react"
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
   }
 }
