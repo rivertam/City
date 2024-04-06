@@ -1,5 +1,5 @@
-import { Leva, button, useControls } from "leva";
-import { useEffect, useRef, useState } from "react";
+import { Leva, useControls } from "leva";
+import { useRef } from "react";
 import * as React from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
@@ -9,10 +9,8 @@ import { observer } from "mobx-react-lite";
 
 import { City } from "./City/City";
 import { CityState } from "./state/CityState";
-import { CityGenerator } from "./generation/CityGenerator";
 import { FocusedItem } from "./ui/FocusedItem";
-import { wait } from "./utils/wait";
-import { RNG } from "./utils/random";
+import { StartScreen } from "./StartScreen";
 
 export const GameWindow = styled.div`
   position: fixed;
@@ -78,54 +76,10 @@ export const Game = observer((): React.ReactElement => {
 
   const divWrapper = useRef<HTMLDivElement | null>(null);
 
-  const [shouldGenerate, setShouldGenerate] = useState(false);
-  const hasGenerated = useRef(false);
-
-  const tweaks = useControls("Game", {
-    "Make simple city": button(async () => {
-      RNG.reset();
-      setShouldGenerate(false);
-      hasGenerated.current = false;
-
-      await wait(100);
-      setShouldGenerate(true);
-    }),
-    size: {
-      min: 100,
-      max: 1000,
-      value: 500,
-      step: 20,
-    },
-  });
-
-  const [cityState, setCityState] = useState<CityState | null>(null);
-
-  useEffect(() => {
-    if (!shouldGenerate) {
-      return;
-    }
-
-    if (hasGenerated.current) {
-      console.warn(
-        "City generation props changed after generation. The prop change will be ignored."
-      );
-
-      return;
-    }
-
-    hasGenerated.current = true;
-
-    (async () => {
-      const generator = new CityGenerator({ size: tweaks.size });
-
-      const generatedCity = await generator.generate();
-
-      setCityState(new CityState(generatedCity));
-    })();
-  }, [shouldGenerate, tweaks.size]);
+  const [cityState, setCityState] = React.useState<CityState | null>(null);
 
   if (!cityState) {
-    return <></>;
+    return <StartScreen setCityState={setCityState} />;
   }
 
   return (
@@ -142,14 +96,14 @@ export const Game = observer((): React.ReactElement => {
             renderer.current.setClearColor(0x333333);
             renderer.current.setPixelRatio(window.devicePixelRatio);
             if (divWrapper.current) {
-              renderer.current.setSize(canvas.offsetWidth, canvas.offsetHeight);
+              renderer.current.setSize(canvas.width, canvas.height);
             }
 
             return renderer.current;
           }}
         >
           <Camera />
-          <City size={tweaks.size} />
+          <City />
         </Canvas>
       </GameWindow>
       <FocusedItem />

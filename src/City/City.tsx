@@ -15,7 +15,6 @@ export const City = observer(function City({
   children,
 }: {
   children?: React.ReactNode;
-  size?: number;
 }) {
   const cityState = CityState.use();
 
