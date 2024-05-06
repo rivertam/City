@@ -1,4 +1,4 @@
-# Lord
+# City
 
 > Forked from https://github.com/ProbableTrain/MapGenerator
 
